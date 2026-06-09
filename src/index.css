@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply min-h-screen bg-slate-950 text-slate-100 antialiased; }
+  input, select, textarea { @apply w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 outline-none transition focus:border-brand-400; }
+  button { @apply transition; }
+}
