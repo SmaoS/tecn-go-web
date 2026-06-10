@@ -1,13 +1,14 @@
 import axios from 'axios'
 
-const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
+const defaultApiUrl = 'https://tecn-go-backend-production.up.railway.app/api'
+const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || defaultApiUrl
 
-if (import.meta.env.PROD && (!configuredApiUrl || !/^https?:\/\//.test(configuredApiUrl))) {
+if (import.meta.env.PROD && !/^https?:\/\//.test(configuredApiUrl)) {
   throw new Error('VITE_API_URL must be an absolute backend URL in production')
 }
 
 export const api = axios.create({
-  baseURL: configuredApiUrl ?? '/api',
+  baseURL: configuredApiUrl,
   timeout: 15000,
 })
 
