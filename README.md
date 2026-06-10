@@ -52,3 +52,9 @@ npm run preview
 
 La URL del backend se configura con `VITE_API_URL`. No se deben guardar secretos en
 variables de Vite porque se incluyen en el bundle del navegador.
+
+## Producción
+
+Vercel usa `vercel.json` para el build y el fallback de React Router. Configura
+`VITE_API_URL=https://BACKEND_RAILWAY/api`. La ruta `/health` verifica versión y entorno
+del backend. Cualquier respuesta `401` elimina la sesión y redirige a `/login`.

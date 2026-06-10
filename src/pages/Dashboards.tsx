@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import axios from 'axios'
-import { api } from '../lib/api'
+import { api, assetUrl } from '../lib/api'
 import { useAuth } from '../context/useAuth'
 import type { ChatMessage, FinancialSummary, Payment, RequestStatus, ServiceCategory, ServiceRequest, TechnicianProfile, UserNotification, UserProfile } from '../types'
 import { uploadFile } from '../lib/files'
@@ -235,7 +235,7 @@ function StatusText({ value }: { value: string }) {
 }
 
 function Reputation({ photo, name, rating, services, description }: { photo?: string; name: string; rating: number; services: number; description?: string }) {
-  return <div className="mt-3 flex gap-3 rounded-xl bg-slate-950/50 p-3">{photo ? <img src={`${api.defaults.baseURL}${photo}`} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="grid h-12 w-12 place-items-center rounded-full bg-slate-800 font-bold">{name.charAt(0)}</div>}<div><strong>{name}</strong><p className="text-sm text-brand-400">★ {rating.toFixed(1)} · {services} servicios</p>{description && <p className="text-xs text-slate-500">{description}</p>}</div></div>
+  return <div className="mt-3 flex gap-3 rounded-xl bg-slate-950/50 p-3">{photo ? <img src={assetUrl(photo)} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="grid h-12 w-12 place-items-center rounded-full bg-slate-800 font-bold">{name.charAt(0)}</div>}<div><strong>{name}</strong><p className="text-sm text-brand-400">★ {rating.toFixed(1)} · {services} servicios</p>{description && <p className="text-xs text-slate-500">{description}</p>}</div></div>
 }
 
 function UserProfileEditor() {

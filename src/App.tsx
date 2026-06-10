@@ -5,6 +5,7 @@ import { ProtectedRoute, RoleRoute, RoleRouter } from './components/ProtectedRou
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage, RegisterPage } from './pages/AuthPages'
 import { AdminDashboard, ClientDashboard, TechnicianDashboard } from './pages/Dashboards'
+import { HealthPage } from './pages/HealthPage'
 
 export default function App() {
   return <BrowserRouter><AuthProvider><Routes>
@@ -12,6 +13,7 @@ export default function App() {
       <Route index element={<LandingPage />} />
       <Route path="login" element={<LoginPage />} />
       <Route path="registro/:kind" element={<RegisterPage />} />
+      <Route path="health" element={<HealthPage />} />
       <Route path="app" element={<ProtectedRoute />}>
         <Route index element={<RoleRouter />} />
         <Route element={<RoleRoute role="CLIENT" />}><Route path="cliente" element={<ClientDashboard />} /></Route>
