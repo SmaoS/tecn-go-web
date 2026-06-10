@@ -2,8 +2,8 @@ import axios from 'axios'
 
 const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
 
-if (!configuredApiUrl && import.meta.env.PROD) {
-  throw new Error('VITE_API_URL is required in production')
+if (import.meta.env.PROD && (!configuredApiUrl || !/^https?:\/\//.test(configuredApiUrl))) {
+  throw new Error('VITE_API_URL must be an absolute backend URL in production')
 }
 
 export const api = axios.create({
