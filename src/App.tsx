@@ -6,6 +6,7 @@ import { LandingPage } from './pages/LandingPage'
 import { LoginPage, RegisterPage } from './pages/AuthPages'
 import { AdminDashboard, ClientDashboard, TechnicianDashboard, VerifierDashboard } from './pages/Dashboards'
 import { HealthPage } from './pages/HealthPage'
+import { VerifyEmailPage } from './pages/VerifyEmailPage'
 
 export default function App() {
   return <BrowserRouter><AuthProvider><Routes>
@@ -14,6 +15,7 @@ export default function App() {
       <Route path="login" element={<LoginPage />} />
       <Route path="registro/:kind" element={<RegisterPage />} />
       <Route path="health" element={<HealthPage />} />
+      <Route path="verificar-correo" element={<VerifyEmailPage />} />
       <Route path="app" element={<ProtectedRoute />}>
         <Route index element={<RoleRouter />} />
         <Route element={<RoleRoute role="CLIENT" />}><Route path="cliente" element={<ClientDashboard />} /></Route>

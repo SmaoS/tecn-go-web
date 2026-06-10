@@ -8,6 +8,9 @@ export interface Session {
   email: string
   role: Role
   verificationStatus: VerificationStatus
+  emailVerified: boolean
+  phoneVerified: boolean
+  documentsVerified: boolean
 }
 
 export interface ServiceCategory {
@@ -31,6 +34,7 @@ export interface ServiceRequest {
   technicianAverageRating?: number
   technicianCompletedServicesCount: number
   technicianExperienceDescription?: string
+  technicianCategories: string[]
   categoryId: string
   categoryName: string
   description: string
@@ -92,6 +96,7 @@ export interface UserProfile {
   id: string
   fullName: string
   email: string
+  phone?: string
   role: Role
   profilePhotoUrl?: string
   documentPhotoUrl?: string
@@ -101,6 +106,9 @@ export interface UserProfile {
   completedServicesCount: number
   paidServicesCount: number
   verificationStatus: VerificationStatus
+  emailVerified: boolean
+  phoneVerified: boolean
+  documentsVerified: boolean
 }
 
 export interface UserVerification {

@@ -33,6 +33,7 @@ export function ClientDashboard() {
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [chatRequest, setChatRequest] = useState<ServiceRequest | null>(null)
+  const [showProfile, setShowProfile] = useState(false)
 
   const load = useCallback(async () => {
     const [catalog, mine, history] = await Promise.all([api.get<ServiceCategory[]>('/v1/services'), api.get<ServiceRequest[]>('/v1/service-requests/mine'), api.get<Payment[]>('/v1/payments/mine')])
@@ -84,7 +85,7 @@ export function ClientDashboard() {
     }), () => setError('No fue posible obtener la ubicación del navegador'))
   }
 
-  return <Shell title={`Hola, ${session?.fullName}`} subtitle="Panel cliente"><NotificationCenter /><UserProfileEditor /><div className="grid gap-8 lg:grid-cols-2">
+  return <Shell title={`Hola, ${session?.fullName}`} subtitle="Panel cliente"><NotificationCenter /><button onClick={() => setShowProfile((value) => !value)} className="mb-6 rounded-lg border border-brand-500 px-4 py-2 text-brand-300">{showProfile ? 'Cerrar perfil' : 'Mi perfil'}</button>{showProfile && <UserProfileEditor />}<div className="grid gap-8 lg:grid-cols-2">
     <form onSubmit={submit} className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900 p-6">
       <h2 className="text-xl font-bold">Crear solicitud</h2>
       <select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} required><option value="">Selecciona una categoría</option>{categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
@@ -100,7 +101,7 @@ export function ClientDashboard() {
       <div className="flex justify-between gap-4"><strong>{item.categoryName}</strong><Status value={item.status} /></div>
       <p className="mt-2 text-sm text-slate-400">{item.description}</p><p className="mt-3 text-xs text-slate-500">{item.address}</p>
       {item.technicianName && <p className="mt-2 text-sm">Técnico: {item.technicianName}</p>}
-      {item.technicianName && <Reputation photo={item.technicianProfilePhotoUrl} name={item.technicianName} rating={item.technicianAverageRating ?? 5} services={item.technicianCompletedServicesCount} description={item.technicianExperienceDescription} />}
+      {item.technicianName && <Reputation photo={item.technicianProfilePhotoUrl} name={item.technicianName} rating={item.technicianAverageRating ?? 5} services={item.technicianCompletedServicesCount} description={[item.technicianExperienceDescription, item.technicianCategories?.join(', ')].filter(Boolean).join(' · ')} />}
       {item.estimatedPrice != null && <p className="mt-2 text-sm">Estimado: ${item.estimatedPrice.toLocaleString()}</p>}
       {item.technicianPrice != null && <p className="mt-2 text-sm text-brand-400">Cotización: ${item.technicianPrice.toLocaleString()}</p>}
       {item.finalPrice != null && <p className="mt-2 font-bold">Precio final: ${item.finalPrice.toLocaleString()}</p>}
@@ -128,6 +129,7 @@ export function TechnicianDashboard() {
   const [quotes, setQuotes] = useState<Record<string, string>>({})
   const [chatRequest, setChatRequest] = useState<ServiceRequest | null>(null)
   const [error, setError] = useState('')
+  const [showProfile, setShowProfile] = useState(false)
 
   const load = useCallback(async () => {
     setError('')
@@ -202,9 +204,10 @@ export function TechnicianDashboard() {
 
   return <Shell title={`Hola, ${session?.fullName}`} subtitle="Panel técnico">
     <NotificationCenter />
+    <button onClick={() => setShowProfile((value) => !value)} className="mb-6 rounded-lg border border-brand-500 px-4 py-2 text-brand-300">{showProfile ? 'Cerrar perfil' : 'Mi perfil'}</button>
     {error && <p className="mb-4 rounded-xl bg-red-500/10 p-3 text-red-300">{error}</p>}
-    <div className="grid gap-8 lg:grid-cols-2">
-      <form onSubmit={saveProfile} className="space-y-3 rounded-3xl border border-slate-800 bg-slate-900 p-6"><div className="flex justify-between"><h2 className="text-xl font-bold">Perfil técnico</h2>{profile && <StatusText value={profile.status} />}</div>
+    <div className={`grid gap-8 ${showProfile || !profile ? 'lg:grid-cols-2' : ''}`}>
+      {(showProfile || !profile) && <form onSubmit={saveProfile} className="space-y-3 rounded-3xl border border-slate-800 bg-slate-900 p-6"><div className="flex justify-between"><h2 className="text-xl font-bold">Perfil técnico</h2>{profile && <StatusText value={profile.status} />}</div>
         {profile && <VerificationBadge value={profile.verificationStatus} />}
         <input placeholder="Documento" value={profileForm.documentNumber} onChange={(e) => setProfileForm({ ...profileForm, documentNumber: e.target.value })} required />
         <input placeholder="Teléfono" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} required />
@@ -217,14 +220,14 @@ export function TechnicianDashboard() {
         <div className="grid grid-cols-2 gap-3"><input type="number" step="any" placeholder="Latitud" value={profileForm.latitude} onChange={(e) => setProfileForm({ ...profileForm, latitude: e.target.value })} required /><input type="number" step="any" placeholder="Longitud" value={profileForm.longitude} onChange={(e) => setProfileForm({ ...profileForm, longitude: e.target.value })} required /></div>
         <button type="button" onClick={useProfileLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">Usar mi ubicación</button>
         <button className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">{profile ? 'Actualizar perfil' : 'Crear perfil'}</button>
-      </form>
+      </form>}
       <RequestList title="Mis servicios" items={assigned} actionLabel={(item) => {
         const labels: Partial<Record<RequestStatus, string>> = { QUOTE_ACCEPTED: 'Ir en camino', ON_THE_WAY: 'Marcar llegada', ARRIVED: 'Iniciar servicio', IN_PROGRESS: 'Completar' }
         return item.status === 'PAID' ? 'Calificar cliente' : labels[item.status]
       }} onAction={(item) => item.status === 'PAID' ? void rateClient(item) : void advance(item)} onChat={setChatRequest} />
     </div>
     {profile?.status === 'APPROVED' && <div className="mt-8"><div className="mb-4 flex items-center gap-3"><label>Radio (km)</label><input className="max-w-28" type="number" min="1" max="100" value={radiusKm} onChange={(e) => setRadiusKm(e.target.value)} /><button onClick={() => void load()} className="rounded-lg border border-slate-700 px-3 py-2">Buscar</button></div>
-      <section><h2 className="mb-4 text-xl font-bold">Solicitudes cercanas</h2><div className="space-y-3">{available.length === 0 && <p className="text-slate-400">No hay solicitudes dentro del radio.</p>}{available.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5"><strong>{item.categoryName}</strong><Reputation photo={item.clientProfilePhotoUrl} name={item.clientName} rating={item.clientAverageRating} services={item.clientPaidServicesCount} /><p className="mt-2 text-sm text-slate-400">{item.description}</p><p className="mt-2 text-xs text-slate-500">{item.address} · {item.distanceKm?.toFixed(2)} km</p><div className="mt-4 flex gap-2"><input type="number" min="1" placeholder="Tu cotización" value={quotes[item.id] ?? ''} onChange={(e) => setQuotes({ ...quotes, [item.id]: e.target.value })} /><button disabled={!quotes[item.id]} onClick={() => quote(item.id)} className="rounded-lg bg-brand-500 px-3 py-2 font-bold text-slate-950">Cotizar</button></div></article>)}</div></section>
+      <section><h2 className="mb-4 text-xl font-bold">Solicitudes cercanas</h2><div className="space-y-3">{available.length === 0 && <p className="text-slate-400">No hay solicitudes dentro del radio.</p>}{available.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5"><strong>{item.categoryName}</strong><Reputation photo={item.clientProfilePhotoUrl} name={item.clientName} rating={item.clientAverageRating} services={item.clientPaidServicesCount} /><p className="mt-2 text-sm text-slate-400">{item.description}</p>{item.estimatedPrice != null && <p className="mt-2 font-bold text-brand-400">Estimado del cliente: ${item.estimatedPrice.toLocaleString()}</p>}<p className="mt-2 text-xs text-slate-500">{item.address} · {item.distanceKm?.toFixed(2)} km</p><div className="mt-4 flex gap-2"><input type="number" min="1" placeholder="Tu cotización" value={quotes[item.id] ?? ''} onChange={(e) => setQuotes({ ...quotes, [item.id]: e.target.value })} /><button disabled={!quotes[item.id]} onClick={() => quote(item.id)} className="rounded-lg bg-brand-500 px-3 py-2 font-bold text-slate-950">Cotizar</button></div></article>)}</div></section>
     </div>}
     {earnings && <div className="mt-8"><FinancialSummaryCard title="Mis ganancias" summary={earnings} /><FinancialList title="Historial de ganancias" items={earnings.payments} amount={(item) => item.technicianAmount} empty="Aún no tienes ganancias registradas." /></div>}
     {chatRequest && <ChatPanel request={chatRequest} currentUserId={session!.userId} onClose={() => setChatRequest(null)} />}
@@ -263,8 +266,14 @@ function UserProfileEditor() {
     if (!profile) return
     try { setProfile((await api.put<UserProfile>('/v1/users/me/profile', profile)).data) } catch (reason) { setError(apiMessage(reason)) }
   }
+  async function sendEmailVerification() {
+    try {
+      await api.post('/v1/auth/send-email-verification')
+      setError('Correo de verificación enviado. Revisa tu bandeja de entrada.')
+    } catch (reason) { setError(apiMessage(reason)) }
+  }
   if (!profile) return null
-  return <form onSubmit={save} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">Mi perfil y reputación</h2><span className="text-brand-400">★ {profile.averageRating.toFixed(1)} · {profile.paidServicesCount} pagados</span></div><div className="mt-2"><VerificationBadge value={profile.verificationStatus} /></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><input value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} required /><label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label><label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label></div>{error && <p className="mt-2 text-sm text-red-400">{error}</p>}<button className="mt-3 rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button></form>
+  return <form onSubmit={save} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">Mi perfil y reputación</h2><span className="text-brand-400">★ {profile.averageRating.toFixed(1)} · {profile.paidServicesCount} pagados</span></div><div className="mt-2"><VerificationBadge value={profile.verificationStatus} /><p className="mt-1 text-sm text-slate-400">Correo: {profile.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {profile.documentsVerified ? 'verificados' : 'pendientes'}</p></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><input value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} required /><input placeholder="Teléfono" value={profile.phone ?? ''} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /><label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label><label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label></div>{error && <p className="mt-2 text-sm text-slate-300">{error}</p>}<div className="mt-3 flex flex-wrap gap-2"><button className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button>{!profile.emailVerified && <button type="button" onClick={() => void sendEmailVerification()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div></form>
 }
 
 function RequestList({ title, items, actionLabel, onAction, onChat }: { title: string; items: ServiceRequest[]; actionLabel: (item: ServiceRequest) => string | undefined; onAction: (item: ServiceRequest) => void; onChat?: (item: ServiceRequest) => void }) {
@@ -311,6 +320,9 @@ function VerificationQueue() {
   async function verify(id: string) {
     try { await api.put(`/v1/verifications/${id}/verify`); await load() } catch (reason) { setError(apiMessage(reason)) }
   }
+  async function reject(id: string) {
+    try { await api.put(`/v1/admin/users/${id}/reject-documents`); await load() } catch (reason) { setError(apiMessage(reason)) }
+  }
 
   async function openEvidence(url?: string) {
     if (!url) return
@@ -327,7 +339,7 @@ function VerificationQueue() {
         <div className="flex items-start justify-between gap-3"><div><h3 className="font-bold">{item.fullName}</h3><p className="text-sm text-slate-400">{item.email}</p></div><span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">{item.role}</span></div>
         {item.workExperienceDescription && <p className="mt-3 text-sm text-slate-400">{item.workExperienceDescription}</p>}
         <div className="mt-4 flex gap-2"><button onClick={() => void openEvidence(item.documentPhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver documento</button>{item.certificatePhotoUrl && <button onClick={() => void openEvidence(item.certificatePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver certificado</button>}</div>
-        <button onClick={() => void verify(item.id)} className="mt-4 rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950">Marcar verificado</button>
+        <div className="mt-4 flex gap-2"><button onClick={() => void verify(item.id)} className="rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950">Marcar verificado</button><button onClick={() => void reject(item.id)} className="rounded-lg border border-red-500 px-4 py-2 text-red-300">Rechazar</button></div>
       </article>)}
     </div>
   </section>
