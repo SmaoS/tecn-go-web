@@ -183,6 +183,13 @@ export function TechnicianDashboard() {
     } catch (reason) { setError(apiMessage(reason)) }
   }
 
+  async function sendEmailVerification() {
+    try {
+      await api.post('/v1/auth/resend-email-verification')
+      setError('Correo de verificación enviado. Revisa tu bandeja de entrada.')
+    } catch (reason) { setError(apiMessage(reason)) }
+  }
+
   async function profileFile(field: 'profilePhotoUrl' | 'documentPhotoUrl' | 'certificatePhotoUrl', file?: File) {
     if (!file) return
     const kind = field === 'profilePhotoUrl' ? 'PROFILE' : field === 'certificatePhotoUrl' ? 'CERTIFICATE' : 'DOCUMENT'
@@ -204,7 +211,7 @@ export function TechnicianDashboard() {
 
   return <Shell title={`Hola, ${session?.fullName}`} subtitle="Panel técnico">
     <NotificationCenter />
-    <button onClick={() => setShowProfile((value) => !value)} className="mb-6 rounded-lg border border-brand-500 px-4 py-2 text-brand-300">{showProfile ? 'Cerrar perfil' : 'Mi perfil'}</button>
+    <div className="mb-6 flex flex-wrap gap-2"><button onClick={() => setShowProfile((value) => !value)} className="rounded-lg border border-brand-500 px-4 py-2 text-brand-300">{showProfile ? 'Cerrar perfil' : 'Mi perfil'}</button>{!session?.emailVerified && <button onClick={() => void sendEmailVerification()} className="rounded-lg border border-amber-500 px-4 py-2 text-amber-300">Reenviar verificación de correo</button>}</div>
     {error && <p className="mb-4 rounded-xl bg-red-500/10 p-3 text-red-300">{error}</p>}
     <div className={`grid gap-8 ${showProfile || !profile ? 'lg:grid-cols-2' : ''}`}>
       {(showProfile || !profile) && <form onSubmit={saveProfile} className="space-y-3 rounded-3xl border border-slate-800 bg-slate-900 p-6"><div className="flex justify-between"><h2 className="text-xl font-bold">Perfil técnico</h2>{profile && <StatusText value={profile.status} />}</div>
