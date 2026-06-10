@@ -1,4 +1,5 @@
-export type Role = 'CLIENT' | 'TECHNICIAN' | 'ADMIN'
+export type Role = 'CLIENT' | 'TECHNICIAN' | 'VERIFIER' | 'ADMIN'
+export type VerificationStatus = 'CREATED' | 'PENDING_VERIFICATION' | 'VERIFIED'
 
 export interface Session {
   token: string
@@ -6,6 +7,7 @@ export interface Session {
   fullName: string
   email: string
   role: Role
+  verificationStatus: VerificationStatus
 }
 
 export interface ServiceCategory {
@@ -77,12 +79,13 @@ export interface TechnicianProfile {
   longitude?: number
   status: TechnicianStatus
   profilePhotoUrl?: string
-  documentPhotoUrl: string
+  documentPhotoUrl?: string
   certificatePhotoUrl?: string
   workExperienceDescription: string
   averageRating: number
   completedServicesCount: number
   paidServicesCount: number
+  verificationStatus: VerificationStatus
 }
 
 export interface UserProfile {
@@ -91,12 +94,34 @@ export interface UserProfile {
   email: string
   role: Role
   profilePhotoUrl?: string
-  documentPhotoUrl: string
+  documentPhotoUrl?: string
   certificatePhotoUrl?: string
   workExperienceDescription?: string
   averageRating: number
   completedServicesCount: number
   paidServicesCount: number
+  verificationStatus: VerificationStatus
+}
+
+export interface UserVerification {
+  id: string
+  fullName: string
+  email: string
+  role: Role
+  verificationStatus: VerificationStatus
+  profilePhotoUrl?: string
+  documentPhotoUrl: string
+  certificatePhotoUrl?: string
+  workExperienceDescription?: string
+  createdAt: string
+  verifiedAt?: string
+}
+
+export interface Verifier {
+  id: string
+  fullName: string
+  email: string
+  createdAt: string
 }
 
 export interface Payment {

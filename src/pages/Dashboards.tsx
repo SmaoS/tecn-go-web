@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import axios from 'axios'
 import { api, assetUrl } from '../lib/api'
 import { useAuth } from '../context/useAuth'
-import type { ChatMessage, FinancialSummary, Payment, RequestStatus, ServiceCategory, ServiceRequest, TechnicianProfile, UserNotification, UserProfile } from '../types'
+import type { ChatMessage, FinancialSummary, Payment, RequestStatus, ServiceCategory, ServiceRequest, TechnicianProfile, UserNotification, UserProfile, UserVerification, VerificationStatus, Verifier } from '../types'
 import { uploadFile } from '../lib/files'
 
 function Shell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
@@ -205,6 +205,7 @@ export function TechnicianDashboard() {
     {error && <p className="mb-4 rounded-xl bg-red-500/10 p-3 text-red-300">{error}</p>}
     <div className="grid gap-8 lg:grid-cols-2">
       <form onSubmit={saveProfile} className="space-y-3 rounded-3xl border border-slate-800 bg-slate-900 p-6"><div className="flex justify-between"><h2 className="text-xl font-bold">Perfil técnico</h2>{profile && <StatusText value={profile.status} />}</div>
+        {profile && <VerificationBadge value={profile.verificationStatus} />}
         <input placeholder="Documento" value={profileForm.documentNumber} onChange={(e) => setProfileForm({ ...profileForm, documentNumber: e.target.value })} required />
         <input placeholder="Teléfono" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} required />
         <fieldset><legend className="mb-2 text-sm text-slate-400">Categorías</legend><div className="grid gap-2 sm:grid-cols-2">{categories.map((category) => <label key={category.id} className="flex gap-2 text-sm"><input type="checkbox" checked={profileForm.categoryIds.includes(category.id)} onChange={(event) => setProfileForm({ ...profileForm, categoryIds: event.target.checked ? [...profileForm.categoryIds, category.id] : profileForm.categoryIds.filter((id) => id !== category.id) })} />{category.name}</label>)}</div></fieldset>
@@ -234,6 +235,17 @@ function StatusText({ value }: { value: string }) {
   return <span className="text-sm font-bold text-brand-400">{value}</span>
 }
 
+const verificationLabels: Record<VerificationStatus, string> = {
+  CREATED: 'Cuenta creada: carga tu documento',
+  PENDING_VERIFICATION: 'Documento pendiente de verificación',
+  VERIFIED: 'Identidad verificada',
+}
+
+function VerificationBadge({ value }: { value: VerificationStatus }) {
+  const color = value === 'VERIFIED' ? 'text-emerald-400' : value === 'PENDING_VERIFICATION' ? 'text-amber-300' : 'text-slate-400'
+  return <span className={`text-sm font-bold ${color}`}>{verificationLabels[value]}</span>
+}
+
 function Reputation({ photo, name, rating, services, description }: { photo?: string; name: string; rating: number; services: number; description?: string }) {
   return <div className="mt-3 flex gap-3 rounded-xl bg-slate-950/50 p-3">{photo ? <img src={assetUrl(photo)} alt="" className="h-12 w-12 rounded-full object-cover" /> : <div className="grid h-12 w-12 place-items-center rounded-full bg-slate-800 font-bold">{name.charAt(0)}</div>}<div><strong>{name}</strong><p className="text-sm text-brand-400">★ {rating.toFixed(1)} · {services} servicios</p>{description && <p className="text-xs text-slate-500">{description}</p>}</div></div>
 }
@@ -252,7 +264,7 @@ function UserProfileEditor() {
     try { setProfile((await api.put<UserProfile>('/v1/users/me/profile', profile)).data) } catch (reason) { setError(apiMessage(reason)) }
   }
   if (!profile) return null
-  return <form onSubmit={save} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex items-center justify-between"><h2 className="font-bold">Mi perfil y reputación</h2><span className="text-brand-400">★ {profile.averageRating.toFixed(1)} · {profile.paidServicesCount} pagados</span></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><input value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} required /><label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label><label className="text-sm">Documento obligatorio<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} required={!profile.documentPhotoUrl} /></label></div>{error && <p className="mt-2 text-sm text-red-400">{error}</p>}<button className="mt-3 rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button></form>
+  return <form onSubmit={save} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">Mi perfil y reputación</h2><span className="text-brand-400">★ {profile.averageRating.toFixed(1)} · {profile.paidServicesCount} pagados</span></div><div className="mt-2"><VerificationBadge value={profile.verificationStatus} /></div><div className="mt-4 grid gap-3 sm:grid-cols-2"><input value={profile.fullName} onChange={(event) => setProfile({ ...profile, fullName: event.target.value })} required /><label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label><label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label></div>{error && <p className="mt-2 text-sm text-red-400">{error}</p>}<button className="mt-3 rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button></form>
 }
 
 function RequestList({ title, items, actionLabel, onAction, onChat }: { title: string; items: ServiceRequest[]; actionLabel: (item: ServiceRequest) => string | undefined; onAction: (item: ServiceRequest) => void; onChat?: (item: ServiceRequest) => void }) {
@@ -288,6 +300,66 @@ function ChatPanel({ request, currentUserId, onClose }: { request: ServiceReques
   return <section className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4"><div className="w-full max-w-xl rounded-3xl border border-slate-700 bg-slate-900 p-6"><div className="flex justify-between"><h2 className="text-xl font-bold">Chat · {request.categoryName}</h2><button onClick={onClose}>Cerrar</button></div><div className="my-4 max-h-80 space-y-2 overflow-y-auto">{messages.length === 0 && <p className="text-slate-500">Inicia la conversación.</p>}{messages.map((item) => <div key={item.id} className={`max-w-[80%] rounded-xl p-3 ${item.senderId === currentUserId ? 'ml-auto bg-brand-500 text-slate-950' : 'bg-slate-800'}`}><p className="text-xs font-bold">{item.senderName}</p><p>{item.message}</p></div>)}</div><form onSubmit={send} className="flex gap-2"><input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe un mensaje" /><button className="rounded-xl bg-brand-500 px-4 font-bold text-slate-950">Enviar</button></form></div></section>
 }
 
+function VerificationQueue() {
+  const [items, setItems] = useState<UserVerification[]>([])
+  const [error, setError] = useState('')
+  const load = useCallback(() => api.get<UserVerification[]>('/v1/verifications/pending')
+    .then(({ data }) => setItems(data))
+    .catch((reason) => setError(apiMessage(reason))), [])
+  useEffect(() => { void load() }, [load])
+
+  async function verify(id: string) {
+    try { await api.put(`/v1/verifications/${id}/verify`); await load() } catch (reason) { setError(apiMessage(reason)) }
+  }
+
+  async function openEvidence(url?: string) {
+    if (!url) return
+    try {
+      const response = await api.get(url, { responseType: 'blob' })
+      window.open(URL.createObjectURL(response.data), '_blank', 'noopener,noreferrer')
+    } catch (reason) { setError(apiMessage(reason)) }
+  }
+
+  return <section className="mb-8"><h2 className="mb-4 text-xl font-bold">Identidades pendientes ({items.length})</h2>
+    {error && <p className="mb-3 text-red-400">{error}</p>}
+    <div className="grid gap-4 md:grid-cols-2">{items.length === 0 && <p className="text-slate-400">No hay documentos pendientes de verificación.</p>}
+      {items.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <div className="flex items-start justify-between gap-3"><div><h3 className="font-bold">{item.fullName}</h3><p className="text-sm text-slate-400">{item.email}</p></div><span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">{item.role}</span></div>
+        {item.workExperienceDescription && <p className="mt-3 text-sm text-slate-400">{item.workExperienceDescription}</p>}
+        <div className="mt-4 flex gap-2"><button onClick={() => void openEvidence(item.documentPhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver documento</button>{item.certificatePhotoUrl && <button onClick={() => void openEvidence(item.certificatePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver certificado</button>}</div>
+        <button onClick={() => void verify(item.id)} className="mt-4 rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950">Marcar verificado</button>
+      </article>)}
+    </div>
+  </section>
+}
+
+function VerifierManager() {
+  const [items, setItems] = useState<Verifier[]>([])
+  const [form, setForm] = useState({ fullName: '', email: '', password: '' })
+  const [error, setError] = useState('')
+  const load = useCallback(() => api.get<Verifier[]>('/v1/admin/verifiers').then(({ data }) => setItems(data)), [])
+  useEffect(() => { void load() }, [load])
+
+  async function create(event: FormEvent) {
+    event.preventDefault(); setError('')
+    try {
+      await api.post('/v1/admin/verifiers', form)
+      setForm({ fullName: '', email: '', password: '' })
+      await load()
+    } catch (reason) { setError(apiMessage(reason)) }
+  }
+
+  return <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><h2 className="text-xl font-bold">Verificadores</h2><p className="mt-1 text-sm text-slate-400">Estas cuentas solo pueden ser creadas por un administrador.</p>
+    <form onSubmit={create} className="mt-4 grid gap-3 md:grid-cols-4"><input placeholder="Nombre completo" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required /><input type="email" placeholder="Correo" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required /><input type="password" minLength={8} placeholder="Contraseña temporal" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required /><button className="rounded-lg bg-brand-500 px-4 py-2 font-bold text-slate-950">Crear verificador</button></form>
+    {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+    <div className="mt-4 flex flex-wrap gap-2">{items.map((item) => <span key={item.id} className="rounded-full border border-slate-700 px-3 py-2 text-sm">{item.fullName} · {item.email}</span>)}</div>
+  </section>
+}
+
+export function VerifierDashboard() {
+  return <Shell title="Verificación de identidad" subtitle="Panel verificador"><VerificationQueue /></Shell>
+}
+
 export function AdminDashboard() {
   const [pending, setPending] = useState<TechnicianProfile[]>([])
   const [categories, setCategories] = useState<ServiceCategory[]>([])
@@ -318,7 +390,7 @@ export function AdminDashboard() {
       window.open(URL.createObjectURL(response.data), '_blank', 'noopener,noreferrer')
     } catch (reason) { setError(apiMessage(reason)) }
   }
-  return <Shell title="Centro de operaciones" subtitle="Panel administrador">{error && <p className="mb-4 text-red-400">{error}</p>}{finances && <><FinancialSummaryCard title="Pagos y comisiones" summary={finances} /><FinancialList title="Movimientos de la plataforma" items={finances.payments} amount={(item) => item.platformFee} empty="Aún no hay pagos registrados." /></>}<div className="mt-8 grid gap-8 lg:grid-cols-2"><section><h2 className="mb-4 text-xl font-bold">Técnicos pendientes ({pending.length})</h2><div className="space-y-4">{pending.length === 0 && <p className="text-slate-400">No hay perfiles pendientes.</p>}{pending.map((profile) => <article key={profile.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h3 className="text-lg font-bold">{profile.fullName}</h3><p className="text-brand-400">{profile.categories.map((item) => item.name).join(', ')}</p><p className="mt-3 text-sm text-slate-400">{profile.workExperienceDescription}</p><div className="mt-3 flex gap-2"><button onClick={() => openEvidence(profile.documentPhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver documento</button>{profile.certificatePhotoUrl && <button onClick={() => openEvidence(profile.certificatePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver certificado</button>}</div><div className="mt-5 flex gap-3"><button onClick={() => review(profile.id, 'approve')} className="rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950">Aprobar</button><button onClick={() => review(profile.id, 'reject')} className="rounded-lg border border-red-500 px-4 py-2 text-red-300">Rechazar</button></div></article>)}</div></section>
+  return <Shell title="Centro de operaciones" subtitle="Panel administrador">{error && <p className="mb-4 text-red-400">{error}</p>}<VerifierManager /><VerificationQueue />{finances && <><FinancialSummaryCard title="Pagos y comisiones" summary={finances} /><FinancialList title="Movimientos de la plataforma" items={finances.payments} amount={(item) => item.platformFee} empty="Aún no hay pagos registrados." /></>}<div className="mt-8 grid gap-8 lg:grid-cols-2"><section><h2 className="mb-4 text-xl font-bold">Técnicos pendientes ({pending.length})</h2><div className="space-y-4">{pending.length === 0 && <p className="text-slate-400">No hay perfiles pendientes.</p>}{pending.map((profile) => <article key={profile.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h3 className="text-lg font-bold">{profile.fullName}</h3><p className="text-brand-400">{profile.categories.map((item) => item.name).join(', ')}</p><VerificationBadge value={profile.verificationStatus} /><p className="mt-3 text-sm text-slate-400">{profile.workExperienceDescription}</p><div className="mt-3 flex gap-2"><button onClick={() => openEvidence(profile.documentPhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver documento</button>{profile.certificatePhotoUrl && <button onClick={() => openEvidence(profile.certificatePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver certificado</button>}</div><div className="mt-5 flex gap-3"><button disabled={profile.verificationStatus !== 'VERIFIED'} onClick={() => review(profile.id, 'approve')} className="rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950 disabled:opacity-40">Aprobar</button><button onClick={() => review(profile.id, 'reject')} className="rounded-lg border border-red-500 px-4 py-2 text-red-300">Rechazar</button></div></article>)}</div></section>
     <section><h2 className="mb-4 text-xl font-bold">Categorías</h2><form onSubmit={createCategory} className="mb-4 space-y-3 rounded-2xl border border-slate-800 bg-slate-900 p-5"><input placeholder="Nombre" value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} required /><input placeholder="Descripción" value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} /><button className="rounded-lg bg-brand-500 px-4 py-2 font-bold text-slate-950">Crear</button></form><div className="space-y-2">{categories.map((category) => <div key={category.id} className="rounded-xl border border-slate-800 p-4"><div className="flex items-center justify-between"><div><strong>{category.name}</strong><p className="text-xs text-slate-500">{category.active ? 'Activa' : 'Inactiva'}</p></div><div className="flex gap-2"><button onClick={() => editCategory(category)} className="rounded-lg border border-slate-700 px-3 py-2">Editar</button><button onClick={() => toggleCategory(category)} className="rounded-lg border border-slate-700 px-3 py-2">{category.active ? 'Desactivar' : 'Activar'}</button><button onClick={() => deleteCategory(category)} className="rounded-lg border border-red-500/50 px-3 py-2 text-red-300">Eliminar</button></div></div></div>)}</div></section></div></Shell>
 }
 

@@ -10,7 +10,7 @@ export function ProtectedRoute() {
 export function RoleRouter() {
   const { session } = useAuth()
   if (!session) return <Navigate to="/login" replace />
-  const route = { CLIENT: '/app/cliente', TECHNICIAN: '/app/tecnico', ADMIN: '/app/admin' }[session.role]
+  const route = { CLIENT: '/app/cliente', TECHNICIAN: '/app/tecnico', VERIFIER: '/app/verificador', ADMIN: '/app/admin' }[session.role]
   return <Navigate to={route} replace />
 }
 

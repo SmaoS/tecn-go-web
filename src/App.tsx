@@ -4,7 +4,7 @@ import { Layout } from './components/Layout'
 import { ProtectedRoute, RoleRoute, RoleRouter } from './components/ProtectedRoute'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage, RegisterPage } from './pages/AuthPages'
-import { AdminDashboard, ClientDashboard, TechnicianDashboard } from './pages/Dashboards'
+import { AdminDashboard, ClientDashboard, TechnicianDashboard, VerifierDashboard } from './pages/Dashboards'
 import { HealthPage } from './pages/HealthPage'
 
 export default function App() {
@@ -18,6 +18,7 @@ export default function App() {
         <Route index element={<RoleRouter />} />
         <Route element={<RoleRoute role="CLIENT" />}><Route path="cliente" element={<ClientDashboard />} /></Route>
         <Route element={<RoleRoute role="TECHNICIAN" />}><Route path="tecnico" element={<TechnicianDashboard />} /></Route>
+        <Route element={<RoleRoute role="VERIFIER" />}><Route path="verificador" element={<VerifierDashboard />} /></Route>
         <Route element={<RoleRoute role="ADMIN" />}><Route path="admin" element={<AdminDashboard />} /></Route>
       </Route>
     </Route>
