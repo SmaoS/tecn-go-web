@@ -136,7 +136,7 @@ export function TechnicianDashboard() {
       setCategories(catalog.data)
       const { data } = await api.get<TechnicianProfile>('/v1/technicians/me')
       setProfile(data)
-      setProfileForm({ documentNumber: data.documentNumber, phone: data.phone, categoryIds: data.categories.map((item) => item.id), description: data.description, profilePhotoUrl: data.profilePhotoUrl ?? '', documentPhotoUrl: data.documentPhotoUrl, certificatePhotoUrl: data.certificatePhotoUrl ?? '', workExperienceDescription: data.workExperienceDescription, latitude: String(data.latitude ?? ''), longitude: String(data.longitude ?? '') })
+      setProfileForm({ documentNumber: data.documentNumber, phone: data.phone, categoryIds: data.categories.map((item) => item.id), description: data.description, profilePhotoUrl: data.profilePhotoUrl ?? '', documentPhotoUrl: data.documentPhotoUrl ?? '', certificatePhotoUrl: data.certificatePhotoUrl ?? '', workExperienceDescription: data.workExperienceDescription, latitude: String(data.latitude ?? ''), longitude: String(data.longitude ?? '') })
       const mine = await api.get<ServiceRequest[]>('/v1/service-requests/mine')
       setAssigned(mine.data)
       setEarnings((await api.get<FinancialSummary>('/v1/technicians/me/earnings')).data)

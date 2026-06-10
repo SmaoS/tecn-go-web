@@ -6,12 +6,13 @@ Axios y Tailwind CSS.
 ## Incluye
 
 - Landing page responsive
-- Login y registro de clientes/técnicos conectados al backend
+- Login y registro básico de clientes/técnicos conectados al backend
 - Persistencia de sesión JWT
 - Panel cliente con creación, publicación, cancelación y estados de solicitudes
 - Perfil técnico con estado de aprobación
 - Solicitudes disponibles, aceptación y avance de estado para técnicos aprobados
-- Panel administrador para aprobar o rechazar técnicos
+- Panel administrador para crear verificadores y aprobar o rechazar técnicos
+- Bandeja de documentos para administradores y verificadores
 - CRUD administrativo de categorías activas/inactivas
 - Ubicación manual o GPS del navegador y presupuesto estimado
 - Búsqueda por radio, cotización técnica y confirmación del cliente
@@ -24,6 +25,11 @@ Axios y Tailwind CSS.
 - Reputación de ambas partes y calificación cliente-técnico/técnico-cliente
 - Cierre de sesión visible para todos los roles
 - Rutas protegidas, navegación y redirección por rol
+
+El registro solicita únicamente nombre, correo, contraseña y tipo de cuenta. Después
+del ingreso, cliente o técnico completa su perfil y carga el documento. La interfaz
+muestra los estados `CREATED`, `PENDING_VERIFICATION` y `VERIFIED`. Los verificadores
+son cuentas internas creadas exclusivamente por un administrador.
 
 ## Requisitos
 
