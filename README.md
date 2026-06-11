@@ -83,3 +83,10 @@ Vercel usa `vercel.json` para el build y el fallback de React Router. Configura
 `VITE_API_URL=https://BACKEND_RAILWAY/api`. La ruta `/health` verifica versión y entorno
 del backend. La variable debe ser una URL absoluta y requiere un redeploy después de
 cambiarla. Cualquier respuesta `401` elimina la sesión y redirige a `/login`.
+
+## Evidencias y cumplimiento
+
+Las solicitudes incluyen un panel para evidencias, comprobantes y denuncias. Cliente y
+técnico cuentan con aceptación legal. Admin tiene páginas separadas para pagos y
+denuncias, usuarios inactivos y documentos legales; el verificador revisa operaciones
+sin permisos para inactivar usuarios.

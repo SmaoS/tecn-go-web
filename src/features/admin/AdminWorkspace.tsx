@@ -7,6 +7,9 @@ const links = [
   { to: workflowPaths.admin.categories, label: 'Categorías' },
   { to: workflowPaths.admin.finances, label: 'Finanzas' },
   { to: workflowPaths.admin.settings, label: 'Configuración' },
+  { to: workflowPaths.admin.operations, label: 'Pagos y denuncias' },
+  { to: workflowPaths.admin.users, label: 'Usuarios inactivos' },
+  { to: workflowPaths.admin.legal, label: 'Documentos legales' },
 ]
 
 export function AdminWorkspace() {

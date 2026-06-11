@@ -1,6 +1,7 @@
 import type { RequestStatus, ServiceRequest } from '../../types'
 import { assetUrl } from '../../lib/api'
 import { statusLabels } from './status'
+import { ServiceSupportPanel } from '../service-support/ServiceSupportPanel'
 
 export function Status({ value }: { value: RequestStatus }) {
   return <span className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-bold text-brand-400">{statusLabels[value]}</span>
@@ -65,6 +66,7 @@ export function RequestList({ title, items, actionLabel, onAction, onChat }: {
         {actionLabel(item) && <button onClick={() => onAction(item)} className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-bold text-slate-950">{actionLabel(item)}</button>}
         {onChat && item.technicianId && <button onClick={() => onChat(item)} className="rounded-lg border border-brand-500/50 px-3 py-2 text-sm text-brand-300">Chat</button>}
       </div>
+      <ServiceSupportPanel requestId={item.id} />
     </article>)}
   </div></section>
 }

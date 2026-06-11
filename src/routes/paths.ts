@@ -13,12 +13,14 @@ export const workflowPaths = {
     create: '/app/cliente/nueva',
     payments: '/app/cliente/pagos',
     profile: '/app/cliente/perfil',
+    legal: '/app/cliente/legal',
   },
   technician: {
     assigned: '/app/tecnico/asignadas',
     available: '/app/tecnico/disponibles',
     earnings: '/app/tecnico/ganancias',
     profile: '/app/tecnico/perfil',
+    legal: '/app/tecnico/legal',
   },
   admin: {
     overview: '/app/admin/resumen',
@@ -26,5 +28,8 @@ export const workflowPaths = {
     categories: '/app/admin/categorias',
     finances: '/app/admin/finanzas',
     settings: '/app/admin/configuracion',
+    operations: '/app/admin/operaciones',
+    users: '/app/admin/usuarios',
+    legal: '/app/admin/legal',
   },
 } as const

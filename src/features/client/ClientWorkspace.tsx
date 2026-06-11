@@ -6,6 +6,7 @@ const links = [
   { to: workflowPaths.client.create, label: 'Solicitar servicio' },
   { to: workflowPaths.client.payments, label: 'Pagos' },
   { to: workflowPaths.client.profile, label: 'Mi perfil' },
+  { to: workflowPaths.client.legal, label: 'Seguridad y términos' },
 ]
 
 export function ClientWorkspace() {

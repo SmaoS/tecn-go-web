@@ -7,6 +7,10 @@ import { AdminFinancesPage } from '../features/admin/pages/AdminFinancesPage'
 import { AdminOverviewPage } from '../features/admin/pages/AdminOverviewPage'
 import { AdminSettingsPage } from '../features/admin/pages/AdminSettingsPage'
 import { AdminVerificationPage } from '../features/admin/pages/AdminVerificationPage'
+import { AdminOperationsPage } from '../features/admin/pages/AdminOperationsPage'
+import { AdminUsersPage } from '../features/admin/pages/AdminUsersPage'
+import { AdminLegalPage } from '../features/admin/pages/AdminLegalPage'
+import { LegalPage } from '../features/legal/LegalPage'
 import { ClientWorkspace } from '../features/client/ClientWorkspace'
 import { ClientPaymentsPage } from '../features/client/pages/ClientPaymentsPage'
 import { ClientProfilePage } from '../features/client/pages/ClientProfilePage'
@@ -39,6 +43,7 @@ export function AppRoutes() {
           <Route path="nueva" element={<CreateRequestPage />} />
           <Route path="pagos" element={<ClientPaymentsPage />} />
           <Route path="perfil" element={<ClientProfilePage />} />
+          <Route path="legal" element={<LegalPage />} />
         </Route></Route>
         <Route element={<RoleRoute role="TECHNICIAN" />}><Route path="tecnico" element={<TechnicianWorkspace />}>
           <Route index element={<Navigate to="asignadas" replace />} />
@@ -46,6 +51,7 @@ export function AppRoutes() {
           <Route path="disponibles" element={<AvailableRequestsPage />} />
           <Route path="ganancias" element={<TechnicianEarningsPage />} />
           <Route path="perfil" element={<TechnicianProfilePage />} />
+          <Route path="legal" element={<LegalPage />} />
         </Route></Route>
         <Route element={<RoleRoute role="VERIFIER" />}><Route path="verificador" element={<VerifierDashboard />} /></Route>
         <Route element={<RoleRoute role="ADMIN" />}><Route path="admin" element={<AdminWorkspace />}>
@@ -55,6 +61,9 @@ export function AppRoutes() {
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="finanzas" element={<AdminFinancesPage />} />
           <Route path="configuracion" element={<AdminSettingsPage />} />
+          <Route path="operaciones" element={<AdminOperationsPage />} />
+          <Route path="usuarios" element={<AdminUsersPage />} />
+          <Route path="legal" element={<AdminLegalPage />} />
         </Route></Route>
       </Route>
     </Route>

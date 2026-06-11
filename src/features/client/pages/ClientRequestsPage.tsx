@@ -5,6 +5,7 @@ import { ChatPanel } from '../../chat/ChatPanel'
 import { ImageGallery, Reputation, Status, Tracking } from '../../service-requests/components'
 import { QueryState } from '../../shared/components/QueryState'
 import { TechnicianLocationViewer } from '../../technician-location/TechnicianLocationViewer'
+import { ServiceSupportPanel } from '../../service-support/ServiceSupportPanel'
 import { clientApi } from '../api'
 import { useClientQuotes, useClientRequestAction, useClientRequests } from '../hooks'
 import type { RatingDraft } from '../types'
@@ -43,6 +44,7 @@ export function ClientRequestsPage() {
           {!['COMPLETED', 'PAID', 'CANCELLED'].includes(item.status) && <button onClick={() => action.mutate(() => clientApi.cancel(item.id))} className="rounded-lg border border-red-500/50 px-3 py-2 text-sm text-red-300">Cancelar</button>}
         </div>
         {item.status === 'PAID' && <div className="mt-4 grid gap-2 rounded-xl bg-slate-950/50 p-3"><strong className="text-sm">Califica al técnico</strong><select value={ratings[item.id]?.score ?? 5} onChange={(event) => setRatings({ ...ratings, [item.id]: { score: Number(event.target.value), comment: ratings[item.id]?.comment ?? '' } })}>{[5, 4, 3, 2, 1].map((score) => <option key={score} value={score}>{score} estrellas</option>)}</select><textarea placeholder="Comentario opcional" value={ratings[item.id]?.comment ?? ''} onChange={(event) => setRatings({ ...ratings, [item.id]: { score: ratings[item.id]?.score ?? 5, comment: event.target.value } })} /><button onClick={() => action.mutate(() => clientApi.rate(item.id, ratings[item.id] ?? { score: 5, comment: '' }), { onSuccess: () => setNotice('Calificación enviada.') })} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Enviar calificación</button></div>}
+        <ServiceSupportPanel requestId={item.id} />
       </article>)}</div>
     </QueryState>
     {chatRequest && <ChatPanel request={chatRequest} currentUserId={session!.userId} onClose={() => setChatRequest(null)} />}
