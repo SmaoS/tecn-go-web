@@ -8,7 +8,10 @@ export function Layout() {
     <div className="min-h-screen">
       <header className="border-b border-slate-800 bg-slate-950/90">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/" className="text-2xl font-black tracking-tight text-white">Tecn<span className="text-brand-400">Go</span></Link>
+          <Link to="/" className="flex items-center gap-3 text-2xl font-black tracking-tight text-white">
+            <img src="/logo-tecno-go-app.png" alt="TecnGo" className="h-11 w-11 rounded-xl object-cover" />
+            <span>Tecn<span className="text-brand-400">Go</span></span>
+          </Link>
           <div className="flex items-center gap-4 text-sm">
             {session ? (
               <>
