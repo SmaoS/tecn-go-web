@@ -1,12 +1,30 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '../../lib/queryClient'
 import { adminApi } from './api'
 
-export function useAdminDashboardData() {
-  const pending = useQuery({ queryKey: ['admin', 'technicians', 'pending'], queryFn: adminApi.pendingTechnicians, refetchInterval: 10_000 })
-  const categories = useQuery({ queryKey: ['admin', 'categories'], queryFn: adminApi.categories })
-  const finances = useQuery({ queryKey: ['admin', 'finances'], queryFn: adminApi.finances, refetchInterval: 10_000 })
-  const summary = useQuery({ queryKey: ['admin', 'summary'], queryFn: adminApi.summary, refetchInterval: 10_000 })
-  const parameters = useQuery({ queryKey: ['admin', 'parameters'], queryFn: adminApi.parameters })
-  const locations = useQuery({ queryKey: ['admin', 'technician-locations'], queryFn: adminApi.locations, refetchInterval: 10_000 })
-  return { pending, categories, finances, summary, parameters, locations }
+export const useAdminSummary = () => useQuery({
+  queryKey: queryKeys.adminSummary, queryFn: adminApi.summary, refetchInterval: 10_000,
+})
+export const useAdminCategories = () => useQuery({
+  queryKey: queryKeys.adminCategories, queryFn: adminApi.categories,
+})
+export const useAdminFinances = () => useQuery({
+  queryKey: queryKeys.adminFinances, queryFn: adminApi.finances, refetchInterval: 10_000,
+})
+export const useAdminParameters = () => useQuery({
+  queryKey: queryKeys.adminParameters, queryFn: adminApi.parameters,
+})
+export const useAdminLocations = () => useQuery({
+  queryKey: queryKeys.adminLocations, queryFn: adminApi.locations, refetchInterval: 10_000,
+})
+export const usePendingTechnicians = () => useQuery({
+  queryKey: queryKeys.adminPendingTechnicians, queryFn: adminApi.pendingTechnicians, refetchInterval: 10_000,
+})
+
+export function useAdminAction(queryKey: readonly unknown[]) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (run: () => Promise<unknown>) => run(),
+    onSuccess: () => client.invalidateQueries({ queryKey }),
+  })
 }

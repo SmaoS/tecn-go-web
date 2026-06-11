@@ -7,6 +7,17 @@ solicitudes y administración de parámetros exclusivamente para `ADMIN`.
 Aplicación web del marketplace TecnGo con React, Vite, TypeScript, React Router,
 Axios y Tailwind CSS.
 
+## Arquitectura
+
+La aplicación se organiza por feature en `src/features`. Cada módulo puede contener
+`api.ts`, `hooks.ts`, `types.ts`, componentes y páginas. Los workspaces de cliente,
+técnico y administrador usan rutas anidadas, por lo que cada flujo carga y actualiza
+únicamente sus propios datos.
+
+TanStack Query administra caché, polling, estados de carga/error e invalidaciones.
+Las claves están centralizadas en `src/lib/queryClient.ts`; los estados locales se
+reservan para formularios, archivos seleccionados y controles de interfaz.
+
 ## Incluye
 
 - Landing page responsive
@@ -59,6 +70,7 @@ Abrir `http://localhost:5173`.
 npm run dev
 npm run build
 npm run lint
+npm test
 npm run preview
 ```
 

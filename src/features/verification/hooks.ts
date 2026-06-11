@@ -7,5 +7,5 @@ export function usePendingVerifications() {
 }
 
 export function useVerifiers() {
-  return useQuery({ queryKey: ['admin', 'verifiers'], queryFn: verificationApi.verifiers })
+  return useQuery({ queryKey: queryKeys.adminVerifiers, queryFn: verificationApi.verifiers })
 }

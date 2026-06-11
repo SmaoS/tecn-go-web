@@ -1,26 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { api } from '../../lib/api'
 import { queryKeys } from '../../lib/queryClient'
-import type { UnreadCount, UserNotification } from '../../types'
+import { QueryState } from '../shared/components/QueryState'
+import { useNotifications, useReadNotification, useUnreadNotifications } from './hooks'
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false)
   const client = useQueryClient()
-  const notifications = useQuery({
-    queryKey: queryKeys.notifications,
-    queryFn: () => api.get<UserNotification[]>('/v1/notifications').then(({ data }) => data),
-    refetchInterval: 10_000,
-  })
-  const unread = useQuery({
-    queryKey: queryKeys.unreadNotifications,
-    queryFn: () => api.get<UnreadCount>('/v1/notifications/unread-count').then(({ data }) => data.count),
-    refetchInterval: 10_000,
-  })
-  const read = useMutation({
-    mutationFn: (id: string) => api.put(`/v1/notifications/${id}/read`),
-    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.notifications }),
-  })
+  const notifications = useNotifications()
+  const unread = useUnreadNotifications()
+  const read = useReadNotification()
 
   return <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5">
     <div className="flex justify-between">
@@ -30,7 +19,7 @@ export function NotificationCenter() {
       </button>
       <button onClick={() => void client.invalidateQueries({ queryKey: queryKeys.notifications })} className="text-sm text-brand-400">Actualizar</button>
     </div>
-    {open && <div className="mt-3 space-y-2">
+    {open && <QueryState pending={notifications.isPending} error={notifications.error ?? unread.error}><div className="mt-3 space-y-2">
       {(notifications.data?.length ?? 0) === 0 && <p className="text-sm text-slate-500">Sin notificaciones.</p>}
       {notifications.data?.slice(0, 10).map((item) => <button
         key={item.id}
@@ -40,6 +29,6 @@ export function NotificationCenter() {
         <strong className="text-sm">{item.title}</strong><p className="text-xs">{item.message}</p>
         <time className="mt-1 block text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleString()}</time>
       </button>)}
-    </div>}
+    </div></QueryState>}
   </section>
 }

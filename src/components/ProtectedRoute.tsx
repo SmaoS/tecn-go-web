@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import type { Role } from '../types'
+import { roleHome } from '../routes/paths'
 
 export function ProtectedRoute() {
   const { session } = useAuth()
@@ -10,8 +11,7 @@ export function ProtectedRoute() {
 export function RoleRouter() {
   const { session } = useAuth()
   if (!session) return <Navigate to="/login" replace />
-  const route = { CLIENT: '/app/cliente', TECHNICIAN: '/app/tecnico', VERIFIER: '/app/verificador', ADMIN: '/app/admin' }[session.role]
-  return <Navigate to={route} replace />
+  return <Navigate to={roleHome[session.role]} replace />
 }
 
 export function RoleRoute({ role }: { role: Role }) {

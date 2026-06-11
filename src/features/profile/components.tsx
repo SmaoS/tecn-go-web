@@ -1,10 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
-import { api } from '../../lib/api'
 import { uploadFile } from '../../lib/files'
-import { queryKeys } from '../../lib/queryClient'
 import type { UserProfile, VerificationStatus } from '../../types'
 import { apiMessage } from '../shared/api'
+import { QueryState } from '../shared/components/QueryState'
+import { profileApi } from './api'
+import { useProfile, useSaveProfile } from './hooks'
 
 const verificationLabels: Record<VerificationStatus, string> = {
   CREATED: 'Cuenta creada: carga tu documento',
@@ -20,22 +21,11 @@ export function VerificationBadge({ value }: { value: VerificationStatus }) {
 export function UserProfileEditor() {
   const [draft, setDraft] = useState<UserProfile | null>(null)
   const [error, setError] = useState('')
-  const client = useQueryClient()
-  const profile = useQuery({
-    queryKey: queryKeys.profile,
-    queryFn: () => api.get<UserProfile>('/v1/users/me/profile').then(({ data }) => data),
-  })
+  const profile = useProfile()
   const current = draft ?? profile.data
-  const save = useMutation({
-    mutationFn: (value: UserProfile) => api.put<UserProfile>('/v1/users/me/profile', value).then(({ data }) => data),
-    onSuccess: (data) => {
-      client.setQueryData(queryKeys.profile, data)
-      setDraft(null)
-    },
-    onError: (reason) => setError(apiMessage(reason)),
-  })
+  const save = useSaveProfile()
   const verifyEmail = useMutation({
-    mutationFn: () => api.post('/v1/auth/send-email-verification'),
+    mutationFn: profileApi.verifyEmail,
     onSuccess: () => setError('Correo de verificación enviado.'),
     onError: (reason) => setError(apiMessage(reason)),
   })
@@ -47,7 +37,10 @@ export function UserProfileEditor() {
   }
   function submit(event: FormEvent) {
     event.preventDefault()
-    if (current) save.mutate(current)
+    if (current) save.mutate(current, {
+      onSuccess: () => setDraft(null),
+      onError: (reason) => setError(apiMessage(reason)),
+    })
   }
   function update(values: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...values })
@@ -58,8 +51,8 @@ export function UserProfileEditor() {
       homeLongitude: coords.longitude,
     }), () => setError('No fue posible obtener la ubicación del navegador'))
   }
-  if (!current) return null
-  return <form onSubmit={submit} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+  return <QueryState pending={profile.isPending} error={profile.error}>
+    {current && <form onSubmit={submit} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5">
     <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">Mi perfil y reputación</h2><span className="text-brand-400">★ {current.averageRating.toFixed(1)} · {current.paidServicesCount} pagados</span></div>
     <div className="mt-2"><VerificationBadge value={current.verificationStatus} /><p className="mt-1 text-sm text-slate-400">Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</p></div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -74,5 +67,6 @@ export function UserProfileEditor() {
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
     <div className="mt-3 flex flex-wrap gap-2"><button className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Usar mi ubicación</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
-  </form>
+    </form>}
+  </QueryState>
 }
