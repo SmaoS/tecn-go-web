@@ -1,0 +1,18 @@
+import { api } from '../../lib/api'
+import type { FinancialSummary, ServiceCategory, ServiceRequest, TechnicianProfile } from '../../types'
+
+export const technicianApi = {
+  sendEmailVerification: () => api.post('/v1/auth/send-email-verification'),
+  categories: () => api.get<ServiceCategory[]>('/v1/service-categories').then(({ data }) => data),
+  profile: () => api.get<TechnicianProfile>('/v1/technicians/me').then(({ data }) => data),
+  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned').then(({ data }) => data),
+  available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
+  earnings: () => api.get<FinancialSummary>('/v1/technicians/me/earnings').then(({ data }) => data),
+  saveProfile: (profile: TechnicianProfile | null, payload: object) => profile
+    ? api.put('/v1/technicians/me', payload)
+    : api.post('/v1/technicians/profile', payload),
+  quote: (id: string, technicianPrice: number, description?: string) => api.put(`/v1/service-requests/${id}/quote`, { technicianPrice, description }),
+  advance: (id: string, status: string) => api.put(`/v1/service-requests/${id}/status`, { status }),
+  rate: (id: string, score: number, comment: string) => api.post(`/v1/service-requests/${id}/ratings`, { score, comment }),
+  location: (payload: object) => api.put('/v1/technicians/me/location', payload),
+}
