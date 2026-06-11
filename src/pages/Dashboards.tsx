@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import axios from 'axios'
 import { api, assetUrl } from '../lib/api'
 import { useAuth } from '../context/useAuth'
-import type { ChatMessage, FinancialSummary, Payment, RequestStatus, ServiceCategory, ServiceRequest, TechnicianProfile, UserNotification, UserProfile, UserVerification, VerificationStatus, Verifier } from '../types'
+import type { AdminDashboardSummary, ChatMessage, FinancialSummary, Payment, RequestStatus, ServiceCategory, ServiceQuote, ServiceRequest, TechnicianProfile, UnreadCount, UserNotification, UserProfile, UserVerification, VerificationStatus, Verifier } from '../types'
 import { uploadFile } from '../lib/files'
+import { usePolling } from '../lib/usePolling'
 
 function Shell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return <section className="mx-auto max-w-6xl px-6 py-12"><p className="text-brand-400">{subtitle}</p><h1 className="mt-1 text-4xl font-black">{title}</h1><div className="mt-8">{children}</div></section>
@@ -34,12 +35,19 @@ export function ClientDashboard() {
   const [error, setError] = useState('')
   const [chatRequest, setChatRequest] = useState<ServiceRequest | null>(null)
   const [showProfile, setShowProfile] = useState(false)
+  const [quotes, setQuotes] = useState<Record<string, ServiceQuote[]>>({})
 
   const load = useCallback(async () => {
-    const [catalog, mine, history] = await Promise.all([api.get<ServiceCategory[]>('/v1/services'), api.get<ServiceRequest[]>('/v1/service-requests/mine'), api.get<Payment[]>('/v1/payments/mine')])
+    const [catalog, mine, history] = await Promise.all([api.get<ServiceCategory[]>('/v1/services'), api.get<ServiceRequest[]>('/v1/service-requests/my'), api.get<Payment[]>('/v1/payments/mine')])
     setCategories(catalog.data); setRequests(mine.data); setPayments(history.data)
+    const quoteEntries = await Promise.all(mine.data.map(async (request) => {
+      const response = await api.get<ServiceQuote[]>(`/v1/service-requests/${request.id}/quotes`)
+      return [request.id, response.data] as const
+    }))
+    setQuotes(Object.fromEntries(quoteEntries))
   }, [])
   useEffect(() => { void load() }, [load])
+  usePolling(load, 10_000)
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setError('')
@@ -64,8 +72,8 @@ export function ClientDashboard() {
     } catch (reason) { setError(apiMessage(reason)) }
   }
 
-  async function confirmQuote(id: string) {
-    try { await api.put(`/v1/service-requests/${id}/confirm-quote`); await load() } catch (reason) { setError(apiMessage(reason)) }
+  async function confirmQuote(id: string, quoteId: string) {
+    try { await api.put(`/v1/service-requests/${id}/confirm-quote`, { quoteId }); await load() } catch (reason) { setError(apiMessage(reason)) }
   }
 
   async function payCash(id: string) {
@@ -103,10 +111,11 @@ export function ClientDashboard() {
       {item.technicianName && <p className="mt-2 text-sm">Técnico: {item.technicianName}</p>}
       {item.technicianName && <Reputation photo={item.technicianProfilePhotoUrl} name={item.technicianName} rating={item.technicianAverageRating ?? 5} services={item.technicianCompletedServicesCount} description={[item.technicianExperienceDescription, item.technicianCategories?.join(', ')].filter(Boolean).join(' · ')} />}
       {item.estimatedPrice != null && <p className="mt-2 text-sm">Estimado: ${item.estimatedPrice.toLocaleString()}</p>}
-      {item.technicianPrice != null && <p className="mt-2 text-sm text-brand-400">Cotización: ${item.technicianPrice.toLocaleString()}</p>}
+      {item.technicianPrice != null && <p className="mt-2 text-sm text-brand-400">Cotización aceptada: ${item.technicianPrice.toLocaleString()}</p>}
       {item.finalPrice != null && <p className="mt-2 font-bold">Precio final: ${item.finalPrice.toLocaleString()}</p>}
       <Tracking status={item.status} />
-      <div className="mt-4 flex gap-2">{item.status === 'QUOTED' && item.technicianPrice != null && <button onClick={() => confirmQuote(item.id)} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950">Aceptar cotización</button>}
+      {item.status === 'QUOTE_PENDING' && (quotes[item.id]?.length ?? 0) > 0 && <div className="mt-4 space-y-3"><strong className="text-sm">Cotizaciones recibidas</strong>{quotes[item.id].filter((quote) => quote.status === 'PENDING').map((quote) => <div key={quote.id} className="rounded-xl border border-slate-700 bg-slate-950/50 p-3"><Reputation photo={quote.technicianProfilePhotoUrl} name={quote.technicianName} rating={quote.technicianAverageRating} services={quote.technicianCompletedServicesCount} description={[quote.technicianExperienceDescription, quote.technicianCategories.join(', ')].filter(Boolean).join(' · ')} /><p className="mt-2 text-lg font-bold text-brand-400">${quote.price.toLocaleString()}</p>{quote.description && <p className="text-sm text-slate-400">{quote.description}</p>}<button onClick={() => confirmQuote(item.id, quote.id)} className="mt-3 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950">Aceptar esta cotización</button></div>)}</div>}
+      <div className="mt-4 flex gap-2">
         {item.status === 'COMPLETED' && <button onClick={() => payCash(item.id)} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950">Confirmar pago en efectivo</button>}
         {item.technicianId && <button onClick={() => setChatRequest(item)} className="rounded-lg border border-brand-500/50 px-3 py-2 text-sm text-brand-300">Abrir chat</button>}
         {!['COMPLETED', 'PAID', 'CANCELLED'].includes(item.status) && <button onClick={() => cancel(item.id)} className="rounded-lg border border-red-500/50 px-3 py-2 text-sm text-red-300">Cancelar</button>}</div>
@@ -127,6 +136,7 @@ export function TechnicianDashboard() {
   const [categories, setCategories] = useState<ServiceCategory[]>([])
   const [radiusKm, setRadiusKm] = useState('10')
   const [quotes, setQuotes] = useState<Record<string, string>>({})
+  const [quoteDescriptions, setQuoteDescriptions] = useState<Record<string, string>>({})
   const [chatRequest, setChatRequest] = useState<ServiceRequest | null>(null)
   const [error, setError] = useState('')
   const [showProfile, setShowProfile] = useState(false)
@@ -139,7 +149,7 @@ export function TechnicianDashboard() {
       const { data } = await api.get<TechnicianProfile>('/v1/technicians/me')
       setProfile(data)
       setProfileForm({ documentNumber: data.documentNumber, phone: data.phone, categoryIds: data.categories.map((item) => item.id), description: data.description, profilePhotoUrl: data.profilePhotoUrl ?? '', documentPhotoUrl: data.documentPhotoUrl ?? '', certificatePhotoUrl: data.certificatePhotoUrl ?? '', workExperienceDescription: data.workExperienceDescription, latitude: String(data.latitude ?? ''), longitude: String(data.longitude ?? '') })
-      const mine = await api.get<ServiceRequest[]>('/v1/service-requests/mine')
+      const mine = await api.get<ServiceRequest[]>('/v1/service-requests/my-assigned')
       setAssigned(mine.data)
       setEarnings((await api.get<FinancialSummary>('/v1/technicians/me/earnings')).data)
       if (data.status === 'APPROVED') setAvailable((await api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`)).data)
@@ -148,6 +158,7 @@ export function TechnicianDashboard() {
     }
   }, [radiusKm])
   useEffect(() => { void load() }, [load])
+  usePolling(load, 10_000)
 
   async function saveProfile(event: FormEvent) {
     event.preventDefault(); setError('')
@@ -178,7 +189,10 @@ export function TechnicianDashboard() {
 
   async function quote(id: string) {
     try {
-      await api.put(`/v1/service-requests/${id}/quote`, { technicianPrice: Number(quotes[id]) })
+      await api.put(`/v1/service-requests/${id}/quote`, {
+        technicianPrice: Number(quotes[id]),
+        description: quoteDescriptions[id] || undefined,
+      })
       await load()
     } catch (reason) { setError(apiMessage(reason)) }
   }
@@ -234,7 +248,7 @@ export function TechnicianDashboard() {
       }} onAction={(item) => item.status === 'PAID' ? void rateClient(item) : void advance(item)} onChat={setChatRequest} />
     </div>
     {profile?.status === 'APPROVED' && <div className="mt-8"><div className="mb-4 flex items-center gap-3"><label>Radio (km)</label><input className="max-w-28" type="number" min="1" max="100" value={radiusKm} onChange={(e) => setRadiusKm(e.target.value)} /><button onClick={() => void load()} className="rounded-lg border border-slate-700 px-3 py-2">Buscar</button></div>
-      <section><h2 className="mb-4 text-xl font-bold">Solicitudes cercanas</h2><div className="space-y-3">{available.length === 0 && <p className="text-slate-400">No hay solicitudes dentro del radio.</p>}{available.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5"><strong>{item.categoryName}</strong><Reputation photo={item.clientProfilePhotoUrl} name={item.clientName} rating={item.clientAverageRating} services={item.clientPaidServicesCount} /><p className="mt-2 text-sm text-slate-400">{item.description}</p>{item.estimatedPrice != null && <p className="mt-2 font-bold text-brand-400">Estimado del cliente: ${item.estimatedPrice.toLocaleString()}</p>}<p className="mt-2 text-xs text-slate-500">{item.address} · {item.distanceKm?.toFixed(2)} km</p><div className="mt-4 flex gap-2"><input type="number" min="1" placeholder="Tu cotización" value={quotes[item.id] ?? ''} onChange={(e) => setQuotes({ ...quotes, [item.id]: e.target.value })} /><button disabled={!quotes[item.id]} onClick={() => quote(item.id)} className="rounded-lg bg-brand-500 px-3 py-2 font-bold text-slate-950">Cotizar</button></div></article>)}</div></section>
+      <section><h2 className="mb-4 text-xl font-bold">Solicitudes cercanas</h2><div className="space-y-3">{available.length === 0 && <p className="text-slate-400">No hay solicitudes dentro del radio.</p>}{available.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5"><strong>{item.categoryName}</strong><Reputation photo={item.clientProfilePhotoUrl} name={item.clientName} rating={item.clientAverageRating} services={item.clientPaidServicesCount} /><p className="mt-2 text-sm text-slate-400">{item.description}</p>{item.estimatedPrice != null && <p className="mt-2 font-bold text-brand-400">Estimado del cliente: ${item.estimatedPrice.toLocaleString()}</p>}<p className="mt-2 text-xs text-slate-500">{item.address} · {item.distanceKm?.toFixed(2)} km</p><div className="mt-4 grid gap-2 sm:grid-cols-[1fr_2fr_auto]"><input type="number" min="1" placeholder="Tu cotización" value={quotes[item.id] ?? ''} onChange={(e) => setQuotes({ ...quotes, [item.id]: e.target.value })} /><input placeholder="Descripción de la oferta (opcional)" value={quoteDescriptions[item.id] ?? ''} onChange={(e) => setQuoteDescriptions({ ...quoteDescriptions, [item.id]: e.target.value })} /><button disabled={!quotes[item.id]} onClick={() => quote(item.id)} className="rounded-lg bg-brand-500 px-3 py-2 font-bold text-slate-950">Cotizar</button></div></article>)}</div></section>
     </div>}
     {earnings && <div className="mt-8"><FinancialSummaryCard title="Mis ganancias" summary={earnings} /><FinancialList title="Historial de ganancias" items={earnings.payments} amount={(item) => item.technicianAmount} empty="Aún no tienes ganancias registradas." /></div>}
     {chatRequest && <ChatPanel request={chatRequest} currentUserId={session!.userId} onClose={() => setChatRequest(null)} />}
@@ -297,10 +311,20 @@ function Tracking({ status }: { status: RequestStatus }) {
 
 function NotificationCenter() {
   const [items, setItems] = useState<UserNotification[]>([])
-  const load = useCallback(() => api.get<UserNotification[]>('/v1/notifications').then(({ data }) => setItems(data)), [])
+  const [unread, setUnread] = useState(0)
+  const [open, setOpen] = useState(false)
+  const load = useCallback(async () => {
+    const [notifications, count] = await Promise.all([
+      api.get<UserNotification[]>('/v1/notifications'),
+      api.get<UnreadCount>('/v1/notifications/unread-count'),
+    ])
+    setItems(notifications.data)
+    setUnread(count.data.count)
+  }, [])
   useEffect(() => { void load() }, [load])
+  usePolling(load, 10_000)
   async function read(item: UserNotification) { if (!item.read) await api.put(`/v1/notifications/${item.id}/read`); await load() }
-  return <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex justify-between"><h2 className="font-bold">Notificaciones</h2><button onClick={() => void load()} className="text-sm text-brand-400">Actualizar</button></div><div className="mt-3 space-y-2">{items.length === 0 && <p className="text-sm text-slate-500">Sin notificaciones.</p>}{items.slice(0, 5).map((item) => <button key={item.id} onClick={() => void read(item)} className={`block w-full rounded-xl p-3 text-left ${item.read ? 'bg-slate-950/40 text-slate-500' : 'bg-brand-500/10 text-slate-200'}`}><strong className="text-sm">{item.title}</strong><p className="text-xs">{item.message}</p></button>)}</div></section>
+  return <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><div className="flex justify-between"><button onClick={() => setOpen((value) => !value)} className="flex items-center gap-2 font-bold"><svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg> Notificaciones {unread > 0 && <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">{unread}</span>}</button><button onClick={() => void load()} className="text-sm text-brand-400">Actualizar</button></div>{open && <div className="mt-3 space-y-2">{items.length === 0 && <p className="text-sm text-slate-500">Sin notificaciones.</p>}{items.slice(0, 10).map((item) => <button key={item.id} onClick={() => void read(item)} className={`block w-full rounded-xl p-3 text-left ${item.read ? 'bg-slate-950/40 text-slate-500' : 'bg-brand-500/10 text-slate-200'}`}><strong className="text-sm">{item.title}</strong><p className="text-xs">{item.message}</p><time className="mt-1 block text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleString()}</time></button>)}</div>}</section>
 }
 
 function ChatPanel({ request, currentUserId, onClose }: { request: ServiceRequest; currentUserId: string; onClose: () => void }) {
@@ -312,6 +336,7 @@ function ChatPanel({ request, currentUserId, onClose }: { request: ServiceReques
     await api.put(`/v1/service-requests/${request.id}/chat/read`)
   }, [request.id])
   useEffect(() => { void load() }, [load])
+  usePolling(load, 5_000)
   async function send(event: FormEvent) { event.preventDefault(); if (!text.trim()) return; await api.post(`/v1/service-requests/${request.id}/chat/messages`, { message: text }); setText(''); await load() }
   return <section className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4"><div className="w-full max-w-xl rounded-3xl border border-slate-700 bg-slate-900 p-6"><div className="flex justify-between"><h2 className="text-xl font-bold">Chat · {request.categoryName}</h2><button onClick={onClose}>Cerrar</button></div><div className="my-4 max-h-80 space-y-2 overflow-y-auto">{messages.length === 0 && <p className="text-slate-500">Inicia la conversación.</p>}{messages.map((item) => <div key={item.id} className={`max-w-[80%] rounded-xl p-3 ${item.senderId === currentUserId ? 'ml-auto bg-brand-500 text-slate-950' : 'bg-slate-800'}`}><p className="text-xs font-bold">{item.senderName}</p><p>{item.message}</p></div>)}</div><form onSubmit={send} className="flex gap-2"><input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe un mensaje" /><button className="rounded-xl bg-brand-500 px-4 font-bold text-slate-950">Enviar</button></form></div></section>
 }
@@ -376,17 +401,19 @@ function VerifierManager() {
 }
 
 export function VerifierDashboard() {
-  return <Shell title="Verificación de identidad" subtitle="Panel verificador"><VerificationQueue /></Shell>
+  return <Shell title="Verificación de identidad" subtitle="Panel verificador"><NotificationCenter /><VerificationQueue /></Shell>
 }
 
 export function AdminDashboard() {
   const [pending, setPending] = useState<TechnicianProfile[]>([])
   const [categories, setCategories] = useState<ServiceCategory[]>([])
   const [finances, setFinances] = useState<FinancialSummary | null>(null)
+  const [summary, setSummary] = useState<AdminDashboardSummary | null>(null)
   const [categoryForm, setCategoryForm] = useState({ name: '', description: '', active: true })
   const [error, setError] = useState('')
-  const load = useCallback(async () => { try { const [profiles, catalog, payments] = await Promise.all([api.get<TechnicianProfile[]>('/v1/admin/technicians/pending'), api.get<ServiceCategory[]>('/v1/admin/service-categories'), api.get<FinancialSummary>('/v1/admin/payments')]); setPending(profiles.data); setCategories(catalog.data); setFinances(payments.data) } catch (reason) { setError(apiMessage(reason)) } }, [])
+  const load = useCallback(async () => { try { const [profiles, catalog, payments, dashboard] = await Promise.all([api.get<TechnicianProfile[]>('/v1/admin/technicians/pending'), api.get<ServiceCategory[]>('/v1/admin/service-categories'), api.get<FinancialSummary>('/v1/admin/payments'), api.get<AdminDashboardSummary>('/v1/admin/dashboard')]); setPending(profiles.data); setCategories(catalog.data); setFinances(payments.data); setSummary(dashboard.data) } catch (reason) { setError(apiMessage(reason)) } }, [])
   useEffect(() => { void load() }, [load])
+  usePolling(load, 10_000)
   async function review(id: string, decision: 'approve' | 'reject') {
     try { await api.put(`/v1/admin/technicians/${id}/${decision}`); await load() } catch (reason) { setError(apiMessage(reason)) }
   }
@@ -409,7 +436,7 @@ export function AdminDashboard() {
       window.open(URL.createObjectURL(response.data), '_blank', 'noopener,noreferrer')
     } catch (reason) { setError(apiMessage(reason)) }
   }
-  return <Shell title="Centro de operaciones" subtitle="Panel administrador">{error && <p className="mb-4 text-red-400">{error}</p>}<VerifierManager /><VerificationQueue />{finances && <><FinancialSummaryCard title="Pagos y comisiones" summary={finances} /><FinancialList title="Movimientos de la plataforma" items={finances.payments} amount={(item) => item.platformFee} empty="Aún no hay pagos registrados." /></>}<div className="mt-8 grid gap-8 lg:grid-cols-2"><section><h2 className="mb-4 text-xl font-bold">Técnicos pendientes ({pending.length})</h2><div className="space-y-4">{pending.length === 0 && <p className="text-slate-400">No hay perfiles pendientes.</p>}{pending.map((profile) => <article key={profile.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h3 className="text-lg font-bold">{profile.fullName}</h3><p className="text-brand-400">{profile.categories.map((item) => item.name).join(', ')}</p><VerificationBadge value={profile.verificationStatus} /><p className="mt-3 text-sm text-slate-400">{profile.workExperienceDescription}</p><div className="mt-3 flex gap-2"><button onClick={() => openEvidence(profile.documentPhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver documento</button>{profile.certificatePhotoUrl && <button onClick={() => openEvidence(profile.certificatePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver certificado</button>}</div><div className="mt-5 flex gap-3"><button disabled={profile.verificationStatus !== 'VERIFIED'} onClick={() => review(profile.id, 'approve')} className="rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950 disabled:opacity-40">Aprobar</button><button onClick={() => review(profile.id, 'reject')} className="rounded-lg border border-red-500 px-4 py-2 text-red-300">Rechazar</button></div></article>)}</div></section>
+  return <Shell title="Centro de operaciones" subtitle="Panel administrador"><NotificationCenter />{summary && <section className="mb-6 grid gap-3 sm:grid-cols-4"><Metric label="Usuarios" value={String(summary.users)} /><Metric label="Técnicos pendientes" value={String(summary.pendingTechnicians)} /><Metric label="Identidades pendientes" value={String(summary.pendingVerifications)} /><Metric label="Pagos" value={String(summary.payments)} /></section>}{error && <p className="mb-4 text-red-400">{error}</p>}<VerifierManager /><VerificationQueue />{finances && <><FinancialSummaryCard title="Pagos y comisiones" summary={finances} /><FinancialList title="Movimientos de la plataforma" items={finances.payments} amount={(item) => item.platformFee} empty="Aún no hay pagos registrados." /></>}<div className="mt-8 grid gap-8 lg:grid-cols-2"><section><h2 className="mb-4 text-xl font-bold">Técnicos pendientes ({pending.length})</h2><div className="space-y-4">{pending.length === 0 && <p className="text-slate-400">No hay perfiles pendientes.</p>}{pending.map((profile) => <article key={profile.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-6"><h3 className="text-lg font-bold">{profile.fullName}</h3><p className="text-brand-400">{profile.categories.map((item) => item.name).join(', ')}</p><VerificationBadge value={profile.verificationStatus} /><p className="mt-3 text-sm text-slate-400">{profile.workExperienceDescription}</p><div className="mt-3 flex gap-2"><button onClick={() => openEvidence(profile.documentPhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver documento</button>{profile.certificatePhotoUrl && <button onClick={() => openEvidence(profile.certificatePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver certificado</button>}</div><div className="mt-5 flex gap-3"><button disabled={profile.verificationStatus !== 'VERIFIED'} onClick={() => review(profile.id, 'approve')} className="rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950 disabled:opacity-40">Aprobar</button><button onClick={() => review(profile.id, 'reject')} className="rounded-lg border border-red-500 px-4 py-2 text-red-300">Rechazar</button></div></article>)}</div></section>
     <section><h2 className="mb-4 text-xl font-bold">Categorías</h2><form onSubmit={createCategory} className="mb-4 space-y-3 rounded-2xl border border-slate-800 bg-slate-900 p-5"><input placeholder="Nombre" value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} required /><input placeholder="Descripción" value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} /><button className="rounded-lg bg-brand-500 px-4 py-2 font-bold text-slate-950">Crear</button></form><div className="space-y-2">{categories.map((category) => <div key={category.id} className="rounded-xl border border-slate-800 p-4"><div className="flex items-center justify-between"><div><strong>{category.name}</strong><p className="text-xs text-slate-500">{category.active ? 'Activa' : 'Inactiva'}</p></div><div className="flex gap-2"><button onClick={() => editCategory(category)} className="rounded-lg border border-slate-700 px-3 py-2">Editar</button><button onClick={() => toggleCategory(category)} className="rounded-lg border border-slate-700 px-3 py-2">{category.active ? 'Desactivar' : 'Activar'}</button><button onClick={() => deleteCategory(category)} className="rounded-lg border border-red-500/50 px-3 py-2 text-red-300">Eliminar</button></div></div></div>)}</div></section></div></Shell>
 }
 

@@ -49,6 +49,23 @@ export interface ServiceRequest {
   createdAt: string
 }
 
+export interface ServiceQuote {
+  id: string
+  serviceRequestId: string
+  technicianId: string
+  technicianName: string
+  technicianProfilePhotoUrl?: string
+  technicianAverageRating: number
+  technicianCompletedServicesCount: number
+  technicianExperienceDescription?: string
+  technicianCategories: string[]
+  price: number
+  description?: string
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED'
+  createdAt: string
+  updatedAt: string
+}
+
 export type RequestStatus = 'QUOTE_PENDING' | 'QUOTED' | 'QUOTE_ACCEPTED' | 'ON_THE_WAY' | 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAID' | 'CANCELLED'
 export type TechnicianStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'BLOCKED'
 
@@ -65,9 +82,22 @@ export interface UserNotification {
   id: string
   title: string
   message: string
-  type: 'QUOTE_RECEIVED' | 'QUOTE_ACCEPTED' | 'SERVICE_STATUS_CHANGED' | 'CHAT_MESSAGE'
+  type: 'NEW_REQUEST' | 'NEW_QUOTE' | 'QUOTE_ACCEPTED' | 'REQUEST_ACCEPTED'
+    | 'TECHNICIAN_ON_THE_WAY' | 'TECHNICIAN_ARRIVED' | 'SERVICE_STARTED'
+    | 'SERVICE_COMPLETED' | 'NEW_CHAT_MESSAGE' | 'NEW_RATING' | 'SERVICE_STATUS_CHANGED'
   read: boolean
   createdAt: string
+}
+
+export interface UnreadCount {
+  count: number
+}
+
+export interface AdminDashboardSummary {
+  users: number
+  pendingTechnicians: number
+  pendingVerifications: number
+  payments: number
 }
 
 export interface TechnicianProfile {

@@ -15,7 +15,7 @@ Axios y Tailwind CSS.
 - Bandeja de documentos para administradores y verificadores
 - CRUD administrativo de categorías activas/inactivas
 - Ubicación manual o GPS del navegador y presupuesto estimado
-- Búsqueda por radio, cotización técnica y confirmación del cliente
+- Búsqueda por radio, múltiples cotizaciones y selección de una oferta por el cliente
 - Chat persistente por solicitud
 - Centro de notificaciones y seguimiento visual del servicio
 - Confirmación de pago en efectivo e historial de pagos del cliente
