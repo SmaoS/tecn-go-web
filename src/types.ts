@@ -47,6 +47,17 @@ export interface ServiceRequest {
   finalPrice?: number
   status: RequestStatus
   createdAt: string
+  serviceImagesCount: number
+  firstServiceImageUrl?: string
+  images: ServiceRequestImage[]
+}
+
+export interface ServiceRequestImage {
+  id: string
+  serviceRequestId: string
+  imageUrl: string
+  publicId: string
+  createdAt: string
 }
 
 export interface ServiceQuote {
@@ -61,9 +72,11 @@ export interface ServiceQuote {
   technicianCategories: string[]
   price: number
   description?: string
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED'
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED' | 'CANCELLED'
   createdAt: string
   updatedAt: string
+  expiresAt: string
+  respondedAt?: string
 }
 
 export type RequestStatus = 'QUOTE_PENDING' | 'QUOTED' | 'QUOTE_ACCEPTED' | 'ON_THE_WAY' | 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAID' | 'CANCELLED'
@@ -120,6 +133,11 @@ export interface TechnicianProfile {
   completedServicesCount: number
   paidServicesCount: number
   verificationStatus: VerificationStatus
+  homeAddress: string
+  homeLatitude: number
+  homeLongitude: number
+  homeCity?: string
+  homeNeighborhood?: string
 }
 
 export interface UserProfile {
@@ -139,6 +157,11 @@ export interface UserProfile {
   emailVerified: boolean
   phoneVerified: boolean
   documentsVerified: boolean
+  homeAddress?: string
+  homeLatitude?: number
+  homeLongitude?: number
+  homeCity?: string
+  homeNeighborhood?: string
 }
 
 export interface UserVerification {
@@ -172,9 +195,32 @@ export interface Payment {
   amount: number
   platformFee: number
   technicianAmount: number
+  platformCommissionPercentage: number
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
   paymentMethod: 'CASH' | 'WOMPI' | 'MERCADO_PAGO' | 'PAYU'
   createdAt: string
+}
+
+export interface TechnicianLocation {
+  technicianId: string
+  technicianName: string
+  latitude: number
+  longitude: number
+  accuracy?: number
+  speed?: number
+  heading?: number
+  online: boolean
+  updatedAt: string
+}
+
+export interface SystemParameter {
+  id: string
+  key: string
+  value: string
+  description: string
+  type: 'INTEGER' | 'DECIMAL' | 'BOOLEAN' | 'STRING'
+  active: boolean
+  updatedAt: string
 }
 
 export interface FinancialSummary {

@@ -12,15 +12,45 @@ export const api = axios.create({
   timeout: 15000,
 })
 
+let pendingMutations = 0
+const loadingListeners = new Set<(loading: boolean) => void>()
+
+function notifyLoading() {
+  loadingListeners.forEach((listener) => listener(pendingMutations > 0))
+}
+
+export function subscribeApiLoading(listener: (loading: boolean) => void) {
+  loadingListeners.add(listener)
+  listener(pendingMutations > 0)
+  return () => {
+    loadingListeners.delete(listener)
+  }
+}
+
 api.interceptors.request.use((config) => {
   const raw = localStorage.getItem('tecngo.session')
   if (raw) config.headers.Authorization = `Bearer ${JSON.parse(raw).token}`
+  if (config.method && ['post', 'put', 'patch', 'delete'].includes(config.method)) {
+    pendingMutations += 1
+    notifyLoading()
+    config.headers['X-TecnGo-Loading'] = 'true'
+  }
   return config
 })
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response.config.headers['X-TecnGo-Loading']) {
+      pendingMutations = Math.max(0, pendingMutations - 1)
+      notifyLoading()
+    }
+    return response
+  },
   (error) => {
+    if (error.config?.headers?.['X-TecnGo-Loading']) {
+      pendingMutations = Math.max(0, pendingMutations - 1)
+      notifyLoading()
+    }
     if (error.response?.status === 401) {
       localStorage.removeItem('tecngo.session')
       if (window.location.pathname !== '/login') window.location.assign('/login')

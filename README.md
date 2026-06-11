@@ -1,5 +1,9 @@
 # TecnGo Web
 
+El panel incluye loader global para operaciones mutables, domicilio con
+geolocalización, GPS del técnico por polling, seguimiento para el cliente, imágenes de
+solicitudes y administración de parámetros exclusivamente para `ADMIN`.
+
 Aplicación web del marketplace TecnGo con React, Vite, TypeScript, React Router,
 Axios y Tailwind CSS.
 

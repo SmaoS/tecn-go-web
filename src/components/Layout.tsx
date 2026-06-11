@@ -1,11 +1,13 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
+import { LoadingOverlay } from './LoadingOverlay'
 
 export function Layout() {
   const { session, logout } = useAuth()
   const navigate = useNavigate()
   return (
     <div className="min-h-screen">
+      <LoadingOverlay />
       <header className="border-b border-slate-800 bg-slate-950/90">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link to="/" className="flex items-center gap-3 text-2xl font-black tracking-tight text-white">
