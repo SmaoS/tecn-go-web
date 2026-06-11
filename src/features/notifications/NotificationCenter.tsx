@@ -3,6 +3,10 @@ import { useState } from 'react'
 import { queryKeys } from '../../lib/queryClient'
 import { QueryState } from '../shared/components/QueryState'
 import { useNotifications, useReadNotification, useUnreadNotifications } from './hooks'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/useAuth'
+import { workflowPaths } from '../../routes/paths'
+import type { UserNotification } from '../../types'
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false)
@@ -10,6 +14,20 @@ export function NotificationCenter() {
   const notifications = useNotifications()
   const unread = useUnreadNotifications()
   const read = useReadNotification()
+  const navigate = useNavigate()
+  const { session } = useAuth()
+  function select(item: UserNotification) {
+    if (!item.read) read.mutate(item.id)
+    if (item.route === 'Legal' || item.type === 'LEGAL_ACCEPTANCE_REQUIRED') {
+      navigate(session?.role === 'TECHNICIAN' ? workflowPaths.technician.legal : workflowPaths.client.legal)
+    } else if ((item.route === 'AvailableRequests' || item.type === 'NEW_REQUEST') && session?.role === 'TECHNICIAN') {
+      navigate(workflowPaths.technician.available)
+    } else if (session?.role === 'TECHNICIAN') {
+      navigate(workflowPaths.technician.assigned)
+    } else if (session?.role === 'CLIENT') {
+      navigate(workflowPaths.client.requests)
+    }
+  }
 
   return <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5">
     <div className="flex justify-between">
@@ -23,7 +41,7 @@ export function NotificationCenter() {
       {(notifications.data?.length ?? 0) === 0 && <p className="text-sm text-slate-500">Sin notificaciones.</p>}
       {notifications.data?.slice(0, 10).map((item) => <button
         key={item.id}
-        onClick={() => !item.read && read.mutate(item.id)}
+        onClick={() => select(item)}
         className={`block w-full rounded-xl p-3 text-left ${item.read ? 'bg-slate-950/40 text-slate-500' : 'bg-brand-500/10 text-slate-200'}`}
       >
         <strong className="text-sm">{item.title}</strong><p className="text-xs">{item.message}</p>

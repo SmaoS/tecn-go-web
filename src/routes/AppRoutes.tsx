@@ -46,7 +46,7 @@ export function AppRoutes() {
           <Route path="legal" element={<LegalPage />} />
         </Route></Route>
         <Route element={<RoleRoute role="TECHNICIAN" />}><Route path="tecnico" element={<TechnicianWorkspace />}>
-          <Route index element={<Navigate to="asignadas" replace />} />
+          <Route index element={<Navigate to="disponibles" replace />} />
           <Route path="asignadas" element={<AssignedServicesPage />} />
           <Route path="disponibles" element={<AvailableRequestsPage />} />
           <Route path="ganancias" element={<TechnicianEarningsPage />} />

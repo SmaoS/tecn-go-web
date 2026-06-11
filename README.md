@@ -90,3 +90,7 @@ Las solicitudes incluyen un panel para evidencias, comprobantes y denuncias. Cli
 técnico cuentan con aceptación legal. Admin tiene páginas separadas para pagos y
 denuncias, usuarios inactivos y documentos legales; el verificador revisa operaciones
 sin permisos para inactivar usuarios.
+
+El técnico inicia en solicitudes disponibles. Las notificaciones persistidas incluyen
+destino: la aceptación legal abre los términos y una solicitud nueva lleva al flujo de
+cotización.

@@ -2,7 +2,7 @@ import type { Role } from '../types'
 
 export const roleHome: Record<Role, string> = {
   CLIENT: '/app/cliente/solicitudes',
-  TECHNICIAN: '/app/tecnico/asignadas',
+  TECHNICIAN: '/app/tecnico/disponibles',
   VERIFIER: '/app/verificador',
   ADMIN: '/app/admin/resumen',
 }
