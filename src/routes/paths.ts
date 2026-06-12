@@ -21,6 +21,7 @@ export const workflowPaths = {
     earnings: '/app/tecnico/ganancias',
     profile: '/app/tecnico/perfil',
     legal: '/app/tecnico/legal',
+    referrals: '/app/tecnico/referidos',
   },
   admin: {
     overview: '/app/admin/resumen',
@@ -31,5 +32,7 @@ export const workflowPaths = {
     operations: '/app/admin/operaciones',
     users: '/app/admin/usuarios',
     legal: '/app/admin/legal',
+    referrals: '/app/admin/referidos',
+    appVersions: '/app/admin/versiones-app',
   },
 } as const

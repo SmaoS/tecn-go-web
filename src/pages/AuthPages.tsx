@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { api } from '../lib/api'
 import { useAuth } from '../context/useAuth'
@@ -40,12 +40,22 @@ export function LoginPage() {
 
 export function RegisterPage() {
   const { kind } = useParams()
-  const role: Role = kind === 'tecnico' ? 'TECHNICIAN' : 'CLIENT'
-  const [form, setForm] = useState({ fullName: '', email: '', password: '' })
+  const [role, setRole] = useState<Role>(kind === 'tecnico' ? 'TECHNICIAN' : 'CLIENT')
+  const [searchParams] = useSearchParams()
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', referralCode: searchParams.get('ref') ?? '' })
+  const [referralMessage, setReferralMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { setSession } = useAuth()
   const navigate = useNavigate()
+
+  async function validateReferral() {
+    if (!form.referralCode.trim()) { setReferralMessage(''); return }
+    try {
+      const { data } = await api.get<{ valid: boolean; message: string }>(`/v1/referrals/validate/${encodeURIComponent(form.referralCode.trim())}`)
+      setReferralMessage(data.message)
+    } catch { setReferralMessage('No fue posible validar el código.') }
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setError('')
@@ -56,9 +66,12 @@ export function RegisterPage() {
   }
 
   return <AuthShell title={role === 'CLIENT' ? 'Crea tu cuenta' : 'Únete como técnico'}><form onSubmit={submit} className="space-y-4">
+    <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setRole('CLIENT')} className={`rounded-lg border p-2 ${role === 'CLIENT' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Cliente</button><button type="button" onClick={() => setRole('TECHNICIAN')} className={`rounded-lg border p-2 ${role === 'TECHNICIAN' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Técnico</button></div>
     <input placeholder="Nombre completo" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
     <input type="email" placeholder="Correo" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
     <input type="password" minLength={8} placeholder="Contraseña (mínimo 8 caracteres)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+    <input placeholder="Código de referido (opcional)" value={form.referralCode} onChange={(e) => setForm({ ...form, referralCode: e.target.value.toUpperCase() })} onBlur={() => void validateReferral()} />
+    {referralMessage && <p className={`text-sm ${referralMessage.startsWith('Código válido') ? 'text-emerald-400' : 'text-amber-300'}`}>{referralMessage}</p>}
     <p className="text-sm text-slate-400">Después de ingresar podrás completar tu perfil, subir tu foto y enviar el documento para verificación.</p>
     {error && <p className="text-sm text-red-400">{error}</p>}
     <button disabled={loading} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950">{loading ? 'Creando...' : 'Crear cuenta'}</button>

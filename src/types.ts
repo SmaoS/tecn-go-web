@@ -201,7 +201,58 @@ export interface Payment {
   platformCommissionPercentage: number
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
   paymentMethod: 'CASH' | 'WOMPI' | 'MERCADO_PAGO' | 'PAYU'
+  commissionWaived?: boolean
+  commissionWaivedReason?: string
+  referralRewardId?: string
   createdAt: string
+}
+
+export interface ReferralCode {
+  id: string
+  technicianId: string
+  technicianName: string
+  code: string
+  active: boolean
+  createdAt: string
+  registered: number
+  qualified: number
+  availableRewards: number
+  usedRewards: number
+}
+
+export interface ReferralRegistration {
+  id: string
+  referredUserId: string
+  referredUserName: string
+  referredUserRole: 'CLIENT' | 'TECHNICIAN'
+  status: 'REGISTERED' | 'QUALIFIED' | 'REWARD_GRANTED' | 'CANCELLED'
+  createdAt: string
+  qualifiedAt?: string
+  rewardGrantedAt?: string
+}
+
+export interface ReferralReward {
+  id: string
+  rewardType: 'FREE_COMMISSION_SERVICE'
+  status: 'AVAILABLE' | 'USED' | 'EXPIRED' | 'CANCELLED'
+  sourceServiceRequestId?: string
+  usedServiceRequestId?: string
+  createdAt: string
+  usedAt?: string
+  expiresAt?: string
+}
+
+export interface AppVersion {
+  id: string
+  platform: 'ANDROID' | 'IOS'
+  minimumSupportedVersion: string
+  latestVersion: string
+  forceUpdate: boolean
+  updateUrl: string
+  message: string
+  active: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface TechnicianLocation {

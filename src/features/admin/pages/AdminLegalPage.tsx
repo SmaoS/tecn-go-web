@@ -12,7 +12,7 @@ export function AdminLegalPage() {
     setDraft({ code: '', title: '', version: '', roleTarget: 'ALL', content: '', active: false })
     void client.invalidateQueries({ queryKey: ['admin', 'legal'] })
   } })
-  return <section><h2 className="mb-2 text-2xl font-bold">Documentos legales</h2><p className="mb-4 text-sm text-amber-300">Los textos iniciales son borradores y requieren revisión jurídica.</p>
+  return <section><h2 className="mb-4 text-2xl font-bold">Documentos legales</h2>
     <div className="mb-6 grid gap-2 rounded-xl border border-slate-800 p-4 md:grid-cols-2">
       <input placeholder="Código" value={draft.code} onChange={(event) => setDraft({ ...draft, code: event.target.value })} />
       <input placeholder="Título" value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />

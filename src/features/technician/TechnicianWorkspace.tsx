@@ -5,6 +5,7 @@ const links = [
   { to: workflowPaths.technician.available, label: 'Solicitudes disponibles' },
   { to: workflowPaths.technician.assigned, label: 'Servicios asignados' },
   { to: workflowPaths.technician.earnings, label: 'Ganancias' },
+  { to: workflowPaths.technician.referrals, label: 'Invita y gana' },
   { to: workflowPaths.technician.profile, label: 'Mi perfil' },
   { to: workflowPaths.technician.legal, label: 'Compromiso y términos' },
 ]

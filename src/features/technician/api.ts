@@ -1,5 +1,5 @@
 import { api } from '../../lib/api'
-import type { FinancialSummary, ServiceCategory, ServiceRequest, TechnicianProfile } from '../../types'
+import type { FinancialSummary, ReferralCode, ReferralRegistration, ReferralReward, ServiceCategory, ServiceRequest, TechnicianProfile } from '../../types'
 
 export const technicianApi = {
   sendEmailVerification: () => api.post('/v1/auth/send-email-verification'),
@@ -14,5 +14,9 @@ export const technicianApi = {
   quote: (id: string, technicianPrice: number, description?: string) => api.put(`/v1/service-requests/${id}/quote`, { technicianPrice, description }),
   advance: (id: string, status: string) => api.put(`/v1/service-requests/${id}/status`, { status }),
   rate: (id: string, score: number, comment: string) => api.post(`/v1/service-requests/${id}/ratings`, { score, comment }),
+  ratingStatus: (id: string) => api.get<{ rated: boolean }>(`/v1/service-requests/${id}/ratings/me`).then(({ data }) => data),
   location: (payload: object) => api.put('/v1/technicians/me/location', payload),
+  referralCode: () => api.get<ReferralCode>('/v1/technicians/me/referral-code').then(({ data }) => data),
+  referrals: () => api.get<ReferralRegistration[]>('/v1/technicians/me/referrals').then(({ data }) => data),
+  referralRewards: () => api.get<ReferralReward[]>('/v1/technicians/me/referral-rewards').then(({ data }) => data),
 }

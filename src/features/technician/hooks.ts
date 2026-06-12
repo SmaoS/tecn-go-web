@@ -31,10 +31,30 @@ export function useTechnicianEarnings() {
   return useQuery({ queryKey: queryKeys.earnings, queryFn: technicianApi.earnings })
 }
 
+export function useTechnicianReferrals() {
+  const code = useQuery({ queryKey: ['referrals', 'code'], queryFn: technicianApi.referralCode })
+  const referrals = useQuery({ queryKey: ['referrals', 'registrations'], queryFn: technicianApi.referrals })
+  const rewards = useQuery({ queryKey: ['referrals', 'rewards'], queryFn: technicianApi.referralRewards })
+  return { code, referrals, rewards }
+}
+
+export function useTechnicianRatingStatuses(requestIds: string[]) {
+  return useQuery({
+    queryKey: ['ratings', 'technician-statuses', ...requestIds],
+    enabled: requestIds.length > 0,
+    queryFn: async () => Object.fromEntries(await Promise.all(
+      requestIds.map(async (id) => [id, (await technicianApi.ratingStatus(id)).rated] as const),
+    )),
+  })
+}
+
 export function useTechnicianAction(queryKey = queryKeys.technicianRequests) {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (run: () => Promise<unknown>) => run(),
-    onSuccess: () => client.invalidateQueries({ queryKey }),
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey })
+      await client.invalidateQueries({ queryKey: ['ratings'] })
+    },
   })
 }

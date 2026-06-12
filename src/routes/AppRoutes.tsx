@@ -21,6 +21,9 @@ import { AssignedServicesPage } from '../features/technician/pages/AssignedServi
 import { AvailableRequestsPage } from '../features/technician/pages/AvailableRequestsPage'
 import { TechnicianEarningsPage } from '../features/technician/pages/TechnicianEarningsPage'
 import { TechnicianProfilePage } from '../features/technician/pages/TechnicianProfilePage'
+import { TechnicianReferralsPage } from '../features/technician/pages/TechnicianReferralsPage'
+import { AdminReferralsPage } from '../features/admin/pages/AdminReferralsPage'
+import { AdminAppVersionsPage } from '../features/admin/pages/AdminAppVersionsPage'
 import { VerifierDashboard } from '../features/verification/VerifierDashboard'
 import { LoginPage, RegisterPage } from '../pages/AuthPages'
 import { HealthPage } from '../pages/HealthPage'
@@ -33,6 +36,7 @@ export function AppRoutes() {
       <Route index element={<LandingPage />} />
       <Route path="login" element={<LoginPage />} />
       <Route path="registro/:kind" element={<RegisterPage />} />
+      <Route path="register" element={<RegisterPage />} />
       <Route path="health" element={<HealthPage />} />
       <Route path="verificar-correo" element={<VerifyEmailPage />} />
       <Route path="app" element={<ProtectedRoute />}>
@@ -51,6 +55,7 @@ export function AppRoutes() {
           <Route path="disponibles" element={<AvailableRequestsPage />} />
           <Route path="ganancias" element={<TechnicianEarningsPage />} />
           <Route path="perfil" element={<TechnicianProfilePage />} />
+          <Route path="referidos" element={<TechnicianReferralsPage />} />
           <Route path="legal" element={<LegalPage />} />
         </Route></Route>
         <Route element={<RoleRoute role="VERIFIER" />}><Route path="verificador" element={<VerifierDashboard />} /></Route>
@@ -64,6 +69,8 @@ export function AppRoutes() {
           <Route path="operaciones" element={<AdminOperationsPage />} />
           <Route path="usuarios" element={<AdminUsersPage />} />
           <Route path="legal" element={<AdminLegalPage />} />
+          <Route path="referidos" element={<AdminReferralsPage />} />
+          <Route path="versiones-app" element={<AdminAppVersionsPage />} />
         </Route></Route>
       </Route>
     </Route>

@@ -26,6 +26,16 @@ export function useClientPayments() {
   return useQuery({ queryKey: queryKeys.payments, queryFn: clientApi.payments })
 }
 
+export function useClientRatingStatuses(requestIds: string[]) {
+  return useQuery({
+    queryKey: ['ratings', 'client-statuses', ...requestIds],
+    enabled: requestIds.length > 0,
+    queryFn: async () => Object.fromEntries(await Promise.all(
+      requestIds.map(async (id) => [id, (await clientApi.ratingStatus(id)).rated] as const),
+    )),
+  })
+}
+
 export function useServiceCategories() {
   return useQuery({ queryKey: queryKeys.categories, queryFn: clientApi.categories })
 }
@@ -39,6 +49,7 @@ export function useClientRequestAction() {
         client.invalidateQueries({ queryKey: queryKeys.clientRequests }),
         client.invalidateQueries({ queryKey: queryKeys.payments }),
         client.invalidateQueries({ queryKey: ['service-quotes'] }),
+        client.invalidateQueries({ queryKey: ['ratings'] }),
       ])
     },
   })

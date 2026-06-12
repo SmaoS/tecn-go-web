@@ -12,6 +12,7 @@ export const clientApi = {
   rejectQuote: (id: string, quoteId: string) => api.put(`/v1/service-requests/${id}/quotes/${quoteId}/reject`),
   payCash: (id: string) => api.post(`/v1/service-requests/${id}/payment/cash`),
   rate: (id: string, rating: { score: number; comment: string }) => api.post(`/v1/service-requests/${id}/ratings`, rating),
+  ratingStatus: (id: string) => api.get<{ rated: boolean }>(`/v1/service-requests/${id}/ratings/me`).then(({ data }) => data),
   uploadImage: (id: string, file: File) => {
     const body = new FormData()
     body.append('file', file)

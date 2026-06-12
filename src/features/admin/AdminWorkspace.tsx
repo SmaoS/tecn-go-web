@@ -10,6 +10,8 @@ const links = [
   { to: workflowPaths.admin.operations, label: 'Pagos y denuncias' },
   { to: workflowPaths.admin.users, label: 'Usuarios inactivos' },
   { to: workflowPaths.admin.legal, label: 'Documentos legales' },
+  { to: workflowPaths.admin.referrals, label: 'Referidos' },
+  { to: workflowPaths.admin.appVersions, label: 'Versiones de App' },
 ]
 
 export function AdminWorkspace() {

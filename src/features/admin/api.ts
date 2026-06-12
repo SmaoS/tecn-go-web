@@ -6,6 +6,10 @@ import type {
   SystemParameter,
   TechnicianLocation,
   TechnicianProfile,
+  ReferralCode,
+  ReferralRegistration,
+  ReferralReward,
+  AppVersion,
 } from '../../types'
 
 export const adminApi = {
@@ -25,4 +29,18 @@ export const adminApi = {
   deleteCategory: (id: string) => api.delete(`/v1/admin/service-categories/${id}`),
   updateParameter: (key: string, value: string) => api.put(`/v1/admin/system-parameters/${key}`, { value }),
   evidence: (url: string) => api.get(url, { responseType: 'blob' }).then(({ data }) => data),
+  referralCodes: () => api.get<ReferralCode[]>('/v1/admin/referrals').then(({ data }) => data),
+  referralRegistrations: (technicianId: string) => api.get<ReferralRegistration[]>(`/v1/admin/referrals/technicians/${technicianId}/registrations`).then(({ data }) => data),
+  referralRewards: (technicianId: string) => api.get<ReferralReward[]>(`/v1/admin/referrals/technicians/${technicianId}/rewards`).then(({ data }) => data),
+  setReferralActive: (id: string, value: boolean) => api.put(`/v1/admin/referrals/${id}/active?value=${value}`),
+  regenerateReferral: (id: string) => api.put(`/v1/admin/referrals/${id}/regenerate`),
+  appVersions: () => api.get<AppVersion[]>('/v1/admin/app-versions').then(({ data }) => data),
+  updateAppVersion: (item: AppVersion) => api.put<AppVersion>(`/v1/admin/app-versions/${item.platform}`, {
+    minimumSupportedVersion: item.minimumSupportedVersion,
+    latestVersion: item.latestVersion,
+    forceUpdate: item.forceUpdate,
+    updateUrl: item.updateUrl,
+    message: item.message,
+    active: item.active,
+  }).then(({ data }) => data),
 }
