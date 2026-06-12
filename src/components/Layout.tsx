@@ -6,7 +6,7 @@ export function Layout() {
   const { session, logout } = useAuth()
   const navigate = useNavigate()
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <LoadingOverlay />
       <header className="border-b border-slate-800 bg-slate-950/90">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -29,7 +29,17 @@ export function Layout() {
           </div>
         </nav>
       </header>
-      <main><Outlet /></main>
+      <main className="flex-1"><Outlet /></main>
+      <footer className="border-t border-slate-800 bg-slate-950">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 text-sm text-slate-400 sm:flex-row">
+          <p>© 2026 TecnGo  Villavicencio</p>
+          <nav aria-label="Enlaces legales" className="flex flex-wrap justify-center gap-4">
+            <Link to="/privacy" className="hover:text-white">Privacidad</Link>
+            <Link to="/accessibility" className="hover:text-white">Accesibilidad</Link>
+            <Link to="/terms" className="hover:text-white">Términos</Link>
+          </nav>
+        </div>
+      </footer>
     </div>
   )
 }

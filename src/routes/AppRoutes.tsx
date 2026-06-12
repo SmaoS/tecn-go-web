@@ -29,6 +29,7 @@ import { LoginPage, RegisterPage } from '../pages/AuthPages'
 import { HealthPage } from '../pages/HealthPage'
 import { LandingPage } from '../pages/LandingPage'
 import { VerifyEmailPage } from '../pages/VerifyEmailPage'
+import { PublicLegalPage } from '../features/legal/PublicLegalPage'
 
 export function AppRoutes() {
   return <Routes>
@@ -39,6 +40,14 @@ export function AppRoutes() {
       <Route path="register" element={<RegisterPage />} />
       <Route path="health" element={<HealthPage />} />
       <Route path="verificar-correo" element={<VerifyEmailPage />} />
+      <Route path="privacy" element={<PublicLegalPage kind="privacy" />} />
+      <Route path="privacidad" element={<Navigate to="/privacy" replace />} />
+      <Route path="terms" element={<PublicLegalPage kind="terms" />} />
+      <Route path="terminos-condiciones" element={<Navigate to="/terms" replace />} />
+      <Route path="data-treatment" element={<PublicLegalPage kind="dataTreatment" />} />
+      <Route path="tratamiento-datos" element={<Navigate to="/data-treatment" replace />} />
+      <Route path="accessibility" element={<PublicLegalPage kind="accessibility" />} />
+      <Route path="accesibilidad" element={<Navigate to="/accessibility" replace />} />
       <Route path="app" element={<ProtectedRoute />}>
         <Route index element={<RoleRouter />} />
         <Route element={<RoleRoute role="CLIENT" />}><Route path="cliente" element={<ClientWorkspace />}>
