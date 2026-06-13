@@ -1,5 +1,5 @@
 import { api } from '../../lib/api'
-import type { EvidenceType, PaymentProof, ProofMethod, ServiceEvidence, UserReport } from './types'
+import type { ContentAsset, EvidenceType, PaymentProof, ProofMethod, ServiceEvidence, UserReport } from './types'
 
 export const serviceSupportApi = {
   evidences: (requestId: string) => api.get<ServiceEvidence[]>(`/v1/service-requests/${requestId}/evidences`).then(({ data }) => data),
@@ -20,6 +20,8 @@ export const serviceSupportApi = {
   },
   report: (requestId: string, reason: string, description: string) =>
     api.post(`/v1/service-requests/${requestId}/reports`, { reason, description, severity: 'MEDIUM' }),
+  reportContent: (contentAssetId: string, reason: string) =>
+    api.post(`/v1/content/${contentAssetId}/report`, { reason }),
   pendingProofs: () => api.get<PaymentProof[]>('/v1/admin/payment-proofs/pending').then(({ data }) => data),
   reviewProof: (id: string, approved: boolean, comment = '') =>
     api.put(`/v1/admin/payment-proofs/${id}/${approved ? 'approve' : 'reject'}`, { comment }),
@@ -29,4 +31,7 @@ export const serviceSupportApi = {
     api.put(`/v1/admin/reports/${id}/status`, { status, comment }),
   inactivateUser: (id: string, comment: string) =>
     api.put(`/v1/admin/users/${id}/inactivate`, { reason: 'REPORT', comment }),
+  moderationQueue: () => api.get<ContentAsset[]>('/v1/admin/content-moderation').then(({ data }) => data),
+  moderate: (id: string, approved: boolean, reason = '') =>
+    api.put(`/v1/admin/content-moderation/${id}/${approved ? 'approve' : 'reject'}`, { reason }),
 }

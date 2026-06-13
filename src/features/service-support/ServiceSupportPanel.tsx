@@ -41,7 +41,13 @@ export function ServiceSupportPanel({ requestId }: { requestId: string }) {
         <input className={inputClass} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => setEvidenceFile(event.target.files?.[0])} />
         <input className={inputClass} placeholder="Descripción" value={description} onChange={(event) => setDescription(event.target.value)} />
         <button disabled={!evidenceFile || action.isPending} onClick={() => evidenceFile && action.mutate(() => serviceSupportApi.uploadEvidence(requestId, evidenceFile, type, description))} className="rounded-lg bg-brand-500 p-2 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">Subir evidencia</button>
-        {evidence.data?.map((item) => <button key={item.id} onClick={() => void openPrivateFile(item.fileUrl)} className="text-left text-sm text-brand-300">{item.description || evidenceLabels[item.evidenceType]} · {item.uploadedByName}</button>)}
+        {evidence.data?.map((item) => <div key={item.id} className="flex flex-wrap items-center gap-2">
+          <button onClick={() => void openPrivateFile(item.fileUrl)} className="text-left text-sm text-brand-300">{item.description || evidenceLabels[item.evidenceType]} · {item.uploadedByName}</button>
+          {item.contentAssetId && <button onClick={() => {
+            const reason = window.prompt('¿Por qué deseas reportar esta imagen?')
+            if (reason) action.mutate(() => serviceSupportApi.reportContent(item.contentAssetId!, reason))
+          }} className="text-xs text-red-300">Reportar contenido</button>}
+        </div>)}
       </div>
       <div className="grid gap-2 rounded-xl bg-slate-950/50 p-3">
         <strong>Comprobante de pago</strong>

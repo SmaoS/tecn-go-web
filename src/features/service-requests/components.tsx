@@ -1,5 +1,6 @@
 import type { RequestStatus, ServiceRequest } from '../../types'
-import { assetUrl } from '../../lib/api'
+import { PrivateImage } from '../../components/PrivateImage'
+import { openPrivateAsset } from '../../components/privateAsset'
 import { statusLabels } from './status'
 import { ServiceSupportPanel } from '../service-support/ServiceSupportPanel'
 
@@ -33,7 +34,7 @@ export function Reputation({ photo, name, rating, services, description }: {
 }) {
   return <div className="mt-3 flex gap-3 rounded-xl bg-slate-950/50 p-3">
     {photo
-      ? <img src={assetUrl(photo)} alt="" className="h-12 w-12 rounded-full object-cover" />
+      ? <PrivateImage src={photo} alt="" className="h-12 w-12 rounded-full object-cover" />
       : <div className="grid h-12 w-12 place-items-center rounded-full bg-slate-800 font-bold">{name.charAt(0)}</div>}
     <div><strong>{name}</strong><p className="text-sm text-brand-400">★ {rating.toFixed(1)} · {services} servicios</p>{description && <p className="text-xs text-slate-500">{description}</p>}</div>
   </div>
@@ -41,9 +42,9 @@ export function Reputation({ photo, name, rating, services, description }: {
 
 export function ImageGallery({ urls }: { urls: string[] }) {
   return <div className="mt-3 grid grid-cols-3 gap-2">
-    {urls.map((url) => <a key={url} href={url} target="_blank" rel="noreferrer">
-      <img src={url} alt="Evidencia del servicio" className="h-24 w-full rounded-lg object-cover" />
-    </a>)}
+    {urls.map((url) => <button key={url} type="button" onClick={() => void openPrivateAsset(url)}>
+      <PrivateImage src={url} alt="Evidencia del servicio" className="h-24 w-full rounded-lg object-cover" />
+    </button>)}
   </div>
 }
 

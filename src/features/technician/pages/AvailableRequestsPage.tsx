@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import { useState } from 'react'
+import { PrivateImage } from '../../../components/PrivateImage'
 import { queryKeys } from '../../../lib/queryClient'
 import { ImageGallery, Reputation } from '../../service-requests/components'
 import { QueryState } from '../../shared/components/QueryState'
@@ -27,7 +28,7 @@ export function AvailableRequestsPage() {
     {quoteError && <p className="mb-4 text-red-300">{quoteError}</p>}
     <QueryState pending={profile.isPending || requests.isPending} error={profile.error ?? requests.error} empty={requests.data?.length === 0}>
       <div className="space-y-3">{requests.data?.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-        {item.firstServiceImageUrl && <img src={item.firstServiceImageUrl} alt="" className="mb-3 h-40 w-full rounded-xl object-cover" />}
+        {item.firstServiceImageUrl && <PrivateImage src={item.firstServiceImageUrl} alt="" className="mb-3 h-40 w-full rounded-xl object-cover" />}
         <strong>{item.categoryName}</strong><Reputation photo={item.clientProfilePhotoUrl} name={item.clientName} rating={item.clientAverageRating} services={item.clientPaidServicesCount} />
         <p className="mt-2 text-sm text-slate-400">{item.description}</p>{item.images?.length > 0 && <ImageGallery urls={item.images.map((image) => image.imageUrl)} />}
         {item.estimatedPrice != null && <p className="mt-2 font-bold text-brand-400">Estimado del cliente: ${item.estimatedPrice.toLocaleString()}</p>}

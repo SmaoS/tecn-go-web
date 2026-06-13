@@ -1,6 +1,6 @@
 import { useAuth } from '../../../context/useAuth'
 import { serviceSupportApi } from '../../service-support/api'
-import { useAllEvidences, useOperationsAction, usePendingProofs, useReports } from '../../service-support/hooks'
+import { useAllEvidences, useModerationQueue, useOperationsAction, usePendingProofs, useReports } from '../../service-support/hooks'
 import { api } from '../../../lib/api'
 
 export function AdminOperationsPage() {
@@ -8,8 +8,31 @@ export function AdminOperationsPage() {
   const proofs = usePendingProofs()
   const reports = useReports()
   const evidences = useAllEvidences()
+  const moderation = useModerationQueue()
   const action = useOperationsAction()
-  return <section><h2 className="text-2xl font-bold">Pagos y denuncias</h2>
+  return <section><h2 className="text-2xl font-bold">Operaciones y moderación</h2>
+    <h3 className="mb-3 mt-6 text-lg font-bold">Contenido reportado o pendiente</h3>
+    <div className="space-y-3">{moderation.data?.filter((item) =>
+      item.moderationStatus !== 'APPROVED' || item.openReports > 0).map((item) =>
+      <article key={item.id} className="rounded-xl border border-slate-800 p-4">
+        <button onClick={async () => {
+          const blob = await api.get(item.fileUrl, { responseType: 'blob' }).then(({ data }) => data)
+          window.open(URL.createObjectURL(blob), '_blank', 'noopener,noreferrer')
+        }} className="font-bold text-brand-300">{item.kind} · {item.uploadedByName}</button>
+        <p className="text-sm text-slate-400">{item.moderationStatus} · reportes abiertos: {item.openReports}</p>
+        {item.moderationReason && <p className="text-sm text-slate-500">{item.moderationReason}</p>}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button onClick={() => action.mutate(() => serviceSupportApi.moderate(item.id, true, 'Aprobado por revisión manual'))} className="rounded bg-emerald-500 px-3 py-2 text-slate-950">Aprobar</button>
+          <button onClick={() => {
+            const reason = window.prompt('Motivo del rechazo')
+            if (reason) action.mutate(() => serviceSupportApi.moderate(item.id, false, reason))
+          }} className="rounded border border-red-500 px-3 py-2 text-red-300">Rechazar</button>
+          {session?.role === 'ADMIN' && <button onClick={() => {
+            const comment = window.prompt('Motivo para inactivar al usuario')
+            if (comment) action.mutate(() => serviceSupportApi.inactivateUser(item.uploadedByUserId, comment))
+          }} className="rounded border border-red-500 px-3 py-2 text-red-300">Inactivar usuario</button>}
+        </div>
+      </article>)}</div>
     <h3 className="mb-3 mt-6 text-lg font-bold">Evidencias recientes</h3>
     <div className="space-y-2">{evidences.data?.slice(0, 20).map((item) => <button key={item.id} onClick={async () => {
       const blob = await api.get(item.fileUrl, { responseType: 'blob' }).then(({ data }) => data)

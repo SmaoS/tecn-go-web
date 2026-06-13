@@ -7,6 +7,8 @@ export interface ServiceEvidence {
   uploadedByName: string
   evidenceType: EvidenceType
   fileUrl: string
+  contentAssetId?: string
+  moderationStatus: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'FLAGGED'
   description?: string
   createdAt: string
 }
@@ -20,6 +22,22 @@ export interface PaymentProof {
   paymentMethod: ProofMethod
   status: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
   reviewComment?: string
+  contentAssetId?: string
+  moderationStatus: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'FLAGGED'
+  createdAt: string
+}
+
+export interface ContentAsset {
+  id: string
+  uploadedByUserId: string
+  uploadedByName: string
+  kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE' | 'SERVICE_REQUEST_IMAGE' | 'SERVICE_EVIDENCE' | 'PAYMENT_PROOF'
+  fileUrl: string
+  contentType: string
+  moderationStatus: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'FLAGGED'
+  moderationReason?: string
+  moderatedAt?: string
+  openReports: number
   createdAt: string
 }
 

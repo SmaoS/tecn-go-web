@@ -24,6 +24,7 @@ export function useServiceSupportAction(requestId: string) {
 export const usePendingProofs = () => useQuery({ queryKey: ['admin', 'payment-proofs'], queryFn: serviceSupportApi.pendingProofs, refetchInterval: 10_000 })
 export const useReports = () => useQuery({ queryKey: ['admin', 'reports'], queryFn: serviceSupportApi.reports, refetchInterval: 10_000 })
 export const useAllEvidences = () => useQuery({ queryKey: ['admin', 'evidences'], queryFn: serviceSupportApi.allEvidences, refetchInterval: 10_000 })
+export const useModerationQueue = () => useQuery({ queryKey: ['admin', 'content-moderation'], queryFn: serviceSupportApi.moderationQueue, refetchInterval: 10_000 })
 export function useOperationsAction() {
   const client = useQueryClient()
   return useMutation({
