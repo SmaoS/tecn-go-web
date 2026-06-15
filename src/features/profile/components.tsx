@@ -73,12 +73,11 @@ export function UserProfileEditor() {
       <input placeholder="Dirección de domicilio" value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} />
       <input placeholder="Ciudad" value={current.homeCity ?? ''} onChange={(event) => update({ homeCity: event.target.value })} />
       <input placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChange={(event) => update({ homeNeighborhood: event.target.value })} />
-      <div className="grid grid-cols-2 gap-2"><input type="number" step="any" placeholder="Latitud" value={current.homeLatitude ?? ''} onChange={(event) => update({ homeLatitude: Number(event.target.value) })} /><input type="number" step="any" placeholder="Longitud" value={current.homeLongitude ?? ''} onChange={(event) => update({ homeLongitude: Number(event.target.value) })} /></div>
       <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>
       <label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label>
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
-    <div className="mt-3 flex flex-wrap gap-2"><button className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Usar mi ubicación</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
+    <div className="mt-3 flex flex-wrap gap-2"><button className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
     </form>}
     {current && <form onSubmit={(event) => {
       event.preventDefault()

@@ -5,6 +5,4 @@ export interface VerifierForm {
   homeAddress: string
   homeCity: string
   homeNeighborhood: string
-  homeLatitude: string
-  homeLongitude: string
 }

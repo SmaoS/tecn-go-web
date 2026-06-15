@@ -41,7 +41,7 @@ export function VerificationQueue() {
 
 const emptyVerifier: VerifierForm = {
   fullName: '', email: '', password: '', homeAddress: '', homeCity: '',
-  homeNeighborhood: '', homeLatitude: '', homeLongitude: '',
+  homeNeighborhood: '',
 }
 
 export function VerifierManager() {
@@ -52,8 +52,8 @@ export function VerifierManager() {
   const create = useMutation({
     mutationFn: () => verificationApi.createVerifier({
       ...form,
-      homeLatitude: form.homeLatitude ? Number(form.homeLatitude) : null,
-      homeLongitude: form.homeLongitude ? Number(form.homeLongitude) : null,
+      homeLatitude: null,
+      homeLongitude: null,
     }),
     onSuccess: async () => {
       setForm(emptyVerifier)
@@ -68,7 +68,7 @@ export function VerifierManager() {
   }
 
   return <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><h2 className="text-xl font-bold">Verificadores</h2><p className="mt-1 text-sm text-slate-400">Estas cuentas solo pueden ser creadas por un administrador.</p>
-    <form onSubmit={submit} className="mt-4 grid gap-3 md:grid-cols-3"><input placeholder="Nombre completo" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required /><input type="email" placeholder="Correo" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required /><input type="password" minLength={8} placeholder="Contraseña temporal" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required /><input placeholder="Dirección domicilio" value={form.homeAddress} onChange={(event) => setForm({ ...form, homeAddress: event.target.value })} /><input placeholder="Ciudad" value={form.homeCity} onChange={(event) => setForm({ ...form, homeCity: event.target.value })} /><input placeholder="Barrio" value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /><input type="number" step="any" placeholder="Latitud" value={form.homeLatitude} onChange={(event) => setForm({ ...form, homeLatitude: event.target.value })} /><input type="number" step="any" placeholder="Longitud" value={form.homeLongitude} onChange={(event) => setForm({ ...form, homeLongitude: event.target.value })} /><button className="rounded-lg bg-brand-500 px-4 py-2 font-bold text-slate-950">Crear verificador</button></form>
+    <form onSubmit={submit} className="mt-4 grid gap-3 md:grid-cols-3"><input placeholder="Nombre completo" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required /><input type="email" placeholder="Correo" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required /><input type="password" minLength={8} placeholder="Contraseña temporal" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required /><input placeholder="Dirección domicilio" value={form.homeAddress} onChange={(event) => setForm({ ...form, homeAddress: event.target.value })} /><input placeholder="Ciudad" value={form.homeCity} onChange={(event) => setForm({ ...form, homeCity: event.target.value })} /><input placeholder="Barrio" value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /><button className="rounded-lg bg-brand-500 px-4 py-2 font-bold text-slate-950">Crear verificador</button></form>
     {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
     <QueryState pending={items.isPending} error={items.error}><div className="mt-4 flex flex-wrap gap-2">{items.data?.map((item) => <span key={item.id} className="rounded-full border border-slate-700 px-3 py-2 text-sm">{item.fullName} · {item.email}</span>)}</div></QueryState>
   </section>
