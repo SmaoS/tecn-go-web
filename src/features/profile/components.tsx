@@ -7,6 +7,7 @@ import { QueryState } from '../shared/components/QueryState'
 import { profileApi } from './api'
 import { useProfile, useSaveProfile } from './hooks'
 import { PasswordField } from '../../components/PasswordField'
+import { GeographicFields } from '../catalogs/GeographicFields'
 
 const verificationLabels: Record<VerificationStatus, string> = {
   CREATED: 'Cuenta creada: carga tu documento',
@@ -24,6 +25,7 @@ export function UserProfileEditor() {
   const [error, setError] = useState('')
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [passwordNotice, setPasswordNotice] = useState('')
+  const [passwordModal, setPasswordModal] = useState(false)
   const profile = useProfile()
   const current = draft ?? profile.data
   const save = useSaveProfile()
@@ -70,16 +72,18 @@ export function UserProfileEditor() {
       <input value={current.fullName} onChange={(event) => update({ fullName: event.target.value })} required />
       <input type="email" value={current.email} disabled readOnly className="cursor-not-allowed opacity-70" aria-label="Correo registrado" />
       <input placeholder="Teléfono" value={current.phone ?? ''} onChange={(event) => update({ phone: event.target.value })} />
-      <input placeholder="Dirección de domicilio" value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} />
-      <input placeholder="Ciudad" value={current.homeCity ?? ''} onChange={(event) => update({ homeCity: event.target.value })} />
-      <input placeholder="Barrio" value={current.homeNeighborhood ?? ''} onChange={(event) => update({ homeNeighborhood: event.target.value })} />
+      <GeographicFields countryId={current.countryId} departmentId={current.departmentId} cityId={current.cityId} onChange={(values) => update({ ...values, homeCity: values.cityName })} />
+      <label className="text-sm">Dirección de domicilio<input value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} /></label>
+      <label className="text-sm">Barrio<input value={current.homeNeighborhood ?? ''} onChange={(event) => update({ homeNeighborhood: event.target.value })} /></label>
       <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>
       <label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label>
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
     <div className="mt-3 flex flex-wrap gap-2"><button className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
+    <button type="button" onClick={() => setPasswordModal(true)} className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-sm">Modificar contraseña</button>
     </form>}
-    {current && <form onSubmit={(event) => {
+    {current && passwordModal && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4" role="dialog" aria-modal="true">
+      <form onSubmit={(event) => {
       event.preventDefault()
       setPasswordNotice('')
       if (passwords.newPassword !== passwords.confirmPassword) {
@@ -87,8 +91,8 @@ export function UserProfileEditor() {
         return
       }
       changePassword.mutate(passwords)
-    }} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-      <h2 className="mb-4 font-bold">Cambiar contraseña</h2>
+    }} className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+      <div className="mb-4 flex items-center justify-between"><h2 className="font-bold">Modificar contraseña</h2><button type="button" onClick={() => setPasswordModal(false)} className="text-sm text-brand-300">Cerrar</button></div>
       <div className="grid gap-3">
         <PasswordField placeholder="Contraseña actual" value={passwords.currentPassword} onChange={(event) => setPasswords({ ...passwords, currentPassword: event.target.value })} required />
         <PasswordField minLength={8} placeholder="Nueva contraseña" value={passwords.newPassword} onChange={(event) => setPasswords({ ...passwords, newPassword: event.target.value })} required />
@@ -98,6 +102,6 @@ export function UserProfileEditor() {
       <button disabled={changePassword.isPending} className="mt-3 rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">
         {changePassword.isPending ? 'Actualizando...' : 'Actualizar contraseña'}
       </button>
-    </form>}
+    </form></div>}
   </QueryState>
 }

@@ -9,12 +9,14 @@ import { QueryState } from '../../shared/components/QueryState'
 import { technicianApi } from '../api'
 import { useTechnicianCategories, useTechnicianProfile } from '../hooks'
 import type { TechnicianProfileForm } from '../types'
+import { GeographicFields } from '../../catalogs/GeographicFields'
 
 const emptyProfile: TechnicianProfileForm = {
   documentNumber: '', phone: '', categoryIds: [], description: '',
   profilePhotoUrl: '', documentPhotoUrl: '', certificatePhotoUrl: '',
   workExperienceDescription: '', latitude: '', longitude: '', homeAddress: '',
   homeLatitude: '', homeLongitude: '', homeCity: '', homeNeighborhood: '',
+  countryId: '', departmentId: '', cityId: '',
 }
 
 export function TechnicianProfilePage() {
@@ -35,7 +37,8 @@ export function TechnicianProfilePage() {
       latitude: String(data.latitude ?? ''), longitude: String(data.longitude ?? ''),
       homeAddress: data.homeAddress ?? '', homeLatitude: String(data.homeLatitude ?? ''),
       homeLongitude: String(data.homeLongitude ?? ''), homeCity: data.homeCity ?? '',
-      homeNeighborhood: data.homeNeighborhood ?? '',
+      homeNeighborhood: data.homeNeighborhood ?? '', countryId: data.countryId ?? '',
+      departmentId: data.departmentId ?? '', cityId: data.cityId ?? '',
     })
   }, [profile.data])
   const save = useMutation({
@@ -85,8 +88,11 @@ export function TechnicianProfilePage() {
         <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>
         <label className="text-sm">Documento obligatorio<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} required={!form.documentPhotoUrl} /></label>
         <label className="text-sm">Certificado opcional<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('certificatePhotoUrl', event.target.files?.[0])} /></label>
-        <input placeholder="Dirección de domicilio" value={form.homeAddress} onChange={(event) => setForm({ ...form, homeAddress: event.target.value })} required />
-        <div className="grid grid-cols-2 gap-3"><input placeholder="Ciudad" value={form.homeCity} onChange={(event) => setForm({ ...form, homeCity: event.target.value })} /><input placeholder="Barrio" value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /></div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <GeographicFields countryId={form.countryId} departmentId={form.departmentId} cityId={form.cityId} onChange={(values) => setForm({ ...form, countryId: values.countryId ?? '', departmentId: values.departmentId ?? '', cityId: values.cityId ?? '', homeCity: values.cityName ?? '' })} />
+        </div>
+        <label className="text-sm">Dirección de domicilio<input value={form.homeAddress} onChange={(event) => setForm({ ...form, homeAddress: event.target.value })} required /></label>
+        <label className="text-sm">Barrio<input value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /></label>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={useLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">{form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener mi ubicación GPS'}</button>{!session?.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">Verificar correo</button>}</div>
         {error && <p className="text-sm text-red-300">{error}</p>}
         <button disabled={save.isPending} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{save.isPending ? 'Guardando...' : profile.data ? 'Actualizar perfil' : 'Crear perfil'}</button>

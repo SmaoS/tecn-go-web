@@ -3,7 +3,7 @@ import { useState, type InputHTMLAttributes } from 'react'
 export function PasswordField(props: InputHTMLAttributes<HTMLInputElement>) {
   const [visible, setVisible] = useState(false)
   return <div className="relative">
-    <input {...props} type={visible ? 'text' : 'password'} className="pr-20" />
+    <input {...props} type={visible ? 'text' : 'password'} className="pr-20 text-slate-100 caret-brand-400" />
     <button
       type="button"
       onClick={() => setVisible((value) => !value)}

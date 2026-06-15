@@ -6,9 +6,11 @@ import { QueryState } from '../../shared/components/QueryState'
 import { clientApi } from '../api'
 import { useServiceCategories } from '../hooks'
 import type { ClientRequestForm } from '../types'
+import { GeographicFields } from '../../catalogs/GeographicFields'
 
 const emptyForm: ClientRequestForm = {
   categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '',
+  countryId: '', departmentId: '', cityId: '',
 }
 
 export function CreateRequestPage() {
@@ -21,7 +23,10 @@ export function CreateRequestPage() {
   const create = useMutation({
     mutationFn: async () => {
       const request = await clientApi.createRequest({
-        ...form,
+        categoryId: form.categoryId,
+        description: form.description,
+        address: form.address,
+        cityId: form.cityId,
         latitude: Number(form.latitude),
         longitude: Number(form.longitude),
         estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
@@ -55,6 +60,9 @@ export function CreateRequestPage() {
           <option value="">Selecciona una categoría</option>
           {categories.data?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <GeographicFields countryId={form.countryId} departmentId={form.departmentId} cityId={form.cityId} onChange={(values) => setForm({ ...form, countryId: values.countryId ?? '', departmentId: values.departmentId ?? '', cityId: values.cityId ?? '' })} />
+        </div>
         <textarea placeholder="Describe lo que necesitas" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} required />
         <input placeholder="Dirección del servicio" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} required />
         <button type="button" onClick={currentLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">{form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'}</button>
@@ -65,7 +73,7 @@ export function CreateRequestPage() {
         {locationError && <p className="text-sm text-red-400">{locationError}</p>}
         {create.error && <p className="text-sm text-red-400">{apiMessage(create.error)}</p>}
         {(!form.latitude || !form.longitude) && <p className="text-sm text-amber-300">Se requiere ubicación GPS para publicar.</p>}
-        <button disabled={create.isPending || !form.latitude || !form.longitude} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{create.isPending ? 'Creando...' : 'Crear solicitud'}</button>
+        <button disabled={create.isPending || !form.cityId || !form.latitude || !form.longitude} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{create.isPending ? 'Creando...' : 'Crear solicitud'}</button>
       </form>
     </QueryState>
   </section>
