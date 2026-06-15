@@ -42,6 +42,8 @@ reservan para formularios, archivos seleccionados y controles de interfaz.
 - Rutas protegidas, navegación y redirección por rol
 - Verificación de correo mediante enlaces enviados por Resend
 - Paneles enfocados en solicitudes y edición bajo el botón `Mi perfil`
+- Recuperación por correo, confirmación visual de contraseña y cambio desde perfil
+- Solicitudes activas e historiales separados para cliente y técnico
 
 El registro solicita únicamente nombre, correo, contraseña y tipo de cuenta. Después
 del ingreso, cliente o técnico completa su perfil y carga el documento. La interfaz

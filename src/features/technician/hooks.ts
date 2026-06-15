@@ -18,6 +18,14 @@ export function useAssignedServices() {
   })
 }
 
+export function useAssignedServiceHistory() {
+  return useQuery({
+    queryKey: queryKeys.technicianRequestHistory,
+    queryFn: technicianApi.assignedHistory,
+    refetchInterval: 10_000,
+  })
+}
+
 export function useAvailableServices(radiusKm: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.availableRequests(radiusKm),
@@ -54,6 +62,7 @@ export function useTechnicianAction(queryKey = queryKeys.technicianRequests) {
     mutationFn: (run: () => Promise<unknown>) => run(),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey })
+      await client.invalidateQueries({ queryKey: queryKeys.technicianRequestHistory })
       await client.invalidateQueries({ queryKey: ['ratings'] })
     },
   })

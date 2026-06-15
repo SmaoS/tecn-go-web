@@ -10,6 +10,7 @@ export const roleHome: Record<Role, string> = {
 export const workflowPaths = {
   client: {
     requests: '/app/cliente/solicitudes',
+    history: '/app/cliente/historial',
     create: '/app/cliente/nueva',
     payments: '/app/cliente/pagos',
     profile: '/app/cliente/perfil',
@@ -17,6 +18,7 @@ export const workflowPaths = {
   },
   technician: {
     assigned: '/app/tecnico/asignadas',
+    history: '/app/tecnico/historial',
     available: '/app/tecnico/disponibles',
     earnings: '/app/tecnico/ganancias',
     profile: '/app/tecnico/perfil',

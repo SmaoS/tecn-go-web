@@ -6,6 +6,7 @@ import { apiMessage } from '../shared/api'
 import { QueryState } from '../shared/components/QueryState'
 import { profileApi } from './api'
 import { useProfile, useSaveProfile } from './hooks'
+import { PasswordField } from '../../components/PasswordField'
 
 const verificationLabels: Record<VerificationStatus, string> = {
   CREATED: 'Cuenta creada: carga tu documento',
@@ -21,6 +22,8 @@ export function VerificationBadge({ value }: { value: VerificationStatus }) {
 export function UserProfileEditor() {
   const [draft, setDraft] = useState<UserProfile | null>(null)
   const [error, setError] = useState('')
+  const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [passwordNotice, setPasswordNotice] = useState('')
   const profile = useProfile()
   const current = draft ?? profile.data
   const save = useSaveProfile()
@@ -28,6 +31,14 @@ export function UserProfileEditor() {
     mutationFn: profileApi.verifyEmail,
     onSuccess: () => setError('Correo de verificación enviado.'),
     onError: (reason) => setError(apiMessage(reason)),
+  })
+  const changePassword = useMutation({
+    mutationFn: profileApi.changePassword,
+    onSuccess: ({ message }) => {
+      setPasswordNotice(message)
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
+    },
+    onError: (reason) => setPasswordNotice(apiMessage(reason)),
   })
   async function file(field: 'profilePhotoUrl' | 'documentPhotoUrl', selected?: File) {
     if (!selected || !current) return
@@ -57,6 +68,7 @@ export function UserProfileEditor() {
     <div className="mt-2"><VerificationBadge value={current.verificationStatus} /><p className="mt-1 text-sm text-slate-400">Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</p></div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
       <input value={current.fullName} onChange={(event) => update({ fullName: event.target.value })} required />
+      <input type="email" value={current.email} disabled readOnly className="cursor-not-allowed opacity-70" aria-label="Correo registrado" />
       <input placeholder="Teléfono" value={current.phone ?? ''} onChange={(event) => update({ phone: event.target.value })} />
       <input placeholder="Dirección de domicilio" value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} />
       <input placeholder="Ciudad" value={current.homeCity ?? ''} onChange={(event) => update({ homeCity: event.target.value })} />
@@ -67,6 +79,26 @@ export function UserProfileEditor() {
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
     <div className="mt-3 flex flex-wrap gap-2"><button className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Usar mi ubicación</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
+    </form>}
+    {current && <form onSubmit={(event) => {
+      event.preventDefault()
+      setPasswordNotice('')
+      if (passwords.newPassword !== passwords.confirmPassword) {
+        setPasswordNotice('Las contraseñas no coinciden')
+        return
+      }
+      changePassword.mutate(passwords)
+    }} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+      <h2 className="mb-4 font-bold">Cambiar contraseña</h2>
+      <div className="grid gap-3">
+        <PasswordField placeholder="Contraseña actual" value={passwords.currentPassword} onChange={(event) => setPasswords({ ...passwords, currentPassword: event.target.value })} required />
+        <PasswordField minLength={8} placeholder="Nueva contraseña" value={passwords.newPassword} onChange={(event) => setPasswords({ ...passwords, newPassword: event.target.value })} required />
+        <PasswordField minLength={8} placeholder="Confirmar nueva contraseña" value={passwords.confirmPassword} onChange={(event) => setPasswords({ ...passwords, confirmPassword: event.target.value })} required />
+      </div>
+      {passwordNotice && <p className="mt-3 text-sm text-slate-300">{passwordNotice}</p>}
+      <button disabled={changePassword.isPending} className="mt-3 rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">
+        {changePassword.isPending ? 'Actualizando...' : 'Actualizar contraseña'}
+      </button>
     </form>}
   </QueryState>
 }

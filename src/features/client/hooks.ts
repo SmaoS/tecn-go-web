@@ -11,6 +11,14 @@ export function useClientRequests() {
   })
 }
 
+export function useClientRequestHistory() {
+  return useQuery({
+    queryKey: queryKeys.clientRequestHistory,
+    queryFn: clientApi.requestHistory,
+    refetchInterval: 10_000,
+  })
+}
+
 export function useClientQuotes(requestIds: string[]) {
   return useQuery({
     queryKey: queryKeys.requestQuotes(requestIds),
@@ -47,6 +55,7 @@ export function useClientRequestAction() {
     onSuccess: async () => {
       await Promise.all([
         client.invalidateQueries({ queryKey: queryKeys.clientRequests }),
+        client.invalidateQueries({ queryKey: queryKeys.clientRequestHistory }),
         client.invalidateQueries({ queryKey: queryKeys.payments }),
         client.invalidateQueries({ queryKey: ['service-quotes'] }),
         client.invalidateQueries({ queryKey: ['ratings'] }),

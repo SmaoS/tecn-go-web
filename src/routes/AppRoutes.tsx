@@ -16,8 +16,10 @@ import { ClientPaymentsPage } from '../features/client/pages/ClientPaymentsPage'
 import { ClientProfilePage } from '../features/client/pages/ClientProfilePage'
 import { ClientRequestsPage } from '../features/client/pages/ClientRequestsPage'
 import { CreateRequestPage } from '../features/client/pages/CreateRequestPage'
+import { ClientRequestHistoryPage } from '../features/client/pages/ClientRequestHistoryPage'
 import { TechnicianWorkspace } from '../features/technician/TechnicianWorkspace'
 import { AssignedServicesPage } from '../features/technician/pages/AssignedServicesPage'
+import { AssignedServiceHistoryPage } from '../features/technician/pages/AssignedServiceHistoryPage'
 import { AvailableRequestsPage } from '../features/technician/pages/AvailableRequestsPage'
 import { TechnicianEarningsPage } from '../features/technician/pages/TechnicianEarningsPage'
 import { TechnicianProfilePage } from '../features/technician/pages/TechnicianProfilePage'
@@ -25,7 +27,7 @@ import { TechnicianReferralsPage } from '../features/technician/pages/Technician
 import { AdminReferralsPage } from '../features/admin/pages/AdminReferralsPage'
 import { AdminAppVersionsPage } from '../features/admin/pages/AdminAppVersionsPage'
 import { VerifierDashboard } from '../features/verification/VerifierDashboard'
-import { LoginPage, RegisterPage } from '../pages/AuthPages'
+import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '../pages/AuthPages'
 import { HealthPage } from '../pages/HealthPage'
 import { LandingPage } from '../pages/LandingPage'
 import { VerifyEmailPage } from '../pages/VerifyEmailPage'
@@ -38,6 +40,8 @@ export function AppRoutes() {
       <Route path="login" element={<LoginPage />} />
       <Route path="registro/:kind" element={<RegisterPage />} />
       <Route path="register" element={<RegisterPage />} />
+      <Route path="forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route path="health" element={<HealthPage />} />
       <Route path="verificar-correo" element={<VerifyEmailPage />} />
       <Route path="privacy" element={<PublicLegalPage kind="privacy" />} />
@@ -53,6 +57,7 @@ export function AppRoutes() {
         <Route element={<RoleRoute role="CLIENT" />}><Route path="cliente" element={<ClientWorkspace />}>
           <Route index element={<Navigate to="solicitudes" replace />} />
           <Route path="solicitudes" element={<ClientRequestsPage />} />
+          <Route path="historial" element={<ClientRequestHistoryPage />} />
           <Route path="nueva" element={<CreateRequestPage />} />
           <Route path="pagos" element={<ClientPaymentsPage />} />
           <Route path="perfil" element={<ClientProfilePage />} />
@@ -61,6 +66,7 @@ export function AppRoutes() {
         <Route element={<RoleRoute role="TECHNICIAN" />}><Route path="tecnico" element={<TechnicianWorkspace />}>
           <Route index element={<Navigate to="disponibles" replace />} />
           <Route path="asignadas" element={<AssignedServicesPage />} />
+          <Route path="historial" element={<AssignedServiceHistoryPage />} />
           <Route path="disponibles" element={<AvailableRequestsPage />} />
           <Route path="ganancias" element={<TechnicianEarningsPage />} />
           <Route path="perfil" element={<TechnicianProfilePage />} />

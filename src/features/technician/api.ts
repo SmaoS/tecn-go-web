@@ -5,7 +5,8 @@ export const technicianApi = {
   sendEmailVerification: () => api.post('/v1/auth/send-email-verification'),
   categories: () => api.get<ServiceCategory[]>('/v1/service-categories').then(({ data }) => data),
   profile: () => api.get<TechnicianProfile>('/v1/technicians/me').then(({ data }) => data),
-  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned').then(({ data }) => data),
+  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned?activeOnly=true').then(({ data }) => data),
+  assignedHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned/history').then(({ data }) => data),
   available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
   earnings: () => api.get<FinancialSummary>('/v1/technicians/me/earnings').then(({ data }) => data),
   saveProfile: (profile: TechnicianProfile | null, payload: object) => profile
