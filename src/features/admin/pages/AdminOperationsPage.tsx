@@ -1,6 +1,6 @@
 import { useAuth } from '../../../context/useAuth'
 import { serviceSupportApi } from '../../service-support/api'
-import { useAllEvidences, useModerationQueue, useOperationsAction, usePendingProofs, useReports } from '../../service-support/hooks'
+import { useAllEvidences, useChatModerationQueue, useModerationQueue, useOperationsAction, usePendingProofs, useReports } from '../../service-support/hooks'
 import { api } from '../../../lib/api'
 
 export function AdminOperationsPage() {
@@ -9,8 +9,28 @@ export function AdminOperationsPage() {
   const reports = useReports()
   const evidences = useAllEvidences()
   const moderation = useModerationQueue()
+  const chatModeration = useChatModerationQueue()
   const action = useOperationsAction()
   return <section><h2 className="text-2xl font-bold">Operaciones y moderación</h2>
+    <h3 className="mb-3 mt-6 text-lg font-bold">Mensajes reportados o bloqueados</h3>
+    <div className="space-y-3">{chatModeration.data?.map((item) =>
+      <article key={item.id} className="rounded-xl border border-slate-800 p-4">
+        <strong>{item.senderName} · solicitud {item.serviceRequestId.slice(0, 8)}</strong>
+        <p className="mt-2 whitespace-pre-wrap text-sm">{item.message}</p>
+        <p className="mt-2 text-xs text-slate-400">{item.moderationStatus} · reportes abiertos: {item.openReports}</p>
+        {item.moderationReason && <p className="text-xs text-amber-300">{item.moderationReason}</p>}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button onClick={() => action.mutate(() => serviceSupportApi.moderateChat(item.id, 'approve', 'Aprobado por revisión manual'))} className="rounded bg-emerald-500 px-3 py-2 text-slate-950">Aprobar mensaje</button>
+          <button onClick={() => {
+            const reason = window.prompt('Motivo del bloqueo')
+            if (reason) action.mutate(() => serviceSupportApi.moderateChat(item.id, 'block', reason))
+          }} className="rounded border border-red-500 px-3 py-2 text-red-300">Bloquear mensaje</button>
+          {session?.role === 'ADMIN' && <button onClick={() => {
+            const reason = window.prompt('Motivo de la sanción al usuario')
+            if (reason) action.mutate(() => serviceSupportApi.moderateChat(item.id, 'sanction', reason))
+          }} className="rounded bg-red-600 px-3 py-2 font-bold text-white">Sancionar usuario</button>}
+        </div>
+      </article>)}</div>
     <h3 className="mb-3 mt-6 text-lg font-bold">Contenido reportado o pendiente</h3>
     <div className="space-y-3">{moderation.data?.filter((item) =>
       item.moderationStatus !== 'APPROVED' || item.openReports > 0).map((item) =>

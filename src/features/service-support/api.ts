@@ -1,5 +1,5 @@
 import { api } from '../../lib/api'
-import type { ContentAsset, EvidenceType, PaymentProof, ProofMethod, ServiceEvidence, UserReport } from './types'
+import type { ContentAsset, EvidenceType, ModeratedChatMessage, PaymentProof, ProofMethod, ServiceEvidence, UserReport } from './types'
 
 export const serviceSupportApi = {
   evidences: (requestId: string) => api.get<ServiceEvidence[]>(`/v1/service-requests/${requestId}/evidences`).then(({ data }) => data),
@@ -34,4 +34,8 @@ export const serviceSupportApi = {
   moderationQueue: () => api.get<ContentAsset[]>('/v1/admin/content-moderation').then(({ data }) => data),
   moderate: (id: string, approved: boolean, reason = '') =>
     api.put(`/v1/admin/content-moderation/${id}/${approved ? 'approve' : 'reject'}`, { reason }),
+  chatModerationQueue: () =>
+    api.get<ModeratedChatMessage[]>('/v1/admin/chat-moderation/messages').then(({ data }) => data),
+  moderateChat: (id: string, action: 'approve' | 'block' | 'sanction', reason: string) =>
+    api.put(`/v1/admin/chat-moderation/messages/${id}/${action}`, { reason }),
 }

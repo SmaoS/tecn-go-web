@@ -53,3 +53,16 @@ export interface UserReport {
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
   resolutionComment?: string
 }
+
+export interface ModeratedChatMessage {
+  id: string
+  serviceRequestId: string
+  senderId: string
+  senderName: string
+  message: string
+  moderationStatus: 'PENDING' | 'APPROVED' | 'FLAGGED' | 'BLOCKED'
+  moderationReason?: string
+  openReports: number
+  createdAt: string
+  moderatedAt?: string
+}

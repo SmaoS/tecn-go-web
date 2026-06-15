@@ -19,3 +19,12 @@ export function useSendMessage(requestId: string) {
     onSuccess: () => client.invalidateQueries({ queryKey: chatKey(requestId) }),
   })
 }
+
+export function useReportMessage(requestId: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ messageId, reason }: { messageId: string; reason: string }) =>
+      chatApi.report(messageId, reason),
+    onSuccess: () => client.invalidateQueries({ queryKey: chatKey(requestId) }),
+  })
+}

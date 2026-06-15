@@ -87,6 +87,8 @@ export interface ChatMessage {
   senderId: string
   senderName: string
   message: string
+  moderationStatus: 'PENDING' | 'APPROVED' | 'FLAGGED' | 'BLOCKED'
+  moderationReason?: string
   createdAt: string
   readAt?: string
 }
@@ -98,7 +100,7 @@ export interface UserNotification {
   type: 'NEW_REQUEST' | 'NEW_QUOTE' | 'QUOTE_ACCEPTED' | 'REQUEST_ACCEPTED'
     | 'TECHNICIAN_ON_THE_WAY' | 'TECHNICIAN_ARRIVED' | 'SERVICE_STARTED'
     | 'SERVICE_COMPLETED' | 'NEW_CHAT_MESSAGE' | 'NEW_RATING' | 'SERVICE_STATUS_CHANGED'
-    | 'LEGAL_ACCEPTANCE_REQUIRED'
+    | 'LEGAL_ACCEPTANCE_REQUIRED' | 'CONTENT_MODERATION_ALERT' | 'CHAT_MODERATION_ALERT'
   read: boolean
   createdAt: string
   route?: string
