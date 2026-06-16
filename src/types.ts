@@ -172,6 +172,8 @@ export interface UserProfile {
   documentFrontUrl?: string
   documentBackUrl?: string
   documentSingleUrl?: string
+  faceDetectionStatus?: 'AUTO_VALIDATED' | 'MANUAL_REVIEW_REQUIRED' | 'FAILED'
+  identityDocumentCaptureStatus?: 'AUTO_CAPTURED' | 'MANUAL_CAPTURED' | 'MANUAL_REVIEW_REQUIRED'
   certificatePhotoUrl?: string
   workExperienceDescription?: string
   averageRating: number

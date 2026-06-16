@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { roleHome } from '../../routes/paths'
 import { useAuth } from '../../context/useAuth'
@@ -16,7 +16,7 @@ const stepLabels: Record<string, string> = {
   PROFILE_SELFIE: 'Foto de perfil',
   IDENTITY_DOCUMENT: 'Documento de identidad',
   TECHNICIAN_CERTIFICATE: 'Certificado técnico',
-  COMPLETED: 'Finalizar',
+  COMPLETED: 'Inscripción lista',
 }
 
 export function OnboardingRequiredPage() {
@@ -38,14 +38,14 @@ export function OnboardingRequiredPage() {
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
   const certificateMutation = useMutation({ mutationFn: onboardingApi.certificate, onSuccess: refresh })
   const skipCertificate = useMutation({ mutationFn: onboardingApi.skipCertificate, onSuccess: refresh })
-  const complete = useMutation({
-    mutationFn: onboardingApi.complete,
-    onSuccess: () => session && navigate(roleHome[session.role]),
-  })
   const pending = mainMutation.isPending || legalMutation.isPending || selfieMutation.isPending
-    || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending || complete.isPending
+    || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending
   const error = mainMutation.error || legalMutation.error || selfieMutation.error || documentMutation.error
-    || certificateMutation.error || skipCertificate.error || complete.error
+    || certificateMutation.error || skipCertificate.error
+
+  useEffect(() => {
+    if (status.data?.onboardingCompleted && session) navigate(roleHome[session.role])
+  }, [navigate, session, status.data?.onboardingCompleted])
 
   async function upload(event: ChangeEvent<HTMLInputElement>, kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE', setUrl: (url: string) => void) {
     const file = event.target.files?.[0]
@@ -83,17 +83,17 @@ export function OnboardingRequiredPage() {
     {status.data?.currentStep === 'PROFILE_SELFIE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Carga una foto clara de tu rostro. Después quedará bloqueada para cambios desde tu perfil.</p>
       <input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => void upload(event, 'PROFILE', setProfilePhotoUrl)} />
-      {profilePhotoUrl && <button disabled={pending} onClick={() => selfieMutation.mutate(profilePhotoUrl)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar selfie</button>}
+      {profilePhotoUrl && <button disabled={pending} onClick={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar selfie</button>}
     </div>}
     {status.data?.currentStep === 'IDENTITY_DOCUMENT' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">{main.documentType === 'CC' ? 'Carga frente y reverso de tu cédula.' : 'Carga la página principal del pasaporte.'}</p>
       {main.documentType === 'CC' ? <>
         <label className="block text-sm">Frente<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setFrontUrl)} /></label>
         <label className="block text-sm">Reverso<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setBackUrl)} /></label>
-        <button disabled={pending || !frontUrl || !backUrl} onClick={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
+        <button disabled={pending || !frontUrl || !backUrl} onClick={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
       </> : <>
         <label className="block text-sm">Pasaporte<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setSingleUrl)} /></label>
-        <button disabled={pending || !singleUrl} onClick={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
+        <button disabled={pending || !singleUrl} onClick={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
       </>}
     </div>}
     {status.data?.currentStep === 'TECHNICIAN_CERTIFICATE' && <div className="mt-5 space-y-4">
@@ -102,10 +102,7 @@ export function OnboardingRequiredPage() {
       <button disabled={pending || !certificateUrl} onClick={() => certificateMutation.mutate(certificateUrl)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar certificado</button>
       <button disabled={pending} onClick={() => skipCertificate.mutate()} className="rounded-xl border border-slate-700 px-5 py-3">No tengo certificado ahora</button>
     </div>}
-    {status.data?.currentStep === 'COMPLETED' && <div className="mt-5 space-y-4">
-      <p className="text-slate-300">Tu inscripción está lista. Finaliza para empezar a operar en TecnGo.</p>
-      <button disabled={pending} onClick={() => complete.mutate()} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Finalizar inscripción</button>
-    </div>}
+    {status.data?.currentStep === 'COMPLETED' && <p className="mt-5 text-slate-300">Tu inscripción está lista. Te estamos llevando al inicio.</p>}
     {error && <p className="mt-4 text-sm text-red-400">{apiMessage(error)}</p>}
   </section>
 }
