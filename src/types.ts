@@ -167,6 +167,11 @@ export interface UserProfile {
   role: Role
   profilePhotoUrl?: string
   documentPhotoUrl?: string
+  documentType?: 'CC' | 'PASSPORT'
+  documentNumber?: string
+  documentFrontUrl?: string
+  documentBackUrl?: string
+  documentSingleUrl?: string
   certificatePhotoUrl?: string
   workExperienceDescription?: string
   averageRating: number
