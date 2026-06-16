@@ -17,6 +17,9 @@ export const useAdminParameters = () => useQuery({
 export const useAdminLocations = () => useQuery({
   queryKey: queryKeys.adminLocations, queryFn: adminApi.locations, refetchInterval: 10_000,
 })
+export const useAdminTechnicianWallets = () => useQuery({
+  queryKey: queryKeys.adminTechnicianWallets, queryFn: adminApi.technicianWallets, refetchInterval: 10_000,
+})
 export const usePendingTechnicians = () => useQuery({
   queryKey: queryKeys.adminPendingTechnicians, queryFn: adminApi.pendingTechnicians, refetchInterval: 10_000,
 })

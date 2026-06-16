@@ -7,6 +7,7 @@ const links = [
   { to: workflowPaths.admin.pendingVerifications, label: 'Pendientes por Verificación' },
   { to: workflowPaths.admin.categories, label: 'Categorías' },
   { to: workflowPaths.admin.finances, label: 'Finanzas' },
+  { to: workflowPaths.admin.technicianWallets, label: 'Saldos técnicos' },
   { to: workflowPaths.admin.settings, label: 'Configuración' },
   { to: workflowPaths.admin.operations, label: 'Pagos y denuncias' },
   { to: workflowPaths.admin.users, label: 'Usuarios inactivos' },

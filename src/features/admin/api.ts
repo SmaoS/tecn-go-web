@@ -4,6 +4,8 @@ import type {
   FinancialSummary,
   ServiceCategory,
   SystemParameter,
+  TechnicianWallet,
+  TechnicianWalletTransaction,
   TechnicianLocation,
   TechnicianProfile,
   ReferralCode,
@@ -19,6 +21,9 @@ export const adminApi = {
   summary: () => api.get<AdminDashboardSummary>('/v1/admin/dashboard').then(({ data }) => data),
   parameters: () => api.get<SystemParameter[]>('/v1/admin/system-parameters').then(({ data }) => data),
   locations: () => api.get<TechnicianLocation[]>('/v1/admin/technicians/locations').then(({ data }) => data),
+  technicianWallets: () => api.get<TechnicianWallet[]>('/v1/admin/technicians/wallets').then(({ data }) => data),
+  adjustTechnicianWallet: (id: string, amount: number, comment: string) =>
+    api.post<TechnicianWalletTransaction>(`/v1/admin/technicians/${id}/wallet/adjustment`, { amount, comment }).then(({ data }) => data),
   reviewTechnician: (id: string, decision: 'approve' | 'reject') => api.put(`/v1/admin/technicians/${id}/${decision}`),
   createCategory: (value: { name: string; description: string; active: boolean }) =>
     api.post('/v1/admin/service-categories', value),

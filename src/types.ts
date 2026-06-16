@@ -313,3 +313,42 @@ export interface FinancialSummary {
   paymentCount: number
   payments: Payment[]
 }
+
+export interface TechnicianWallet {
+  walletId?: string
+  technicianId: string
+  technicianName: string
+  technicianEmail: string
+  technicianPhone?: string
+  balance: number
+  currency: string
+  rechargeEnabled: boolean
+  lowBalance: boolean
+  blocked: boolean
+  lowBalanceMinimum: number
+  minRechargeAmount: number
+  maxRechargeAmount: number
+  totalApprovedRecharges: number
+  totalCommissionDebits: number
+  completedServicesCount: number
+  updatedAt?: string
+}
+
+export interface TechnicianWalletTransaction {
+  id: string
+  type: 'RECHARGE_PENDING' | 'RECHARGE_APPROVED' | 'RECHARGE_REJECTED' | 'COMMISSION_DEBIT' | 'COMMISSION_REFUND' | 'ADMIN_ADJUSTMENT'
+  amount: number
+  balanceBefore: number
+  balanceAfter: number
+  reference?: string
+  description?: string
+  createdAt: string
+}
+
+export interface RechargeResponse {
+  rechargeId: string
+  paymentUrl: string
+  reference: string
+  amount: number
+  currency: string
+}

@@ -23,10 +23,12 @@ import { AssignedServicesPage } from '../features/technician/pages/AssignedServi
 import { AssignedServiceHistoryPage } from '../features/technician/pages/AssignedServiceHistoryPage'
 import { AvailableRequestsPage } from '../features/technician/pages/AvailableRequestsPage'
 import { TechnicianEarningsPage } from '../features/technician/pages/TechnicianEarningsPage'
+import { TechnicianWalletPage } from '../features/technician/pages/TechnicianWalletPage'
 import { TechnicianProfilePage } from '../features/technician/pages/TechnicianProfilePage'
 import { TechnicianReferralsPage } from '../features/technician/pages/TechnicianReferralsPage'
 import { AdminReferralsPage } from '../features/admin/pages/AdminReferralsPage'
 import { AdminAppVersionsPage } from '../features/admin/pages/AdminAppVersionsPage'
+import { AdminTechnicianWalletsPage } from '../features/admin/pages/AdminTechnicianWalletsPage'
 import { VerifierDashboard } from '../features/verification/VerifierDashboard'
 import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '../pages/AuthPages'
 import { HealthPage } from '../pages/HealthPage'
@@ -74,6 +76,7 @@ export function AppRoutes() {
           <Route path="historial" element={<AssignedServiceHistoryPage />} />
           <Route path="disponibles" element={<AvailableRequestsPage />} />
           <Route path="ganancias" element={<TechnicianEarningsPage />} />
+          <Route path="saldo" element={<TechnicianWalletPage />} />
           <Route path="perfil" element={<TechnicianProfilePage />} />
           <Route path="referidos" element={<TechnicianReferralsPage />} />
           <Route path="legal" element={<LegalPage />} />
@@ -86,6 +89,7 @@ export function AppRoutes() {
           <Route path="pendientes-verificacion" element={<AdminPendingVerificationPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="finanzas" element={<AdminFinancesPage />} />
+          <Route path="saldos-tecnicos" element={<AdminTechnicianWalletsPage />} />
           <Route path="configuracion" element={<AdminSettingsPage />} />
           <Route path="operaciones" element={<AdminOperationsPage />} />
           <Route path="usuarios" element={<AdminUsersPage />} />

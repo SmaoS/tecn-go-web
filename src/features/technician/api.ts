@@ -1,5 +1,5 @@
 import { api } from '../../lib/api'
-import type { FinancialSummary, ReferralCode, ReferralRegistration, ReferralReward, ServiceCategory, ServiceRequest, TechnicianProfile } from '../../types'
+import type { FinancialSummary, RechargeResponse, ReferralCode, ReferralRegistration, ReferralReward, ServiceCategory, ServiceRequest, TechnicianProfile, TechnicianWallet, TechnicianWalletTransaction } from '../../types'
 
 export const technicianApi = {
   sendEmailVerification: () => api.post('/v1/auth/send-email-verification'),
@@ -9,6 +9,9 @@ export const technicianApi = {
   assignedHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned/history').then(({ data }) => data),
   available: (radiusKm: string) => api.get<ServiceRequest[]>(`/v1/service-requests/available?radiusKm=${radiusKm}`).then(({ data }) => data),
   earnings: () => api.get<FinancialSummary>('/v1/technicians/me/earnings').then(({ data }) => data),
+  wallet: () => api.get<TechnicianWallet>('/v1/technicians/me/wallet').then(({ data }) => data),
+  walletTransactions: () => api.get<TechnicianWalletTransaction[]>('/v1/technicians/me/wallet/transactions').then(({ data }) => data),
+  rechargeWallet: (amount: number) => api.post<RechargeResponse>('/v1/technicians/me/wallet/recharge', { amount }).then(({ data }) => data),
   saveProfile: (profile: TechnicianProfile | null, payload: object) => profile
     ? api.put('/v1/technicians/me', payload)
     : api.post('/v1/technicians/profile', payload),

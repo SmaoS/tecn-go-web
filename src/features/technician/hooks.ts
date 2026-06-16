@@ -39,6 +39,24 @@ export function useTechnicianEarnings() {
   return useQuery({ queryKey: queryKeys.earnings, queryFn: technicianApi.earnings })
 }
 
+export function useTechnicianWallet() {
+  const wallet = useQuery({ queryKey: queryKeys.technicianWallet, queryFn: technicianApi.wallet, refetchInterval: 10_000 })
+  const transactions = useQuery({ queryKey: queryKeys.technicianWalletTransactions, queryFn: technicianApi.walletTransactions, refetchInterval: 10_000 })
+  return { wallet, transactions }
+}
+
+export function useRechargeWallet() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: technicianApi.rechargeWallet,
+    onSuccess: async (response) => {
+      window.open(response.paymentUrl, '_blank', 'noopener,noreferrer')
+      await client.invalidateQueries({ queryKey: queryKeys.technicianWallet })
+      await client.invalidateQueries({ queryKey: queryKeys.technicianWalletTransactions })
+    },
+  })
+}
+
 export function useTechnicianReferrals() {
   const code = useQuery({ queryKey: ['referrals', 'code'], queryFn: technicianApi.referralCode })
   const referrals = useQuery({ queryKey: ['referrals', 'registrations'], queryFn: technicianApi.referrals })
