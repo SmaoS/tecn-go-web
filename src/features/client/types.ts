@@ -5,7 +5,10 @@ export interface ClientRequestForm {
   latitude: string
   longitude: string
   estimatedPrice: string
+  paymentMethod: PaymentMethod
 }
+
+export type PaymentMethod = 'CASH' | 'BREB' | 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | 'DAVIVIENDA'
 
 export interface RatingDraft {
   score: number

@@ -7,9 +7,10 @@ import { clientApi } from '../api'
 import { useServiceCategories } from '../hooks'
 import type { ClientRequestForm } from '../types'
 import { useProfile } from '../../profile/hooks'
+import { paymentMethodLabels, requestPaymentMethods } from '../../payments/paymentMethods'
 
 const emptyForm: ClientRequestForm = {
-  categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '',
+  categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', paymentMethod: 'CASH',
 }
 
 export function CreateRequestPage() {
@@ -30,6 +31,7 @@ export function CreateRequestPage() {
         latitude: Number(form.latitude),
         longitude: Number(form.longitude),
         estimatedPrice: form.estimatedPrice ? Number(form.estimatedPrice) : null,
+        paymentMethod: form.paymentMethod,
       })
       for (const image of images) await clientApi.uploadImage(request.id, image)
     },
@@ -69,6 +71,11 @@ export function CreateRequestPage() {
         <input placeholder="Dirección del servicio" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} required />
         <button type="button" onClick={currentLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">{form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'}</button>
         <input type="number" min="0" step="1000" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChange={(event) => setForm({ ...form, estimatedPrice: event.target.value })} />
+        <label className="block text-sm text-slate-300">¿Por dónde vas a pagar?
+          <select value={form.paymentMethod} onChange={(event) => setForm({ ...form, paymentMethod: event.target.value as ClientRequestForm['paymentMethod'] })} required>
+            {requestPaymentMethods.map((method) => <option key={method} value={method}>{paymentMethodLabels[method]}</option>)}
+          </select>
+        </label>
         <label className="block text-sm text-slate-300">Imágenes del problema (opcional, máximo 5)<input type="file" accept=".jpg,.jpeg,.png,.webp" multiple onChange={(event) => setImages(Array.from(event.target.files ?? []).slice(0, 5))} /></label>
         {images.length > 0 && <div className="grid grid-cols-3 gap-2">{images.map((file) => <img key={`${file.name}-${file.lastModified}`} src={URL.createObjectURL(file)} alt="" className="h-24 w-full rounded-lg object-cover" />)}</div>}
         {notice && <p className="text-sm text-emerald-400">{notice}</p>}

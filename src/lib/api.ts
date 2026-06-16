@@ -55,6 +55,14 @@ api.interceptors.response.use(
       localStorage.removeItem('tecngo.session')
       if (window.location.pathname !== '/login') window.location.assign('/login')
     }
+    if (error.response?.status === 403 && error.response.data?.code === 'EMAIL_NOT_VERIFIED'
+      && window.location.pathname !== '/app/confirmar-correo') {
+      window.location.assign('/app/confirmar-correo')
+    }
+    if (error.response?.status === 403 && error.response.data?.code === 'ONBOARDING_REQUIRED'
+      && window.location.pathname !== '/app/onboarding') {
+      window.location.assign('/app/onboarding')
+    }
     return Promise.reject(error)
   },
 )

@@ -33,6 +33,8 @@ import { HealthPage } from '../pages/HealthPage'
 import { LandingPage } from '../pages/LandingPage'
 import { VerifyEmailPage } from '../pages/VerifyEmailPage'
 import { PublicLegalPage } from '../features/legal/PublicLegalPage'
+import { EmailConfirmationRequiredPage } from '../features/onboarding/EmailConfirmationRequiredPage'
+import { OnboardingRequiredPage } from '../features/onboarding/OnboardingRequiredPage'
 
 export function AppRoutes() {
   return <Routes>
@@ -55,6 +57,8 @@ export function AppRoutes() {
       <Route path="accesibilidad" element={<Navigate to="/accessibility" replace />} />
       <Route path="app" element={<ProtectedRoute />}>
         <Route index element={<RoleRouter />} />
+        <Route path="confirmar-correo" element={<EmailConfirmationRequiredPage />} />
+        <Route path="onboarding" element={<OnboardingRequiredPage />} />
         <Route element={<RoleRoute role="CLIENT" />}><Route path="cliente" element={<ClientWorkspace />}>
           <Route index element={<Navigate to="solicitudes" replace />} />
           <Route path="solicitudes" element={<ClientRequestsPage />} />

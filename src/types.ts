@@ -50,6 +50,7 @@ export interface ServiceRequest {
   estimatedPrice?: number
   technicianPrice?: number
   finalPrice?: number
+  requestedPaymentMethod: 'CASH' | 'BREB' | 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMBIA' | 'DAVIVIENDA' | 'WOMPI' | 'MERCADO_PAGO' | 'PAYU'
   status: RequestStatus
   createdAt: string
   serviceImagesCount: number
@@ -86,7 +87,7 @@ export interface ServiceQuote {
   respondedAt?: string
 }
 
-export type RequestStatus = 'QUOTE_PENDING' | 'QUOTED' | 'QUOTE_ACCEPTED' | 'ON_THE_WAY' | 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAID' | 'CANCELLED'
+export type RequestStatus = 'QUOTE_PENDING' | 'QUOTED' | 'QUOTE_ACCEPTED' | 'ON_THE_WAY' | 'ARRIVED' | 'IN_PROGRESS' | 'COMPLETED' | 'PAID' | 'PAYMENT_DISPUTE' | 'CANCELLED'
 export type TechnicianStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'BLOCKED'
 
 export interface ChatMessage {
