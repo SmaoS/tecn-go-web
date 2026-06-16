@@ -5,9 +5,6 @@ export interface ClientRequestForm {
   latitude: string
   longitude: string
   estimatedPrice: string
-  countryId: string
-  departmentId: string
-  cityId: string
 }
 
 export interface RatingDraft {
