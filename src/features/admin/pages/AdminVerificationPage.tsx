@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { queryKeys } from '../../../lib/queryClient'
 import { VerificationBadge } from '../../profile/components'
 import { QueryState } from '../../shared/components/QueryState'
-import { VerificationQueue, VerifierManager } from '../../verification/components'
+import { VerifierManager } from '../../verification/components'
 import { adminApi } from '../api'
 import { usePendingTechnicians } from '../hooks'
 
@@ -22,7 +22,7 @@ export function AdminVerificationPage() {
     catch { setError('No fue posible abrir la evidencia.') }
   }
   return <section><h2 className="mb-4 text-2xl font-bold">Verificaciones</h2>
-    <VerifierManager /><VerificationQueue />
+    <VerifierManager />
     <h3 className="mb-4 text-xl font-bold">Técnicos pendientes ({pending.data?.length ?? 0})</h3>
     {(error || review.error) && <p className="mb-4 text-red-300">{error || 'No fue posible revisar el técnico.'}</p>}
     <QueryState pending={pending.isPending} error={pending.error} empty={pending.data?.length === 0}>

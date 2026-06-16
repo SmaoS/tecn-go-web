@@ -28,6 +28,7 @@ export const workflowPaths = {
   admin: {
     overview: '/app/admin/resumen',
     verifications: '/app/admin/verificaciones',
+    pendingVerifications: '/app/admin/pendientes-verificacion',
     categories: '/app/admin/categorias',
     finances: '/app/admin/finanzas',
     settings: '/app/admin/configuracion',

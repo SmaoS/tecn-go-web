@@ -16,6 +16,9 @@ export const verificationApi = {
     homeNeighborhood: string
     homeLatitude: number | null
     homeLongitude: number | null
+    countryId?: string
+    departmentId?: string
+    cityId?: string
   }) => api.post('/v1/admin/verifiers', value),
   evidence: (url: string) => api.get(url, { responseType: 'blob' }).then(({ data }) => data),
 }

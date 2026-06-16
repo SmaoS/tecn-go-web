@@ -5,4 +5,7 @@ export interface VerifierForm {
   homeAddress: string
   homeCity: string
   homeNeighborhood: string
+  countryId: string
+  departmentId: string
+  cityId: string
 }

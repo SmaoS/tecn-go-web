@@ -7,6 +7,7 @@ import { AdminFinancesPage } from '../features/admin/pages/AdminFinancesPage'
 import { AdminOverviewPage } from '../features/admin/pages/AdminOverviewPage'
 import { AdminSettingsPage } from '../features/admin/pages/AdminSettingsPage'
 import { AdminVerificationPage } from '../features/admin/pages/AdminVerificationPage'
+import { AdminPendingVerificationPage } from '../features/admin/pages/AdminPendingVerificationPage'
 import { AdminOperationsPage } from '../features/admin/pages/AdminOperationsPage'
 import { AdminUsersPage } from '../features/admin/pages/AdminUsersPage'
 import { AdminLegalPage } from '../features/admin/pages/AdminLegalPage'
@@ -78,6 +79,7 @@ export function AppRoutes() {
           <Route index element={<Navigate to="resumen" replace />} />
           <Route path="resumen" element={<AdminOverviewPage />} />
           <Route path="verificaciones" element={<AdminVerificationPage />} />
+          <Route path="pendientes-verificacion" element={<AdminPendingVerificationPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="finanzas" element={<AdminFinancesPage />} />
           <Route path="configuracion" element={<AdminSettingsPage />} />

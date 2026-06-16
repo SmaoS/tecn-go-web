@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
+import { PrivateImage } from '../../components/PrivateImage'
 import { queryKeys } from '../../lib/queryClient'
+import { GeographicFields } from '../catalogs/GeographicFields'
 import { apiMessage } from '../shared/api'
 import { QueryState } from '../shared/components/QueryState'
 import { verificationApi } from './api'
@@ -10,6 +12,7 @@ import type { VerifierForm } from './types'
 export function VerificationQueue() {
   const client = useQueryClient()
   const [error, setError] = useState('')
+  const [large, setLarge] = useState<{ url: string; title: string } | null>(null)
   const items = usePendingVerifications()
   const review = useMutation({
     mutationFn: ({ id, decision }: { id: string; decision: 'verify' | 'reject' | 'photo' }) =>
@@ -32,16 +35,41 @@ export function VerificationQueue() {
       {items.data?.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div className="flex items-start justify-between gap-3"><div><h3 className="font-bold">{item.fullName}</h3><p className="text-sm text-slate-400">{item.email}</p></div><span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">{item.role}</span></div>
         {item.workExperienceDescription && <p className="mt-3 text-sm text-slate-400">{item.workExperienceDescription}</p>}
-        <div className="mt-4 flex flex-wrap gap-2"><button onClick={() => void openEvidence(item.documentPhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver documento</button>{item.certificatePhotoUrl && <button onClick={() => void openEvidence(item.certificatePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver certificado</button>}{item.profilePhotoUrl && <><button onClick={() => void openEvidence(item.profilePhotoUrl)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Ver foto perfil</button><button onClick={() => review.mutate({ id: item.id, decision: 'photo' })} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Validar rostro visible</button></>}</div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <EvidenceThumb title="Documento" url={item.documentPhotoUrl} onOpen={openEvidence} onLarge={(url) => setLarge({ url, title: 'Documento' })} />
+          {item.certificatePhotoUrl && <EvidenceThumb title="Certificado" url={item.certificatePhotoUrl} onOpen={openEvidence} onLarge={(url) => setLarge({ url, title: 'Certificado' })} />}
+          {item.profilePhotoUrl && <EvidenceThumb title="Foto de perfil" url={item.profilePhotoUrl} onOpen={openEvidence} onLarge={(url) => setLarge({ url, title: 'Foto de perfil' })} />}
+        </div>
+        {item.profilePhotoUrl && <button onClick={() => review.mutate({ id: item.id, decision: 'photo' })} className="mt-3 rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Validar rostro visible</button>}
         <div className="mt-4 flex gap-2"><button onClick={() => review.mutate({ id: item.id, decision: 'verify' })} className="rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950">Marcar verificado</button><button onClick={() => review.mutate({ id: item.id, decision: 'reject' })} className="rounded-lg border border-red-500 px-4 py-2 text-red-300">Rechazar</button></div>
       </article>)}
     </div></QueryState>
+    {large && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4" onClick={() => setLarge(null)}>
+      <div className="max-h-[90vh] max-w-4xl rounded-2xl border border-slate-700 bg-slate-900 p-4" onClick={(event) => event.stopPropagation()}>
+        <div className="mb-3 flex items-center justify-between"><strong>{large.title}</strong><button onClick={() => setLarge(null)} className="text-sm text-brand-300">Cerrar</button></div>
+        <PrivateImage src={large.url} alt={large.title} className="max-h-[75vh] max-w-full rounded-xl object-contain" />
+      </div>
+    </div>}
   </section>
+}
+
+function EvidenceThumb({ title, url, onOpen, onLarge }: {
+  title: string
+  url: string
+  onOpen: (url?: string) => Promise<void>
+  onLarge: (url: string) => void
+}) {
+  return <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3">
+    <button type="button" onClick={() => onLarge(url)} className="block w-full overflow-hidden rounded-lg border border-slate-800 bg-slate-950">
+      <PrivateImage src={url} alt={title} className="h-28 w-full object-cover" />
+    </button>
+    <div className="mt-2 flex items-center justify-between gap-2"><span className="text-sm font-bold">{title}</span><button type="button" onClick={() => void onOpen(url)} className="text-xs text-brand-300">Abrir</button></div>
+  </div>
 }
 
 const emptyVerifier: VerifierForm = {
   fullName: '', email: '', password: '', homeAddress: '', homeCity: '',
-  homeNeighborhood: '',
+  homeNeighborhood: '', countryId: '', departmentId: '', cityId: '',
 }
 
 export function VerifierManager() {
@@ -54,6 +82,9 @@ export function VerifierManager() {
       ...form,
       homeLatitude: null,
       homeLongitude: null,
+      countryId: form.countryId || undefined,
+      departmentId: form.departmentId || undefined,
+      cityId: form.cityId || undefined,
     }),
     onSuccess: async () => {
       setForm(emptyVerifier)
@@ -68,7 +99,9 @@ export function VerifierManager() {
   }
 
   return <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5"><h2 className="text-xl font-bold">Verificadores</h2><p className="mt-1 text-sm text-slate-400">Estas cuentas solo pueden ser creadas por un administrador.</p>
-    <form onSubmit={submit} className="mt-4 grid gap-3 md:grid-cols-3"><input placeholder="Nombre completo" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required /><input type="email" placeholder="Correo" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required /><input type="password" minLength={8} placeholder="Contraseña temporal" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required /><input placeholder="Dirección domicilio" value={form.homeAddress} onChange={(event) => setForm({ ...form, homeAddress: event.target.value })} /><input placeholder="Ciudad" value={form.homeCity} onChange={(event) => setForm({ ...form, homeCity: event.target.value })} /><input placeholder="Barrio" value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /><button className="rounded-lg bg-brand-500 px-4 py-2 font-bold text-slate-950">Crear verificador</button></form>
+    <form onSubmit={submit} className="mt-4 grid gap-3 md:grid-cols-3"><input placeholder="Nombre completo" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required /><input type="email" placeholder="Correo" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required /><input type="password" minLength={8} placeholder="Contraseña temporal" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required />
+      <GeographicFields countryId={form.countryId} departmentId={form.departmentId} cityId={form.cityId} onChange={(values) => setForm({ ...form, countryId: values.countryId ?? '', departmentId: values.departmentId ?? '', cityId: values.cityId ?? '', homeCity: values.cityName ?? '' })} />
+      <input placeholder="Dirección domicilio" value={form.homeAddress} onChange={(event) => setForm({ ...form, homeAddress: event.target.value })} /><input placeholder="Barrio" value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /><button className="rounded-lg bg-brand-500 px-4 py-2 font-bold text-slate-950">Crear verificador</button></form>
     {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
     <QueryState pending={items.isPending} error={items.error}><div className="mt-4 flex flex-wrap gap-2">{items.data?.map((item) => <span key={item.id} className="rounded-full border border-slate-700 px-3 py-2 text-sm">{item.fullName} · {item.email}</span>)}</div></QueryState>
   </section>

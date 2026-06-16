@@ -3,6 +3,22 @@ import { serviceSupportApi } from '../../service-support/api'
 import { useAllEvidences, useChatModerationQueue, useModerationQueue, useOperationsAction, usePendingProofs, useReports } from '../../service-support/hooks'
 import { api } from '../../../lib/api'
 
+const contentKindLabels: Record<string, string> = {
+  PROFILE: 'Foto de perfil',
+  DOCUMENT: 'Documento',
+  CERTIFICATE: 'Certificado',
+  SERVICE_REQUEST_IMAGE: 'Imagen de solicitud',
+  SERVICE_EVIDENCE: 'Evidencia del servicio',
+  PAYMENT_PROOF: 'Comprobante de pago',
+}
+
+const moderationStatusLabels: Record<string, string> = {
+  PENDING_REVIEW: 'Pendiente de revisión',
+  APPROVED: 'Aprobado',
+  REJECTED: 'Rechazado',
+  FLAGGED: 'Marcado para revisión',
+}
+
 export function AdminOperationsPage() {
   const { session } = useAuth()
   const proofs = usePendingProofs()
@@ -38,8 +54,8 @@ export function AdminOperationsPage() {
         <button onClick={async () => {
           const blob = await api.get(item.fileUrl, { responseType: 'blob' }).then(({ data }) => data)
           window.open(URL.createObjectURL(blob), '_blank', 'noopener,noreferrer')
-        }} className="font-bold text-brand-300">{item.kind} · {item.uploadedByName}</button>
-        <p className="text-sm text-slate-400">{item.moderationStatus} · reportes abiertos: {item.openReports}</p>
+        }} className="font-bold text-brand-300">{contentKindLabels[item.kind] ?? item.kind} · {item.uploadedByName}</button>
+        <p className="text-sm text-slate-400">{moderationStatusLabels[item.moderationStatus] ?? item.moderationStatus} · reportes abiertos: {item.openReports}</p>
         {item.moderationReason && <p className="text-sm text-slate-500">{item.moderationReason}</p>}
         <div className="mt-3 flex flex-wrap gap-2">
           <button onClick={() => action.mutate(() => serviceSupportApi.moderate(item.id, true, 'Aprobado por revisión manual'))} className="rounded bg-emerald-500 px-3 py-2 text-slate-950">Aprobar</button>
