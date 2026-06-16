@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { queryKeys } from '../../lib/queryClient'
 import { QueryState } from '../shared/components/QueryState'
-import { useNotifications, useReadNotification, useUnreadNotifications } from './hooks'
+import { useDeleteNotification, useNotifications, useReadNotification, useUnreadNotifications } from './hooks'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { workflowPaths } from '../../routes/paths'
@@ -14,6 +14,7 @@ export function NotificationCenter() {
   const notifications = useNotifications()
   const unread = useUnreadNotifications()
   const read = useReadNotification()
+  const deleteNotification = useDeleteNotification()
   const navigate = useNavigate()
   const { session } = useAuth()
   function select(item: UserNotification) {
@@ -39,14 +40,24 @@ export function NotificationCenter() {
     </div>
     {open && <QueryState pending={notifications.isPending} error={notifications.error ?? unread.error}><div className="mt-3 space-y-2">
       {(notifications.data?.length ?? 0) === 0 && <p className="text-sm text-slate-500">Sin notificaciones.</p>}
-      {notifications.data?.slice(0, 10).map((item) => <button
+      {notifications.data?.slice(0, 10).map((item) => <div
         key={item.id}
-        onClick={() => select(item)}
-        className={`block w-full rounded-xl p-3 text-left ${item.read ? 'bg-slate-950/40 text-slate-500' : 'bg-brand-500/10 text-slate-200'}`}
+        className={`flex items-start gap-3 rounded-xl p-3 ${item.read ? 'bg-slate-950/40 text-slate-500' : 'bg-brand-500/10 text-slate-200'}`}
       >
-        <strong className="text-sm">{item.title}</strong><p className="text-xs">{item.message}</p>
-        <time className="mt-1 block text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleString()}</time>
-      </button>)}
+        <button onClick={() => select(item)} className="min-w-0 flex-1 text-left">
+          <strong className="text-sm">{item.title}</strong><p className="text-xs">{item.message}</p>
+          <time className="mt-1 block text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleString()}</time>
+        </button>
+        <button
+          type="button"
+          aria-label="Eliminar notificación"
+          title="Eliminar"
+          onClick={() => deleteNotification.mutate(item.id)}
+          className="rounded-full border border-slate-700 px-2 py-0.5 text-xs text-slate-400 hover:border-red-400 hover:text-red-300"
+        >
+          ×
+        </button>
+      </div>)}
     </div></QueryState>}
   </section>
 }
