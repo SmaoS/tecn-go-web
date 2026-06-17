@@ -10,6 +10,7 @@ export function TechnicianWalletPage() {
   const { wallet, transactions } = useTechnicianWallet()
   const recharge = useRechargeWallet()
   const [amount, setAmount] = useState('10000')
+  const [showMovements, setShowMovements] = useState(false)
 
   return <section>
     <h2 className="mb-4 text-2xl font-bold">Mi saldo</h2>
@@ -51,8 +52,13 @@ export function TechnicianWalletPage() {
           </form>
         </article>
         <article className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-          <h3 className="text-xl font-bold">Movimientos</h3>
-          {(transactions.data ?? []).length === 0
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-xl font-bold">Movimientos de saldo</h3>
+            <button className="rounded-lg border border-brand-500/60 px-3 py-2 text-sm font-bold text-brand-300" onClick={() => setShowMovements((value) => !value)}>
+              {showMovements ? 'Ocultar' : 'Ver historial'}
+            </button>
+          </div>
+          {showMovements && ((transactions.data ?? []).length === 0
             ? <p className="mt-3 text-slate-400">Aún no tienes movimientos de saldo.</p>
             : <div className="mt-4 space-y-2">
               {transactions.data?.map((item) => <div key={item.id} className="flex items-start justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/70 p-4">
@@ -63,7 +69,7 @@ export function TechnicianWalletPage() {
                 </div>
                 <strong className={item.amount < 0 ? 'text-red-300' : 'text-brand-300'}>{money(item.amount)}</strong>
               </div>)}
-            </div>}
+            </div>)}
         </article>
       </div>}
     </QueryState>

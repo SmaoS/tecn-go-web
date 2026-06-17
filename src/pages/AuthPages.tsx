@@ -21,11 +21,13 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const { setSession } = useAuth()
   const navigate = useNavigate()
+  const canLogin = email.trim().length > 0 && password.length > 0
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setError('')
+    if (!canLogin) { setLoading(false); return }
     try {
-      const { data } = await api.post<Session>('/v1/auth/login', { email, password })
+      const { data } = await api.post<Session>('/v1/auth/login', { email: email.trim(), password })
       setSession(data); navigate('/app')
     } catch (reason) { setError(message(reason)) } finally { setLoading(false) }
   }
@@ -34,7 +36,7 @@ export function LoginPage() {
     <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
     <PasswordField placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
     {error && <p className="text-sm text-red-400">{error}</p>}
-    <button disabled={loading} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:opacity-50">{loading ? 'Ingresando...' : 'Ingresar'}</button>
+    <button disabled={loading || !canLogin} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">{loading ? 'Ingresando...' : 'Ingresar'}</button>
     <Link className="block text-center text-sm text-brand-400" to="/forgot-password">¿Olvidaste tu contraseña?</Link>
     <p className="text-sm text-slate-400">¿Aún no tienes cuenta? <Link className="text-brand-400" to="/registro/cliente">Regístrate</Link></p>
   </form></AuthShell>

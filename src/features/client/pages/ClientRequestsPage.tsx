@@ -39,8 +39,8 @@ export function ClientRequestsPage() {
           {quote.description && <p className="text-sm text-slate-400">{quote.description}</p>}
           <div className="mt-3 flex gap-2"><button onClick={() => action.mutate(() => clientApi.confirmQuote(item.id, quote.id))} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950">Aceptar</button><button onClick={() => action.mutate(() => clientApi.rejectQuote(item.id, quote.id))} className="rounded-lg border border-red-500 px-3 py-2 text-sm text-red-300">Rechazar</button></div>
         </div>)}
+        {item.status === 'COMPLETED' && <p className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">El técnico debe confirmar si recibió el pago para cerrar el servicio. Después ambos podrán calificar o reportar un problema.</p>}
         <div className="mt-4 flex gap-2">
-          {item.status === 'COMPLETED' && <button onClick={() => action.mutate(() => clientApi.payCash(item.id), { onSuccess: () => setNotice('Pago en efectivo registrado.') })} className="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-bold text-slate-950">Confirmar pago en efectivo</button>}
           {item.technicianId && <button onClick={() => setChatRequest(item)} className="rounded-lg border border-brand-500/50 px-3 py-2 text-sm text-brand-300">Abrir chat</button>}
           {!['COMPLETED', 'PAID', 'CANCELLED'].includes(item.status) && <button onClick={() => action.mutate(() => clientApi.cancel(item.id))} className="rounded-lg border border-red-500/50 px-3 py-2 text-sm text-red-300">Cancelar</button>}
         </div>
