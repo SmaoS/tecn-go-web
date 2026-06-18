@@ -15,6 +15,7 @@ const stepLabels: Record<string, string> = {
   LEGAL_ACCEPTANCE: 'Documentos legales',
   PROFILE_SELFIE: 'Foto de perfil',
   IDENTITY_DOCUMENT: 'Documento de identidad',
+  TECHNICIAN_PROFESSIONAL_PROFILE: 'Perfil profesional',
   TECHNICIAN_CERTIFICATE: 'Certificado técnico',
   COMPLETED: 'Inscripción lista',
 }
@@ -23,25 +24,33 @@ export function OnboardingRequiredPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { session } = useAuth()
-  const status = useQuery({ queryKey: ['onboarding-status'], queryFn: onboardingApi.status, refetchInterval: 10_000 })
+  const status = useQuery({ queryKey: ['onboarding-status'], queryFn: onboardingApi.status, refetchInterval: false })
+  const categories = useQuery({
+    queryKey: ['service-categories', 'onboarding'],
+    queryFn: onboardingApi.activeCategories,
+    enabled: status.data?.currentStep === 'TECHNICIAN_PROFESSIONAL_PROFILE',
+  })
   const [main, setMain] = useState({ fullName: session?.fullName ?? '', phone: '', countryId: '', departmentId: '', cityId: '', address: '', neighborhood: '', documentType: 'CC' as DocumentType, documentNumber: '' })
   const [profilePhotoUrl, setProfilePhotoUrl] = useState('')
   const [frontUrl, setFrontUrl] = useState('')
   const [backUrl, setBackUrl] = useState('')
   const [singleUrl, setSingleUrl] = useState('')
   const [certificateUrl, setCertificateUrl] = useState('')
+  const [professional, setProfessional] = useState({ categoryIds: [] as string[], workExperienceDescription: '' })
   const refresh = async () => queryClient.invalidateQueries({ queryKey: ['onboarding-status'] })
 
   const mainMutation = useMutation({ mutationFn: onboardingApi.mainData, onSuccess: refresh })
   const legalMutation = useMutation({ mutationFn: onboardingApi.legalAcceptance, onSuccess: refresh })
   const selfieMutation = useMutation({ mutationFn: onboardingApi.profileSelfie, onSuccess: refresh })
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
+  const professionalMutation = useMutation({ mutationFn: onboardingApi.professionalProfile, onSuccess: refresh })
   const certificateMutation = useMutation({ mutationFn: onboardingApi.certificate, onSuccess: refresh })
   const skipCertificate = useMutation({ mutationFn: onboardingApi.skipCertificate, onSuccess: refresh })
   const pending = mainMutation.isPending || legalMutation.isPending || selfieMutation.isPending
-    || documentMutation.isPending || certificateMutation.isPending || skipCertificate.isPending
+    || documentMutation.isPending || professionalMutation.isPending
+    || certificateMutation.isPending || skipCertificate.isPending
   const error = mainMutation.error || legalMutation.error || selfieMutation.error || documentMutation.error
-    || certificateMutation.error || skipCertificate.error
+    || professionalMutation.error || certificateMutation.error || skipCertificate.error
 
   useEffect(() => {
     if (status.data?.onboardingCompleted && session) navigate(roleHome[session.role])
@@ -95,6 +104,46 @@ export function OnboardingRequiredPage() {
         <label className="block text-sm">Pasaporte<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setSingleUrl)} /></label>
         <button disabled={pending || !singleUrl} onClick={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
       </>}
+    </div>}
+    {status.data?.currentStep === 'TECHNICIAN_PROFESSIONAL_PROFILE' && <div className="mt-5 space-y-4">
+      <div>
+        <h3 className="text-xl font-bold">Completa tu perfil técnico</h3>
+        <p className="mt-1 text-slate-300">Cuéntale a los clientes qué servicios realizas, tu experiencia y especialidad.</p>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {categories.data?.map((category) => <label key={category.id} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-700 p-3">
+          <input
+            type="checkbox"
+            checked={professional.categoryIds.includes(category.id)}
+            onChange={(event) => setProfessional((current) => ({
+              ...current,
+              categoryIds: event.target.checked
+                ? [...current.categoryIds, category.id]
+                : current.categoryIds.filter((id) => id !== category.id),
+            }))}
+          />
+          <span><strong>{category.name}</strong>{category.description && <small className="block text-slate-400">{category.description}</small>}</span>
+        </label>)}
+      </div>
+      <textarea
+        minLength={30}
+        maxLength={1000}
+        rows={6}
+        placeholder="Describe tu experiencia"
+        value={professional.workExperienceDescription}
+        onChange={(event) => setProfessional({ ...professional, workExperienceDescription: event.target.value })}
+      />
+      <p className="text-xs text-slate-400">{professional.workExperienceDescription.trim().length}/1000 · mínimo 30 caracteres</p>
+      <button
+        disabled={pending || professional.categoryIds.length === 0 || professional.workExperienceDescription.trim().length < 30}
+        onClick={() => professionalMutation.mutate({
+          categoryIds: professional.categoryIds,
+          workExperienceDescription: professional.workExperienceDescription.trim(),
+        })}
+        className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Continuar
+      </button>
     </div>}
     {status.data?.currentStep === 'TECHNICIAN_CERTIFICATE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Si no tienes certificado de estudio, lo puedes cargar después.</p>

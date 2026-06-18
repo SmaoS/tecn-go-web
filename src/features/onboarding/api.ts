@@ -1,9 +1,10 @@
 import { api } from '../../lib/api'
+import type { ServiceCategory } from '../../types'
 
 export interface OnboardingStatus {
   emailVerified: boolean
   onboardingCompleted: boolean
-  currentStep: 'MAIN_DATA' | 'LEGAL_ACCEPTANCE' | 'PROFILE_SELFIE' | 'IDENTITY_DOCUMENT' | 'TECHNICIAN_CERTIFICATE' | 'COMPLETED'
+  currentStep: 'MAIN_DATA' | 'LEGAL_ACCEPTANCE' | 'PROFILE_SELFIE' | 'IDENTITY_DOCUMENT' | 'TECHNICIAN_PROFESSIONAL_PROFILE' | 'TECHNICIAN_CERTIFICATE' | 'COMPLETED'
   requiredSteps: string[]
   nextScreen?: 'HOME'
 }
@@ -32,6 +33,9 @@ export const onboardingApi = {
     documentSingleUrl?: string
     identityDocumentCaptureStatus?: 'AUTO_CAPTURED' | 'MANUAL_CAPTURED' | 'MANUAL_REVIEW_REQUIRED'
   }) => api.post<OnboardingStatus>('/v1/users/me/onboarding/identity-document', payload).then(({ data }) => data),
+  activeCategories: () => api.get<ServiceCategory[]>('/v1/service-categories').then(({ data }) => data),
+  professionalProfile: (payload: { categoryIds: string[]; workExperienceDescription: string }) =>
+    api.put<OnboardingStatus>('/v1/technicians/me/onboarding/professional-profile', payload).then(({ data }) => data),
   certificate: (certificateUrl?: string) =>
     api.post<OnboardingStatus>('/v1/technicians/me/onboarding/certificate', { certificateUrl }).then(({ data }) => data),
   skipCertificate: () => api.post<OnboardingStatus>('/v1/technicians/me/onboarding/skip-certificate').then(({ data }) => data),
