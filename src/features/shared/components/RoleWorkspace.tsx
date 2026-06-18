@@ -16,9 +16,9 @@ export function RoleWorkspace({ title, subtitle, links }: {
   const { session } = useAuth()
   return <DashboardShell title={title ?? `Hola, ${session?.fullName}`} subtitle={subtitle}>
     <NotificationCenter />
-    <nav className="mb-8 flex flex-wrap gap-2">
+    <nav className="mb-8 flex gap-2 overflow-x-auto pb-2">
       {links.map((link) => <NavLink key={link.to} to={link.to} className={({ isActive }) =>
-        `rounded-lg border px-4 py-2 text-sm ${isActive ? 'border-brand-500 bg-brand-500/10 text-brand-300' : 'border-slate-700 text-slate-300'}`
+        `shrink-0 rounded-xl border px-4 py-2.5 text-sm font-semibold ${isActive ? 'border-brand-500 bg-brand-500/15 text-brand-300' : 'border-slate-700 bg-surface/60 text-slate-300 hover:border-slate-600'}`
       }>{link.label}</NavLink>)}
     </nav>
     <Outlet />

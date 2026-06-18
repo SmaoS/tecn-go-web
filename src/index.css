@@ -3,7 +3,18 @@
 @tailwind utilities;
 
 @layer base {
-  body { @apply min-h-screen bg-slate-950 text-slate-100 antialiased; }
-  input, select, textarea { @apply w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 outline-none transition focus:border-brand-400; }
+  html { background: #020817; }
+  body {
+    @apply min-h-screen bg-canvas font-sans text-slate-100 antialiased;
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(0, 216, 74, 0.09), transparent 28rem),
+      radial-gradient(circle at 88% 18%, rgba(0, 184, 62, 0.05), transparent 24rem);
+  }
+  input, select, textarea { @apply w-full rounded-xl border border-slate-700 bg-surface px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/15; }
   button { @apply transition; }
+}
+
+@layer components {
+  .tecngo-panel { @apply rounded-3xl border border-slate-800 bg-surface/90 shadow-2xl shadow-black/20 backdrop-blur; }
+  .tecngo-primary { @apply rounded-xl bg-brand-500 px-5 py-3 font-extrabold text-canvas hover:bg-brand-300 disabled:cursor-not-allowed disabled:opacity-50; }
 }

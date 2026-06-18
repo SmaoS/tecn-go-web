@@ -7,7 +7,14 @@ import type { Role, Session } from '../types'
 import { PasswordField } from '../components/PasswordField'
 
 function AuthShell({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="mx-auto max-w-md px-6 py-16"><div className="rounded-3xl border border-slate-800 bg-slate-900 p-8"><h1 className="mb-6 text-3xl font-bold">{title}</h1>{children}</div></section>
+  return <section className="mx-auto max-w-md px-5 py-12 sm:py-16">
+    <div className="mb-7 flex justify-center"><img src="/tecngo-logo-dark.png" alt="TecnGo" className="h-14 w-auto" /></div>
+    <div className="tecngo-panel p-6 sm:p-8">
+      <p className="mb-2 text-sm font-bold uppercase tracking-[.16em] text-brand-400">TecnGo</p>
+      <h1 className="mb-7 text-3xl font-extrabold tracking-tight">{title}</h1>
+      {children}
+    </div>
+  </section>
 }
 
 function message(error: unknown) {
