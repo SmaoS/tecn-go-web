@@ -75,7 +75,7 @@ export function UserProfileEditor() {
       <GeographicFields countryId={current.countryId} departmentId={current.departmentId} cityId={current.cityId} onChange={(values) => update({ ...values, homeCity: values.cityName })} />
       <label className="text-sm">Dirección de domicilio<input value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} /></label>
       <label className="text-sm">Barrio<input value={current.homeNeighborhood ?? ''} onChange={(event) => update({ homeNeighborhood: event.target.value })} /></label>
-      <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>
+      {!current.profilePhotoFaceValidated && <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>}
       <label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label>
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}

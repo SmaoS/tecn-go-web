@@ -109,6 +109,8 @@ export interface UserNotification {
   title: string
   message: string
   type: 'NEW_REQUEST' | 'NEW_QUOTE' | 'QUOTE_ACCEPTED' | 'REQUEST_ACCEPTED'
+    | 'QUOTE_REJECTED' | 'PAYMENT_PROOF_UPLOADED' | 'SERVICE_EVIDENCE_UPLOADED'
+    | 'PAYMENT_PROOF_VERIFIED'
     | 'TECHNICIAN_ON_THE_WAY' | 'TECHNICIAN_ARRIVED' | 'SERVICE_STARTED'
     | 'SERVICE_COMPLETED' | 'NEW_CHAT_MESSAGE' | 'NEW_RATING' | 'SERVICE_STATUS_CHANGED'
     | 'LEGAL_ACCEPTANCE_REQUIRED' | 'CONTENT_MODERATION_ALERT' | 'CHAT_MODERATION_ALERT'
@@ -143,6 +145,7 @@ export interface TechnicianProfile {
   status: TechnicianStatus
   profilePhotoUrl?: string
   documentPhotoUrl?: string
+  profilePhotoFaceValidated?: boolean
   certificatePhotoUrl?: string
   workExperienceDescription: string
   averageRating: number
@@ -186,6 +189,7 @@ export interface UserProfile {
   emailVerified: boolean
   phoneVerified: boolean
   documentsVerified: boolean
+  profilePhotoFaceValidated?: boolean
   homeAddress?: string
   homeLatitude?: number
   homeLongitude?: number

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { workflowPaths } from '../../routes/paths'
 import type { UserNotification } from '../../types'
+import { notificationTitle } from './labels'
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false)
@@ -45,7 +46,7 @@ export function NotificationCenter() {
         className={`flex items-start gap-3 rounded-xl p-3 ${item.read ? 'bg-slate-950/40 text-slate-500' : 'bg-brand-500/10 text-slate-200'}`}
       >
         <button onClick={() => select(item)} className="min-w-0 flex-1 text-left">
-          <strong className="text-sm">{item.title}</strong><p className="text-xs">{item.message}</p>
+          <strong className="text-sm">{notificationTitle(item)}</strong><p className="text-xs">{item.message}</p>
           <time className="mt-1 block text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleString()}</time>
         </button>
         <button

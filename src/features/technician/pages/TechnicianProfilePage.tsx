@@ -85,7 +85,7 @@ export function TechnicianProfilePage() {
         </div></fieldset>
         <textarea placeholder="Descripción profesional" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} required />
         <textarea placeholder="Experiencia laboral" value={form.workExperienceDescription} onChange={(event) => setForm({ ...form, workExperienceDescription: event.target.value })} required />
-        <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>
+        {!profile.data?.profilePhotoFaceValidated && <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>}
         <label className="text-sm">Documento obligatorio<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} required={!form.documentPhotoUrl} /></label>
         <label className="text-sm">Certificado opcional<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('certificatePhotoUrl', event.target.files?.[0])} /></label>
         <div className="grid gap-3 sm:grid-cols-3">

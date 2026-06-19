@@ -3,6 +3,7 @@ import { PrivateImage } from '../../components/PrivateImage'
 import { openPrivateAsset } from '../../components/privateAsset'
 import { statusLabels } from './status'
 import { ServiceSupportPanel } from '../service-support/ServiceSupportPanel'
+import { formatCopCurrency } from '../../lib/format'
 
 export function Status({ value }: { value: RequestStatus }) {
   return <span className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-bold text-brand-400">{statusLabels[value]}</span>
@@ -61,7 +62,7 @@ export function RequestList({ title, items, actionLabel, onAction, onChat }: {
       <div className="flex justify-between"><strong>{item.categoryName}</strong><Status value={item.status} /></div>
       <p className="mt-2 text-sm text-slate-400">{item.description}</p>
       <p className="mt-2 text-xs text-slate-500">{item.address}</p>
-      {item.finalPrice != null && <p className="mt-2 font-bold">${item.finalPrice.toLocaleString()}</p>}
+      {item.finalPrice != null && <p className="mt-2 font-bold">{formatCopCurrency(item.finalPrice)}</p>}
       <Tracking status={item.status} />
       <div className="mt-4 flex gap-2">
         {actionLabel(item) && <button onClick={() => onAction(item)} className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-bold text-slate-950">{actionLabel(item)}</button>}

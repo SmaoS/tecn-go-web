@@ -82,7 +82,9 @@ variables de Vite porque se incluyen en el bundle del navegador.
 ## Producción
 
 Vercel usa `vercel.json` para el build y el fallback de React Router. Configura
-`VITE_API_URL=https://BACKEND_RAILWAY/api`. La ruta `/health` verifica versión y entorno
+`VITE_API_URL=https://BACKEND_RAILWAY/api` y `VITE_GOOGLE_MAPS_API_KEY` para mostrar
+el recorrido aproximado en solicitudes disponibles. La clave requiere Maps Embed API.
+La ruta `/health` verifica versión y entorno
 del backend. La variable debe ser una URL absoluta y requiere un redeploy después de
 cambiarla. Cualquier respuesta `401` elimina la sesión y redirige a `/login`.
 
