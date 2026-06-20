@@ -15,7 +15,7 @@ export function EmailConfirmationRequiredPage() {
     <div className="mt-5 flex flex-wrap gap-3">
       <button onClick={() => resend.mutate()} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Reenviar correo</button>
       <button onClick={() => void status.refetch().then((result) => {
-        if (result.data?.emailVerified && session) navigate(result.data.onboardingCompleted ? roleHome[session.role] : '/app/onboarding')
+        if ((result.data?.emailVerified || result.data?.phoneVerified) && session) navigate(result.data.onboardingCompleted ? roleHome[session.role] : '/app/onboarding')
       })} className="rounded-xl border border-slate-700 px-5 py-3">Ya confirmé mi correo</button>
       <button onClick={logout} className="rounded-xl border border-slate-700 px-5 py-3">Cerrar sesión</button>
     </div>

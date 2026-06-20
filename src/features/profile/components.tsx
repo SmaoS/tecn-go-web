@@ -26,6 +26,7 @@ export function UserProfileEditor() {
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [passwordNotice, setPasswordNotice] = useState('')
   const [passwordModal, setPasswordModal] = useState(false)
+  const [phoneCode, setPhoneCode] = useState('')
   const profile = useProfile()
   const current = draft ?? profile.data
   const save = useSaveProfile()
@@ -41,6 +42,16 @@ export function UserProfileEditor() {
       setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' })
     },
     onError: (reason) => setPasswordNotice(apiMessage(reason)),
+  })
+  const sendPhoneOtp = useMutation({
+    mutationFn: profileApi.sendPhoneOtp,
+    onSuccess: (data) => setError(data.debugCode ? `Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.'),
+    onError: (reason) => setError(apiMessage(reason)),
+  })
+  const verifyPhoneOtp = useMutation({
+    mutationFn: ({ phone, code }: { phone: string; code: string }) => profileApi.verifyPhoneOtp(phone, code),
+    onSuccess: () => { setError('Celular verificado.'); void profile.refetch() },
+    onError: (reason) => setError(apiMessage(reason)),
   })
   async function file(field: 'profilePhotoUrl' | 'documentPhotoUrl', selected?: File) {
     if (!selected || !current) return
@@ -70,8 +81,13 @@ export function UserProfileEditor() {
     <div className="mt-2"><VerificationBadge value={current.verificationStatus} /><p className="mt-1 text-sm text-slate-400">Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</p></div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
       <input value={current.fullName} onChange={(event) => update({ fullName: event.target.value })} required />
-      <input type="email" value={current.email} disabled readOnly className="cursor-not-allowed opacity-70" aria-label="Correo registrado" />
+      <input type="email" value={current.email ?? ''} placeholder="Sin correo registrado" disabled readOnly className="cursor-not-allowed opacity-70" aria-label="Correo registrado" />
       <input placeholder="Teléfono" value={current.phone ?? ''} onChange={(event) => update({ phone: event.target.value })} />
+      {!current.phoneVerified && current.phone && <div className="flex gap-2 sm:col-span-2">
+        <button type="button" onClick={() => sendPhoneOtp.mutate(current.phone!)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Enviar código al celular</button>
+        <input inputMode="numeric" placeholder="Código OTP" value={phoneCode} onChange={(event) => setPhoneCode(event.target.value.replace(/\D/g, ''))} />
+        <button type="button" disabled={!phoneCode} onClick={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode })} className="rounded-lg border border-brand-500 px-3 py-2 text-sm disabled:opacity-50">Verificar celular</button>
+      </div>}
       <GeographicFields countryId={current.countryId} departmentId={current.departmentId} cityId={current.cityId} onChange={(values) => update({ ...values, homeCity: values.cityName })} />
       <label className="text-sm">Dirección de domicilio<input value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} /></label>
       <label className="text-sm">Barrio<input value={current.homeNeighborhood ?? ''} onChange={(event) => update({ homeNeighborhood: event.target.value })} /></label>

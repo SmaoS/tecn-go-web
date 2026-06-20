@@ -22,25 +22,34 @@ function message(error: unknown) {
 }
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [method, setMethod] = useState<'email' | 'phone'>('email')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { setSession } = useAuth()
   const navigate = useNavigate()
-  const canLogin = email.trim().length > 0 && password.length > 0
+  const canLogin = identifier.trim().length > 0 && password.length > 0
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setError('')
     if (!canLogin) { setLoading(false); return }
     try {
-      const { data } = await api.post<Session>('/v1/auth/login', { email: email.trim(), password })
+      const endpoint = method === 'email' ? '/v1/auth/login' : '/v1/auth/login-by-phone'
+      const payload = method === 'email'
+        ? { email: identifier.trim(), password }
+        : { phone: identifier.trim(), password }
+      const { data } = await api.post<Session>(endpoint, payload)
       setSession(data); navigate('/app')
     } catch (reason) { setError(message(reason)) } finally { setLoading(false) }
   }
 
   return <AuthShell title="Bienvenido de nuevo"><form onSubmit={submit} className="space-y-4">
-    <input type="email" placeholder="Correo" value={email} onChange={(e) => setEmail(e.target.value)} required />
+    <div className="grid grid-cols-2 gap-2">
+      <button type="button" onClick={() => { setMethod('email'); setIdentifier('') }} className={`rounded-lg border p-2 ${method === 'email' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Correo</button>
+      <button type="button" onClick={() => { setMethod('phone'); setIdentifier('') }} className={`rounded-lg border p-2 ${method === 'phone' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Celular</button>
+    </div>
+    <input type={method === 'email' ? 'email' : 'tel'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChange={(e) => setIdentifier(e.target.value)} required />
     <PasswordField placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
     {error && <p className="text-sm text-red-400">{error}</p>}
     <button disabled={loading || !canLogin} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">{loading ? 'Ingresando...' : 'Ingresar'}</button>
@@ -53,7 +62,12 @@ export function RegisterPage() {
   const { kind } = useParams()
   const [role, setRole] = useState<Role>(kind === 'tecnico' ? 'TECHNICIAN' : 'CLIENT')
   const [searchParams] = useSearchParams()
-  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '', referralCode: searchParams.get('ref') ?? '' })
+  const [method, setMethod] = useState<'email' | 'phone'>('email')
+  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: searchParams.get('ref') ?? '' })
+  const [otpCode, setOtpCode] = useState('')
+  const [verificationToken, setVerificationToken] = useState('')
+  const [otpNotice, setOtpNotice] = useState('')
+  const [otpLoading, setOtpLoading] = useState(false)
   const [referralMessage, setReferralMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -74,22 +88,50 @@ export function RegisterPage() {
       setError('Las contraseñas no coinciden'); setLoading(false); return
     }
     try {
-      const { data } = await api.post<Session>('/v1/auth/register', { ...form, role })
+      if (method === 'phone' && !verificationToken) {
+        setError('Verifica el código enviado a tu celular'); setLoading(false); return
+      }
+      const endpoint = method === 'email' ? '/v1/auth/register' : '/v1/auth/register-by-phone'
+      const payload = method === 'email'
+        ? { fullName: form.fullName, email: form.email, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
+        : { fullName: form.fullName, phone: form.phone, verificationToken, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
+      const { data } = await api.post<Session>(endpoint, payload)
       setSession(data); navigate('/app')
     } catch (reason) { setError(message(reason)) } finally { setLoading(false) }
   }
 
+  async function sendOtp() {
+    setOtpLoading(true); setError(''); setOtpNotice('')
+    try {
+      const { data } = await api.post<{ message: string; debugCode?: string }>('/v1/auth/phone/send-otp', { phone: form.phone })
+      setOtpNotice(data.debugCode ? `Código enviado. Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.')
+    } catch (reason) { setError(message(reason)) } finally { setOtpLoading(false) }
+  }
+
+  async function verifyOtp() {
+    setOtpLoading(true); setError('')
+    try {
+      const { data } = await api.post<{ verificationToken: string }>('/v1/auth/phone/verify-otp', { phone: form.phone, code: otpCode })
+      setVerificationToken(data.verificationToken); setOtpNotice('Celular verificado correctamente.')
+    } catch (reason) { setError(message(reason)) } finally { setOtpLoading(false) }
+  }
+
   return <AuthShell title={role === 'CLIENT' ? 'Crea tu cuenta' : 'Únete como técnico'}><form onSubmit={submit} className="space-y-4">
     <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setRole('CLIENT')} className={`rounded-lg border p-2 ${role === 'CLIENT' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Cliente</button><button type="button" onClick={() => setRole('TECHNICIAN')} className={`rounded-lg border p-2 ${role === 'TECHNICIAN' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Técnico</button></div>
+    <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setMethod('email')} className={`rounded-lg border p-2 ${method === 'email' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Con correo</button><button type="button" onClick={() => setMethod('phone')} className={`rounded-lg border p-2 ${method === 'phone' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Con celular</button></div>
     <input placeholder="Nombre completo" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
-    <input type="email" placeholder="Correo" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+    {method === 'email'
+      ? <input type="email" placeholder="Correo" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+      : <><div className="flex gap-2"><input type="tel" placeholder="Celular, ej. 3001234567" value={form.phone} onChange={(e) => { setForm({ ...form, phone: e.target.value }); setVerificationToken('') }} required /><button type="button" disabled={otpLoading || !form.phone.trim()} onClick={() => void sendOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">Enviar código</button></div>
+        <div className="flex gap-2"><input inputMode="numeric" maxLength={8} placeholder="Código OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} /><button type="button" disabled={otpLoading || !otpCode || Boolean(verificationToken)} onClick={() => void verifyOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">{verificationToken ? 'Verificado' : 'Verificar'}</button></div>
+        {otpNotice && <p className="text-sm text-emerald-400">{otpNotice}</p>}</>}
     <PasswordField minLength={8} placeholder="Contraseña (mínimo 8 caracteres)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
     <PasswordField minLength={8} placeholder="Confirmar contraseña" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
     <input placeholder="Código de referido (opcional)" value={form.referralCode} onChange={(e) => setForm({ ...form, referralCode: e.target.value.toUpperCase() })} onBlur={() => void validateReferral()} />
     {referralMessage && <p className={`text-sm ${referralMessage.startsWith('Código válido') ? 'text-emerald-400' : 'text-amber-300'}`}>{referralMessage}</p>}
     <p className="text-sm text-slate-400">Después de ingresar podrás completar tu perfil, subir tu foto y enviar el documento para verificación.</p>
     {error && <p className="text-sm text-red-400">{error}</p>}
-    <button disabled={loading} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950">{loading ? 'Creando...' : 'Crear cuenta'}</button>
+    <button disabled={loading || (method === 'phone' && !verificationToken)} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:opacity-50">{loading ? 'Creando...' : 'Crear cuenta'}</button>
   </form></AuthShell>
 }
 
