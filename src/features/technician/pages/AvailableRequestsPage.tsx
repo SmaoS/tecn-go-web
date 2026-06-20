@@ -69,7 +69,7 @@ export function AvailableRequestsPage() {
           routeRequestId === item.id ? 'Ocultar recorrido' : 'Ver recorrido aproximado'
         }</button>
         {routeRequestId === item.id && <div className="mt-3">
-          <p className="mb-2 text-xs text-slate-400">Tu ubicación se actualiza en tiempo real. El destino es una zona aproximada hasta que el cliente acepte.</p>
+          <p className="mb-2 text-xs text-slate-400">Tu ubicación se actualiza en tiempo real. El destino mostrado es aproximado; la ubicación exacta se habilita cuando el cliente acepta una cotización.</p>
           {locationError && <p className="text-sm text-amber-300">{locationError}</p>}
           {location && Number.isFinite(item.latitude) && Number.isFinite(item.longitude) && mapsApiKey
             ? <iframe

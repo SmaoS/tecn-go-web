@@ -1,9 +1,32 @@
-import { QueryClient } from '@tanstack/react-query'
+import { focusManager, onlineManager, QueryClient } from '@tanstack/react-query'
+
+focusManager.setEventListener((handleFocus) => {
+  const onVisibilityChange = () => handleFocus(document.visibilityState === 'visible')
+  document.addEventListener('visibilitychange', onVisibilityChange, false)
+  window.addEventListener('focus', onVisibilityChange, false)
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+    window.removeEventListener('focus', onVisibilityChange)
+  }
+})
+
+onlineManager.setEventListener((setOnline) => {
+  const online = () => setOnline(true)
+  const offline = () => setOnline(false)
+  window.addEventListener('online', online)
+  window.addEventListener('offline', offline)
+  return () => {
+    window.removeEventListener('online', online)
+    window.removeEventListener('offline', offline)
+  }
+})
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchIntervalInBackground: false,
       retry: 1,
       staleTime: 5_000,
     },

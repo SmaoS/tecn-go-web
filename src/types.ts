@@ -50,6 +50,7 @@ export interface ServiceRequest {
   address: string
   latitude: number
   longitude: number
+  locationPrecision: 'APPROXIMATE' | 'EXACT'
   distanceKm?: number
   estimatedPrice?: number
   technicianPrice?: number
@@ -298,6 +299,7 @@ export interface TechnicianLocation {
   technicianName: string
   latitude: number
   longitude: number
+  locationPrecision: 'APPROXIMATE' | 'EXACT'
   accuracy?: number
   speed?: number
   heading?: number

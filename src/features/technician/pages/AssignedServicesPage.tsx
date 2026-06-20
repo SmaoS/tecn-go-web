@@ -31,7 +31,9 @@ export function AssignedServicesPage() {
   useEffect(() => {
     if (!locationOnline || !navigator.geolocation) return
     let active = true
-    const send = () => navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    const send = () => {
+      if (document.visibilityState !== 'visible') return
+      navigator.geolocation.getCurrentPosition(async ({ coords }) => {
       if (!active) return
       try {
         await technicianApi.location({
@@ -49,10 +51,19 @@ export function AssignedServicesPage() {
         3: 'La ubicación tardó demasiado. Intenta en un lugar con mejor señal.',
       }
       setError(messages[reason.code] ?? 'No fue posible actualizar la ubicación GPS')
-    }, { enableHighAccuracy: false, timeout: 30_000, maximumAge: 15_000 })
+      }, { enableHighAccuracy: false, timeout: 30_000, maximumAge: 15_000 })
+    }
     send()
     const interval = window.setInterval(send, 10_000)
-    return () => { active = false; window.clearInterval(interval) }
+    const resume = () => {
+      if (document.visibilityState === 'visible') send()
+    }
+    document.addEventListener('visibilitychange', resume)
+    return () => {
+      active = false
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', resume)
+    }
   }, [locationOnline])
   function toggleLocation() {
     if (locationOnline) {
