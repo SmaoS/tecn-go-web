@@ -20,7 +20,7 @@ export const queryKeys = {
   requestQuotes: (requestIds: string[]) => ['service-quotes', requestIds] as const,
   technicianRequests: ['service-requests', 'technician'] as const,
   technicianRequestHistory: ['service-requests', 'technician', 'history'] as const,
-  availableRequests: (radiusKm: string) => ['service-requests', 'available', radiusKm] as const,
+  availableRequests: (search: object = {}) => ['service-requests', 'available', search] as const,
   availableRequestsRoot: ['service-requests', 'available'] as const,
   payments: ['payments', 'client'] as const,
   earnings: ['payments', 'technician'] as const,

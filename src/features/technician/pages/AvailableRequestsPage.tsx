@@ -11,7 +11,7 @@ import { useAvailableServices, useTechnicianProfile } from '../hooks'
 
 export function AvailableRequestsPage() {
   const client = useQueryClient()
-  const [radiusKm, setRadiusKm] = useState('10')
+  const [categoryId, setCategoryId] = useState('')
   const [quotes, setQuotes] = useState<Record<string, string>>({})
   const [descriptions, setDescriptions] = useState<Record<string, string>>({})
   const [routeRequestId, setRouteRequestId] = useState<string>()
@@ -19,7 +19,10 @@ export function AvailableRequestsPage() {
   const [locationError, setLocationError] = useState('')
   const mapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined
   const profile = useTechnicianProfile()
-  const requests = useAvailableServices(radiusKm, profile.data?.status === 'APPROVED')
+  const requests = useAvailableServices(
+    categoryId ? { categoryId } : {},
+    profile.data?.status === 'APPROVED',
+  )
   const quote = useMutation({
     mutationFn: (id: string) => technicianApi.quote(id, Number(quotes[id]), descriptions[id] || undefined),
     onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.availableRequestsRoot }),
@@ -42,7 +45,17 @@ export function AvailableRequestsPage() {
     return () => navigator.geolocation.clearWatch(watch)
   }, [])
 
-  return <section><div className="mb-4 flex items-center gap-3"><h2 className="text-2xl font-bold">Solicitudes cercanas</h2><label>Radio (km)</label><input className="max-w-28" type="number" min="1" max="100" value={radiusKm} onChange={(event) => setRadiusKm(event.target.value)} /></div>
+  return <section><div className="mb-4 flex flex-wrap items-end gap-3">
+    <div><h2 className="text-2xl font-bold">Solicitudes disponibles</h2>
+      <p className="text-sm text-slate-400">Ciudad: {profile.data?.cityName ?? 'configura tu ciudad en Mi perfil'}</p>
+    </div>
+    <label className="ml-auto grid gap-1 text-sm">Categoría
+      <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+        <option value="">Todas mis categorías</option>
+        {profile.data?.categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+      </select>
+    </label>
+  </div>
     {profile.data && profile.data.status !== 'APPROVED' && <p className="text-amber-300">Tu perfil debe estar aprobado para consultar solicitudes.</p>}
     {quoteError && <p className="mb-4 text-red-300">{quoteError}</p>}
     <QueryState pending={profile.isPending || requests.isPending} error={profile.error ?? requests.error} empty={requests.data?.length === 0}>

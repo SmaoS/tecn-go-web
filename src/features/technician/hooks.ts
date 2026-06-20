@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '../../lib/queryClient'
-import { technicianApi } from './api'
+import { technicianApi, type AvailableRequestSearch } from './api'
 
 export function useTechnicianProfile() {
   return useQuery({ queryKey: queryKeys.technicianProfile, queryFn: technicianApi.profile, retry: false })
@@ -26,10 +26,10 @@ export function useAssignedServiceHistory() {
   })
 }
 
-export function useAvailableServices(radiusKm: string, enabled = true) {
+export function useAvailableServices(search: AvailableRequestSearch = {}, enabled = true) {
   return useQuery({
-    queryKey: queryKeys.availableRequests(radiusKm),
-    queryFn: () => technicianApi.available(radiusKm),
+    queryKey: queryKeys.availableRequests(search),
+    queryFn: () => technicianApi.available(search),
     enabled,
     refetchInterval: 10_000,
   })
