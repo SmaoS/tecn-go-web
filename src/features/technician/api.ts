@@ -1,5 +1,5 @@
 import { api } from '../../lib/api'
-import type { FinancialSummary, RechargeResponse, ReferralCode, ReferralRegistration, ReferralReward, ServiceCategory, ServiceRequest, TechnicianProfile, TechnicianWallet, TechnicianWalletTransaction } from '../../types'
+import type { FinancialSummary, PageResponse, RechargeResponse, ReferralCode, ReferralRegistration, ReferralReward, ServiceCategory, ServiceRequest, TechnicianProfile, TechnicianWallet, TechnicianWalletTransaction } from '../../types'
 
 export interface AvailableRequestSearch {
   cityId?: string
@@ -12,10 +12,12 @@ export const technicianApi = {
   sendEmailVerification: () => api.post('/v1/auth/send-email-verification'),
   categories: () => api.get<ServiceCategory[]>('/v1/service-categories').then(({ data }) => data),
   profile: () => api.get<TechnicianProfile>('/v1/technicians/me').then(({ data }) => data),
-  assigned: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned?activeOnly=true').then(({ data }) => data),
-  assignedHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my-assigned/history').then(({ data }) => data),
+  assigned: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my-assigned/page?activeOnly=true&page=0&size=20').then(({ data }) => data.content),
+  assignedHistory: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my-assigned/history/page?page=0&size=20').then(({ data }) => data.content),
   available: (search: AvailableRequestSearch = {}) =>
-    api.get<ServiceRequest[]>('/v1/service-requests/available', { params: search }).then(({ data }) => data),
+    api.get<PageResponse<ServiceRequest>>('/v1/service-requests/available/page', {
+      params: { ...search, page: 0, size: 30 },
+    }).then(({ data }) => data.content),
   earnings: () => api.get<FinancialSummary>('/v1/technicians/me/earnings').then(({ data }) => data),
   wallet: () => api.get<TechnicianWallet>('/v1/technicians/me/wallet').then(({ data }) => data),
   walletTransactions: () => api.get<TechnicianWalletTransaction[]>('/v1/technicians/me/wallet/transactions').then(({ data }) => data),

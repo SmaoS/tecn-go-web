@@ -1,10 +1,10 @@
 import { api } from '../../lib/api'
-import type { Payment, ServiceCategory, ServiceQuote, ServiceRequest } from '../../types'
+import type { PageResponse, Payment, ServiceCategory, ServiceQuote, ServiceRequest } from '../../types'
 
 export const clientApi = {
   categories: () => api.get<ServiceCategory[]>('/v1/services').then(({ data }) => data),
-  requests: () => api.get<ServiceRequest[]>('/v1/service-requests/my?activeOnly=true').then(({ data }) => data),
-  requestHistory: () => api.get<ServiceRequest[]>('/v1/service-requests/my/history').then(({ data }) => data),
+  requests: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my/page?activeOnly=true&page=0&size=20').then(({ data }) => data.content),
+  requestHistory: () => api.get<PageResponse<ServiceRequest>>('/v1/service-requests/my/history/page?page=0&size=20').then(({ data }) => data.content),
   payments: () => api.get<Payment[]>('/v1/payments/mine').then(({ data }) => data),
   quotes: (requestId: string) => api.get<ServiceQuote[]>(`/v1/service-requests/${requestId}/quotes`).then(({ data }) => data),
   createRequest: (payload: object) => api.post<ServiceRequest>('/v1/service-requests', payload).then(({ data }) => data),
