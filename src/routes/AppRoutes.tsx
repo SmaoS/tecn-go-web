@@ -29,6 +29,7 @@ import { TechnicianReferralsPage } from '../features/technician/pages/Technician
 import { AdminReferralsPage } from '../features/admin/pages/AdminReferralsPage'
 import { AdminAppVersionsPage } from '../features/admin/pages/AdminAppVersionsPage'
 import { AdminTechnicianWalletsPage } from '../features/admin/pages/AdminTechnicianWalletsPage'
+import { AdminCompliancePage } from '../features/admin/pages/AdminCompliancePage'
 import { VerifierDashboard } from '../features/verification/VerifierDashboard'
 import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '../pages/AuthPages'
 import { HealthPage } from '../pages/HealthPage'
@@ -96,6 +97,7 @@ export function AppRoutes() {
           <Route path="legal" element={<AdminLegalPage />} />
           <Route path="referidos" element={<AdminReferralsPage />} />
           <Route path="versiones-app" element={<AdminAppVersionsPage />} />
+          <Route path="cumplimiento" element={<AdminCompliancePage />} />
         </Route></Route>
       </Route>
     </Route>

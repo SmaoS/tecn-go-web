@@ -39,5 +39,6 @@ export const workflowPaths = {
     legal: '/app/admin/legal',
     referrals: '/app/admin/referidos',
     appVersions: '/app/admin/versiones-app',
+    compliance: '/app/admin/cumplimiento',
   },
 } as const

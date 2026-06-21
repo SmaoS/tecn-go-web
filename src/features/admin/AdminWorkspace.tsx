@@ -14,6 +14,7 @@ const links = [
   { to: workflowPaths.admin.legal, label: 'Documentos legales' },
   { to: workflowPaths.admin.referrals, label: 'Referidos' },
   { to: workflowPaths.admin.appVersions, label: 'Versiones de App' },
+  { to: workflowPaths.admin.compliance, label: 'Cumplimiento' },
 ]
 
 export function AdminWorkspace() {

@@ -10,6 +10,7 @@ import { technicianApi } from '../api'
 import { useTechnicianCategories, useTechnicianProfile } from '../hooks'
 import type { TechnicianProfileForm } from '../types'
 import { GeographicFields } from '../../catalogs/GeographicFields'
+import { DataRightsPanel } from '../../compliance/DataRightsPanel'
 
 const emptyProfile: TechnicianProfileForm = {
   documentNumber: '', phone: '', categoryIds: [], description: '',
@@ -98,5 +99,6 @@ export function TechnicianProfilePage() {
         <button disabled={save.isPending} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{save.isPending ? 'Guardando...' : profile.data ? 'Actualizar perfil' : 'Crear perfil'}</button>
       </form>
     </QueryState>
+    <DataRightsPanel />
   </section>
 }
