@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { QueryState } from '../../shared/components/QueryState'
-import { useRechargeWallet, useTechnicianWallet } from '../hooks'
+import { useRechargeWallet, useReconcileRecharge, useTechnicianWallet } from '../hooks'
 
 function money(value: number) {
   return `$${value.toLocaleString()}`
@@ -9,11 +10,27 @@ function money(value: number) {
 export function TechnicianWalletPage() {
   const { wallet, transactions } = useTechnicianWallet()
   const recharge = useRechargeWallet()
+  const reconcile = useReconcileRecharge()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [amount, setAmount] = useState('10000')
   const [showMovements, setShowMovements] = useState(false)
 
+  useEffect(() => {
+    const transactionId = searchParams.get('id')
+    if (!transactionId || reconcile.isPending || reconcile.isSuccess) return
+    reconcile.mutate(transactionId, {
+      onSettled: () => {
+        searchParams.delete('id')
+        setSearchParams(searchParams, { replace: true })
+      },
+    })
+  }, [reconcile, searchParams, setSearchParams])
+
   return <section>
     <h2 className="mb-4 text-2xl font-bold">Mi saldo</h2>
+    {reconcile.isPending && <p className="mb-4 text-sm text-brand-300">Conciliando pago con Wompi...</p>}
+    {reconcile.isSuccess && <p className="mb-4 text-sm text-brand-300">Pago conciliado correctamente.</p>}
+    {reconcile.error && <p className="mb-4 text-sm text-red-300">No fue posible conciliar el pago todavía. Se reintentará automáticamente.</p>}
     <QueryState pending={wallet.isPending || transactions.isPending} error={wallet.error ?? transactions.error}>
       {wallet.data && <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
         <article className="rounded-2xl border border-slate-800 bg-slate-900 p-5">

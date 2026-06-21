@@ -57,6 +57,19 @@ export function useRechargeWallet() {
   })
 }
 
+export function useReconcileRecharge() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: technicianApi.reconcileRecharge,
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: queryKeys.technicianWallet }),
+        client.invalidateQueries({ queryKey: queryKeys.technicianWalletTransactions }),
+      ])
+    },
+  })
+}
+
 export function useTechnicianReferrals() {
   const code = useQuery({ queryKey: ['referrals', 'code'], queryFn: technicianApi.referralCode })
   const referrals = useQuery({ queryKey: ['referrals', 'registrations'], queryFn: technicianApi.referrals })
