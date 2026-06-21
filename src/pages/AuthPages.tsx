@@ -27,6 +27,8 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mfaChallenge, setMfaChallenge] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
   const { setSession } = useAuth()
   const navigate = useNavigate()
   const canLogin = identifier.trim().length > 0 && password.length > 0
@@ -39,9 +41,46 @@ export function LoginPage() {
       const payload = method === 'email'
         ? { email: identifier.trim(), password }
         : { phone: identifier.trim(), password }
-      const { data } = await api.post<Session>(endpoint, payload)
-      setSession(data); navigate('/app')
+      const { data } = await api.post<Session & {
+        mfaRequired?: boolean
+        mfaChallengeToken?: string
+      }>(endpoint, payload)
+      if (data.mfaRequired && data.mfaChallengeToken) {
+        setMfaChallenge(data.mfaChallengeToken)
+        return
+      }
+      setSession(data)
+      navigate('/app')
     } catch (reason) { setError(message(reason)) } finally { setLoading(false) }
+  }
+
+  async function verifyMfa(event: FormEvent) {
+    event.preventDefault(); setLoading(true); setError('')
+    try {
+      const { data } = await api.post<Session>('/v1/auth/mfa/verify', {
+        challengeToken: mfaChallenge,
+        code: mfaCode,
+      })
+      setSession(data)
+      navigate('/app')
+    } catch (reason) { setError(message(reason)) } finally { setLoading(false) }
+  }
+
+  if (mfaChallenge) {
+    return <AuthShell title="Verificación administrativa"><form onSubmit={verifyMfa} className="space-y-4">
+      <p className="text-sm text-slate-400">Enviamos un código de seis dígitos al correo de la cuenta.</p>
+      <input inputMode="numeric" maxLength={6} placeholder="Código MFA" value={mfaCode}
+        onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, ''))} required />
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      <button disabled={loading || mfaCode.length !== 6}
+        className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:opacity-50">
+        {loading ? 'Verificando...' : 'Verificar e ingresar'}
+      </button>
+      <button type="button" className="w-full text-sm text-brand-400"
+        onClick={() => { setMfaChallenge(''); setMfaCode('') }}>
+        Volver al inicio de sesión
+      </button>
+    </form></AuthShell>
   }
 
   return <AuthShell title="Bienvenido de nuevo"><form onSubmit={submit} className="space-y-4">
