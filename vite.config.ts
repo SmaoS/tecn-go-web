@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
@@ -14,6 +15,27 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./src/test/setup.ts'],
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'html', 'lcov'],
+        include: [
+          'src/components/PasswordField.tsx',
+          'src/components/privateAsset.ts',
+          'src/features/notifications/labels.ts',
+          'src/features/service-requests/status.ts',
+          'src/routes/paths.ts',
+        ],
+        thresholds: {
+          lines: 80,
+          functions: 80,
+          statements: 80,
+          branches: 70,
+        },
+      },
+    },
     build: {
       sourcemap: sentryAuthToken ? 'hidden' : false,
     },

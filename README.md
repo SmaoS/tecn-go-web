@@ -98,3 +98,14 @@ sin permisos para inactivar usuarios.
 El técnico inicia en solicitudes disponibles. Las notificaciones persistidas incluyen
 destino: la aceptación legal abre los términos y una solicitud nueva lleva al flujo de
 cotización.
+
+## Calidad
+
+```bash
+npm run lint
+npm run test:coverage
+npm run build
+```
+
+Vitest y Testing Library generan el reporte en `coverage/`. CodeQL y Dependabot están
+configurados en `.github`.
