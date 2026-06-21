@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { captureClientError, Sentry } from './observability'
 
 const defaultApiUrl = 'https://tecn-go-backend-production.up.railway.app/api'
 const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || defaultApiUrl
@@ -28,6 +29,9 @@ export function subscribeApiLoading(listener: (loading: boolean) => void) {
 }
 
 api.interceptors.request.use((config) => {
+  const correlationId = crypto.randomUUID()
+  config.headers['X-Correlation-ID'] = correlationId
+  config.headers['X-TecnGo-Correlation-ID'] = correlationId
   const raw = localStorage.getItem('tecngo.session')
   if (raw) config.headers.Authorization = `Bearer ${JSON.parse(raw).token}`
   if (config.method && ['post', 'put', 'patch', 'delete'].includes(config.method)) {
@@ -40,6 +44,15 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
+    const correlationId = response.headers['x-correlation-id']
+    if (correlationId) {
+      Sentry.addBreadcrumb({
+        category: 'api',
+        message: `${response.config.method?.toUpperCase()} ${response.config.url}`,
+        data: { correlationId, status: response.status },
+        level: 'info',
+      })
+    }
     if (response.config.headers['X-TecnGo-Loading']) {
       pendingMutations = Math.max(0, pendingMutations - 1)
       notifyLoading()
@@ -47,6 +60,11 @@ api.interceptors.response.use(
     return response
   },
   (error) => {
+    const correlationId = error.response?.headers?.['x-correlation-id']
+      || error.config?.headers?.['X-TecnGo-Correlation-ID']
+    if (!error.response || error.response.status >= 500) {
+      captureClientError(error, correlationId)
+    }
     if (error.config?.headers?.['X-TecnGo-Loading']) {
       pendingMutations = Math.max(0, pendingMutations - 1)
       notifyLoading()
