@@ -73,6 +73,7 @@ npm run dev
 npm run build
 npm run lint
 npm test
+npm run test:watch
 npm run preview
 ```
 
@@ -109,3 +110,16 @@ npm run build
 
 Vitest y Testing Library generan el reporte en `coverage/`. CodeQL y Dependabot están
 configurados en `.github`.
+
+La infraestructura de pruebas también incluye:
+
+- `src/test/renderWithProviders.tsx`: render compartido con router, sesión y un
+  `QueryClient` aislado para cada prueba.
+- `src/test/server.ts`: servidor MSW que impide consumir accidentalmente la API real.
+- `src/test/fixtures`: datos reutilizables para sesiones, solicitudes, cotizaciones y
+  notificaciones.
+- `src/test/browserMocks.ts`: mocks de GPS, archivos y object URLs.
+
+La cobertura configurada actualmente protege las utilidades ya incorporadas. El
+alcance se ampliará gradualmente a autenticación, rutas y flujos de negocio a medida
+que se agreguen sus pruebas, sin reducir los umbrales existentes.
