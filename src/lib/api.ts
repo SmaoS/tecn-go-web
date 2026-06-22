@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { captureClientError, Sentry } from './observability'
+import { clearStoredSession, readStoredSession } from '../context/sessionStorage'
+import { redirectBrowser } from './browserNavigation'
 
 const defaultApiUrl = 'https://tecn-go-backend-production.up.railway.app/api'
 const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || defaultApiUrl
@@ -32,8 +34,8 @@ api.interceptors.request.use((config) => {
   const correlationId = crypto.randomUUID()
   config.headers['X-Correlation-ID'] = correlationId
   config.headers['X-TecnGo-Correlation-ID'] = correlationId
-  const raw = localStorage.getItem('tecngo.session')
-  if (raw) config.headers.Authorization = `Bearer ${JSON.parse(raw).token}`
+  const session = readStoredSession()
+  if (session) config.headers.Authorization = `Bearer ${session.token}`
   if (config.method && ['post', 'put', 'patch', 'delete'].includes(config.method)) {
     pendingMutations += 1
     notifyLoading()
@@ -70,16 +72,16 @@ api.interceptors.response.use(
       notifyLoading()
     }
     if (error.response?.status === 401) {
-      localStorage.removeItem('tecngo.session')
-      if (window.location.pathname !== '/login') window.location.assign('/login')
+      clearStoredSession()
+      redirectBrowser('/login')
     }
     if (error.response?.status === 403 && error.response.data?.code === 'EMAIL_NOT_VERIFIED'
-      && window.location.pathname !== '/app/confirmar-correo') {
-      window.location.assign('/app/confirmar-correo')
+    ) {
+      redirectBrowser('/app/confirmar-correo')
     }
     if (error.response?.status === 403 && error.response.data?.code === 'ONBOARDING_REQUIRED'
-      && window.location.pathname !== '/app/onboarding') {
-      window.location.assign('/app/onboarding')
+    ) {
+      redirectBrowser('/app/onboarding')
     }
     return Promise.reject(error)
   },

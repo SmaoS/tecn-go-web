@@ -23,9 +23,13 @@ export default defineConfig(({ mode }) => {
         reporter: ['text', 'html', 'lcov'],
         include: [
           'src/components/PasswordField.tsx',
+          'src/components/ProtectedRoute.tsx',
           'src/components/privateAsset.ts',
+          'src/context/AuthContext.tsx',
+          'src/context/sessionStorage.ts',
           'src/features/notifications/labels.ts',
           'src/features/service-requests/status.ts',
+          'src/features/shared/components/RoleWorkspace.tsx',
           'src/routes/paths.ts',
         ],
         thresholds: {

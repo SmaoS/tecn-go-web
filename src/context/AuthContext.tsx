@@ -4,19 +4,16 @@ import { AuthContext } from './auth-context'
 import { api } from '../lib/api'
 import { setObservedUser } from '../lib/observability'
 import { useEffect } from 'react'
-const key = 'tecngo.session'
+import { clearStoredSession, readStoredSession, storeSession } from './sessionStorage'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, updateSession] = useState<Session | null>(() => {
-    const raw = localStorage.getItem(key)
-    return raw ? JSON.parse(raw) : null
-  })
+  const [session, updateSession] = useState<Session | null>(readStoredSession)
   useEffect(() => setObservedUser(session?.userId, session?.role), [session])
 
   const value = useMemo(() => ({
     session,
     setSession: (next: Session) => {
-      localStorage.setItem(key, JSON.stringify(next))
+      storeSession(next)
       updateSession(next)
     },
     logout: async () => {
@@ -25,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         // Local logout must continue when the backend is unavailable.
       } finally {
-        localStorage.removeItem(key)
+        clearStoredSession()
         updateSession(null)
       }
     },

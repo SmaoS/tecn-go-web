@@ -123,3 +123,7 @@ La infraestructura de pruebas también incluye:
 La cobertura configurada actualmente protege las utilidades ya incorporadas. El
 alcance se ampliará gradualmente a autenticación, rutas y flujos de negocio a medida
 que se agreguen sus pruebas, sin reducir los umbrales existentes.
+
+La suite de seguridad y navegación cubre restauración y limpieza de sesión, logout
+tolerante a fallos, autorización por rol, destinos iniciales, respuestas `401/403`,
+JWT/correlation ID y navegación principal/secundaria de cliente, técnico y admin.
