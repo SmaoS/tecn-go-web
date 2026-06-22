@@ -50,8 +50,9 @@ export function TechnicianWalletPage() {
             event.preventDefault()
             recharge.mutate(Number(amount))
           }}>
-            <label className="block text-sm font-semibold">Valor a recargar</label>
+            <label htmlFor="wallet-recharge-amount" className="block text-sm font-semibold">Valor a recargar</label>
             <input
+              id="wallet-recharge-amount"
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3"
               inputMode="numeric"
               value={amount}

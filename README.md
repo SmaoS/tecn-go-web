@@ -127,3 +127,8 @@ que se agreguen sus pruebas, sin reducir los umbrales existentes.
 La suite de seguridad y navegación cubre restauración y limpieza de sesión, logout
 tolerante a fallos, autorización por rol, destinos iniciales, respuestas `401/403`,
 JWT/correlation ID y navegación principal/secundaria de cliente, técnico y admin.
+
+Los flujos Web cubiertos incluyen creación de solicitudes con perfil/GPS, cotizaciones
+independientes, aceptación y cancelación, avance del servicio, ubicación del técnico,
+calificación bilateral, notificaciones, onboarding, recargas Wompi, movimientos de
+saldo y verificación de identidades/cuentas verificadoras.
