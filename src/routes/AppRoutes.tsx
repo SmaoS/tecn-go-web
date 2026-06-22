@@ -56,6 +56,8 @@ export function AppRoutes() {
       <Route path="terminos-condiciones" element={<Navigate to="/terms" replace />} />
       <Route path="data-treatment" element={<PublicLegalPage kind="dataTreatment" />} />
       <Route path="tratamiento-datos" element={<Navigate to="/data-treatment" replace />} />
+      <Route path="data-collected" element={<PublicLegalPage kind="privacyLabel" />} />
+      <Route path="datos-recolectados" element={<Navigate to="/data-collected" replace />} />
       <Route path="accessibility" element={<PublicLegalPage kind="accessibility" />} />
       <Route path="accesibilidad" element={<Navigate to="/accessibility" replace />} />
       <Route path="app" element={<ProtectedRoute />}>

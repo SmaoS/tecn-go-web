@@ -44,9 +44,9 @@ export function ServiceSupportPanel({ requestId }: { requestId: string }) {
         {evidence.data?.map((item) => <div key={item.id} className="flex flex-wrap items-center gap-2">
           <button onClick={() => void openPrivateFile(item.fileUrl)} className="text-left text-sm text-brand-300">{item.description || evidenceLabels[item.evidenceType]} · {item.uploadedByName}</button>
           {item.contentAssetId && <button onClick={() => {
-            const reason = window.prompt('¿Por qué deseas reportar esta imagen?')
+            const reason = window.prompt('Describe el motivo del reporte, por ejemplo contenido inapropiado o posible infracción de derechos de autor.')
             if (reason) action.mutate(() => serviceSupportApi.reportContent(item.contentAssetId!, reason))
-          }} className="text-xs text-red-300">Reportar contenido</button>}
+          }} className="text-xs text-red-300">Reportar contenido o derechos de autor</button>}
         </div>)}
       </div>
       <div className="grid gap-2 rounded-xl bg-slate-950/50 p-3">

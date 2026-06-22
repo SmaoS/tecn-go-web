@@ -2,11 +2,11 @@ import { RoleWorkspace } from '../shared/components/RoleWorkspace'
 import { workflowPaths } from '../../routes/paths'
 
 const links = [
-  { to: workflowPaths.admin.overview, label: 'Resumen' },
-  { to: workflowPaths.admin.verifications, label: 'Verificaciones' },
-  { to: workflowPaths.admin.pendingVerifications, label: 'Pendientes por Verificación' },
+  { to: workflowPaths.admin.overview, label: 'Resumen', primary: true },
+  { to: workflowPaths.admin.verifications, label: 'Verificaciones', primary: true },
+  { to: workflowPaths.admin.pendingVerifications, label: 'Pendientes por Verificación', primary: true },
   { to: workflowPaths.admin.categories, label: 'Categorías' },
-  { to: workflowPaths.admin.finances, label: 'Finanzas' },
+  { to: workflowPaths.admin.finances, label: 'Finanzas', primary: true },
   { to: workflowPaths.admin.technicianWallets, label: 'Saldos técnicos' },
   { to: workflowPaths.admin.settings, label: 'Configuración' },
   { to: workflowPaths.admin.operations, label: 'Pagos y denuncias' },

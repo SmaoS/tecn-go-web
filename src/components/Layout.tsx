@@ -34,6 +34,7 @@ export function Layout() {
           <p>© 2026 TecnGo  Villavicencio</p>
           <nav aria-label="Enlaces legales" className="flex flex-wrap justify-center gap-4">
             <Link to="/privacy" className="hover:text-white">Privacidad</Link>
+            <Link to="/data-collected" className="hover:text-white">Datos recolectados</Link>
             <Link to="/accessibility" className="hover:text-white">Accesibilidad</Link>
             <Link to="/terms" className="hover:text-white">Términos</Link>
           </nav>

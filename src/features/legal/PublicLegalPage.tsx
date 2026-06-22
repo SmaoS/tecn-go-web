@@ -24,6 +24,11 @@ const pageConfig = {
     description: 'Compromiso de TecnGo con una experiencia clara, legible e inclusiva.',
     codes: ['ACCESSIBILITY_POLICY'],
   },
+  privacyLabel: {
+    heading: 'Datos recolectados',
+    description: 'Categorías de datos, finalidades, proveedores y controles de TecnGo.',
+    codes: ['PRIVACY_LABEL'],
+  },
 } as const
 
 export function PublicLegalPage({ kind }: { kind: keyof typeof pageConfig }) {
