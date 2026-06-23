@@ -61,12 +61,7 @@ export function CreateRequestPage() {
         <select value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })} required>
           <option value="">Selecciona una categoría</option>
           {categories.data?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-        </select>
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-300">
-          <p className="font-semibold text-slate-100">Ciudad del servicio</p>
-          <p>{profile.data?.cityName ?? profile.data?.homeCity ?? 'No configurada en tu perfil'}</p>
-          <p className="mt-1 text-xs text-slate-500">Se toma automáticamente de tu perfil. Puedes cambiar dirección y ubicación exacta para este servicio.</p>
-        </div>
+        </select>        
         <textarea placeholder="Describe lo que necesitas" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} required />
         <input placeholder="Dirección del servicio" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} required />
         <button type="button" onClick={currentLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">{form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'}</button>
