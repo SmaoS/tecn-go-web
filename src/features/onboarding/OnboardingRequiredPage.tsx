@@ -8,6 +8,7 @@ import { GeographicFields } from '../catalogs/GeographicFields'
 import { apiMessage } from '../shared/api'
 import { onboardingApi } from './api'
 import { LegalDocumentsContent } from '../legal/LegalDocumentsContent'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../lib/phone'
 
 type DocumentType = 'CC' | 'PASSPORT'
 
@@ -38,6 +39,7 @@ export function OnboardingRequiredPage() {
   const [singleUrl, setSingleUrl] = useState('')
   const [certificateUrl, setCertificateUrl] = useState('')
   const [professional, setProfessional] = useState({ categoryIds: [] as string[], workExperienceDescription: '' })
+  const [showLegalPreview, setShowLegalPreview] = useState(false)
   const refresh = async () => queryClient.invalidateQueries({ queryKey: ['onboarding-status'] })
 
   const mainMutation = useMutation({ mutationFn: onboardingApi.mainData, onSuccess: refresh })
@@ -70,20 +72,32 @@ export function OnboardingRequiredPage() {
   return <section className="mx-auto max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-6">
     <h2 className="text-2xl font-bold">Completa tu inscripción</h2>
     <p className="mt-2 text-slate-300">Paso actual: <strong className="text-brand-300">{stepLabels[status.data?.currentStep ?? 'MAIN_DATA']}</strong></p>
+    <button
+      type="button"
+      onClick={() => setShowLegalPreview((value) => !value)}
+      className="mt-4 rounded-xl border border-brand-500 px-4 py-2 text-sm font-bold text-brand-300"
+    >
+      {showLegalPreview ? 'Ocultar documentos legales' : 'Ver documentos legales'}
+    </button>
+    {showLegalPreview && <div className="mt-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+      <LegalDocumentsContent showAcceptButton={false} />
+    </div>}
     {status.data?.currentStep === 'MAIN_DATA' && <form onSubmit={submitMain} className="mt-5 space-y-4">
-      <input placeholder="Nombre completo" value={main.fullName} onChange={(event) => setMain({ ...main, fullName: event.target.value })} required />
-      <input placeholder="Teléfono" value={main.phone} onChange={(event) => setMain({ ...main, phone: event.target.value })} />
+      <p className="text-sm text-slate-400">Los campos marcados con * son obligatorios.</p>
+      <input aria-label="Nombre completo obligatorio" placeholder="Nombre completo *" value={main.fullName} onChange={(event) => setMain({ ...main, fullName: event.target.value })} required />
+      <input placeholder="Teléfono" inputMode="numeric" maxLength={10} pattern="\d{10}" value={main.phone} onChange={(event) => setMain({ ...main, phone: normalizeLocalPhone(event.target.value) })} />
+      {main.phone && !isValidLocalPhone(main.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
       <div className="grid gap-3 sm:grid-cols-3">
         <GeographicFields countryId={main.countryId} departmentId={main.departmentId} cityId={main.cityId} onChange={(values) => setMain({ ...main, countryId: values.countryId ?? '', departmentId: values.departmentId ?? '', cityId: values.cityId ?? '' })} />
       </div>
-      <input placeholder="Dirección" value={main.address} onChange={(event) => setMain({ ...main, address: event.target.value })} required />
+      <input placeholder="Dirección *" value={main.address} onChange={(event) => setMain({ ...main, address: event.target.value })} required />
       <input placeholder="Barrio" value={main.neighborhood} onChange={(event) => setMain({ ...main, neighborhood: event.target.value })} />
       <select value={main.documentType} onChange={(event) => setMain({ ...main, documentType: event.target.value as DocumentType })}>
         <option value="CC">Cédula de ciudadanía</option>
         <option value="PASSPORT">Pasaporte</option>
       </select>
-      <input placeholder="Número de documento" value={main.documentNumber} onChange={(event) => setMain({ ...main, documentNumber: event.target.value })} required />
-      <button disabled={pending} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar y continuar</button>
+      <input placeholder="Número de documento *" value={main.documentNumber} onChange={(event) => setMain({ ...main, documentNumber: event.target.value })} required />
+      <button disabled={pending || Boolean(main.phone) && !isValidLocalPhone(main.phone)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">Guardar y continuar</button>
     </form>}
     {status.data?.currentStep === 'LEGAL_ACCEPTANCE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Lee todos los documentos legales requeridos para tu rol.</p>

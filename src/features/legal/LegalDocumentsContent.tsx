@@ -5,9 +5,11 @@ import { apiMessage } from '../shared/api'
 export function LegalDocumentsContent({
   onAccepted,
   buttonLabel = 'Aceptar todos los términos y condiciones',
+  showAcceptButton = true,
 }: {
   onAccepted?: () => void
   buttonLabel?: string
+  showAcceptButton?: boolean
 }) {
   const queryClient = useQueryClient()
   const documents = useQuery({ queryKey: ['legal', 'active'], queryFn: legalApi.active })
@@ -34,15 +36,17 @@ export function LegalDocumentsContent({
       </div>
       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{document.content}</p>
     </article>)}
-    {acceptAll.error && <p className="text-sm text-red-400">{apiMessage(acceptAll.error)}</p>}
-    <button
-      disabled={acceptAll.isPending || pendingDocuments.length === 0}
-      onClick={() => acceptAll.mutate()}
-      className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {pendingDocuments.length === 0
-        ? 'Términos y condiciones aceptados'
-        : acceptAll.isPending ? 'Aceptando...' : buttonLabel}
-    </button>
+    {showAcceptButton && <>
+      {acceptAll.error && <p className="text-sm text-red-400">{apiMessage(acceptAll.error)}</p>}
+      <button
+        disabled={acceptAll.isPending || pendingDocuments.length === 0}
+        onClick={() => acceptAll.mutate()}
+        className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {pendingDocuments.length === 0
+          ? 'Términos y condiciones aceptados'
+          : acceptAll.isPending ? 'Aceptando...' : buttonLabel}
+      </button>
+    </>}
   </div>
 }

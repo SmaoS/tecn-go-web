@@ -11,6 +11,7 @@ import { useTechnicianCategories, useTechnicianProfile } from '../hooks'
 import type { TechnicianProfileForm } from '../types'
 import { GeographicFields } from '../../catalogs/GeographicFields'
 import { DataRightsPanel } from '../../compliance/DataRightsPanel'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../lib/phone'
 
 const emptyProfile: TechnicianProfileForm = {
   documentNumber: '', phone: '', categoryIds: [], description: '',
@@ -80,7 +81,8 @@ export function TechnicianProfilePage() {
       <form onSubmit={submit} className="space-y-3 rounded-3xl border border-slate-800 bg-slate-900 p-6">
         <div className="flex justify-between">{profile.data && <><VerificationBadge value={profile.data.verificationStatus} /><span className="text-sm font-bold text-brand-400">{profile.data.status}</span></>}</div>
         <input placeholder="Documento" value={form.documentNumber} onChange={(event) => setForm({ ...form, documentNumber: event.target.value })} required />
-        <input placeholder="Teléfono" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />
+        <input placeholder="Teléfono" inputMode="numeric" maxLength={10} pattern="\d{10}" value={form.phone} onChange={(event) => setForm({ ...form, phone: normalizeLocalPhone(event.target.value) })} required />
+        {form.phone && !isValidLocalPhone(form.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
         <fieldset><legend className="mb-3 text-sm text-slate-400">Categorías</legend><div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
           {categories.data?.map((category) => <label key={category.id} className="grid cursor-pointer grid-cols-[1.25rem_1fr] items-start gap-3 text-sm leading-5"><input className="mt-0.5 h-5 w-5 shrink-0 accent-brand-500" type="checkbox" checked={form.categoryIds.includes(category.id)} onChange={(event) => setForm({ ...form, categoryIds: event.target.checked ? [...form.categoryIds, category.id] : form.categoryIds.filter((id) => id !== category.id) })} /><span>{category.name}</span></label>)}
         </div></fieldset>
@@ -96,7 +98,7 @@ export function TechnicianProfilePage() {
         <label className="text-sm">Barrio<input value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /></label>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={useLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">{form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener mi ubicación GPS'}</button>{!session?.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">Verificar correo</button>}</div>
         {error && <p className="text-sm text-red-300">{error}</p>}
-        <button disabled={save.isPending} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{save.isPending ? 'Guardando...' : profile.data ? 'Actualizar perfil' : 'Crear perfil'}</button>
+        <button disabled={save.isPending || !isValidLocalPhone(form.phone)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{save.isPending ? 'Guardando...' : profile.data ? 'Actualizar perfil' : 'Crear perfil'}</button>
       </form>
     </QueryState>
     <DataRightsPanel />

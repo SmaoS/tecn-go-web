@@ -8,6 +8,7 @@ import { profileApi } from './api'
 import { useProfile, useSaveProfile } from './hooks'
 import { PasswordField } from '../../components/PasswordField'
 import { GeographicFields } from '../catalogs/GeographicFields'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../lib/phone'
 
 const verificationLabels: Record<VerificationStatus, string> = {
   CREATED: 'Cuenta creada: carga tu documento',
@@ -49,7 +50,7 @@ export function UserProfileEditor() {
     onError: (reason) => setError(apiMessage(reason)),
   })
   const verifyPhoneOtp = useMutation({
-    mutationFn: ({ phone, code }: { phone: string; code: string }) => profileApi.verifyPhoneOtp(phone, code),
+    mutationFn: ({ phone, code, countryId }: { phone: string; code: string; countryId?: string }) => profileApi.verifyPhoneOtp(phone, code, countryId),
     onSuccess: () => { setError('Celular verificado.'); void profile.refetch() },
     onError: (reason) => setError(apiMessage(reason)),
   })
@@ -82,11 +83,12 @@ export function UserProfileEditor() {
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
       <input value={current.fullName} onChange={(event) => update({ fullName: event.target.value })} required />
       <input type="email" value={current.email ?? ''} placeholder="Sin correo registrado" disabled readOnly className="cursor-not-allowed opacity-70" aria-label="Correo registrado" />
-      <input placeholder="Teléfono" value={current.phone ?? ''} onChange={(event) => update({ phone: event.target.value })} />
+      <input placeholder="Teléfono" inputMode="numeric" maxLength={10} pattern="\d{10}" value={current.phone ?? ''} onChange={(event) => update({ phone: normalizeLocalPhone(event.target.value) })} />
+      {current.phone && !isValidLocalPhone(current.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
       {!current.phoneVerified && current.phone && <div className="flex gap-2 sm:col-span-2">
-        <button type="button" onClick={() => sendPhoneOtp.mutate(current.phone!)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Enviar código al celular</button>
+        <button type="button" disabled={!isValidLocalPhone(current.phone)} onClick={() => sendPhoneOtp.mutate({ phone: current.phone!, countryId: current.countryId })} className="rounded-lg border border-slate-700 px-3 py-2 text-sm disabled:opacity-50">Enviar código al celular</button>
         <input inputMode="numeric" placeholder="Código OTP" value={phoneCode} onChange={(event) => setPhoneCode(event.target.value.replace(/\D/g, ''))} />
-        <button type="button" disabled={!phoneCode} onClick={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode })} className="rounded-lg border border-brand-500 px-3 py-2 text-sm disabled:opacity-50">Verificar celular</button>
+        <button type="button" disabled={!phoneCode || !isValidLocalPhone(current.phone)} onClick={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode, countryId: current.countryId })} className="rounded-lg border border-brand-500 px-3 py-2 text-sm disabled:opacity-50">Verificar celular</button>
       </div>}
       <GeographicFields countryId={current.countryId} departmentId={current.departmentId} cityId={current.cityId} onChange={(values) => update({ ...values, homeCity: values.cityName })} />
       <label className="text-sm">Dirección de domicilio<input value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} /></label>

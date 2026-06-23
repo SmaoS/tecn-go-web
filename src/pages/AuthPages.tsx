@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { useAuth } from '../context/useAuth'
 import type { Role, Session } from '../types'
 import { PasswordField } from '../components/PasswordField'
+import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../lib/phone'
 
 function AuthShell({ title, children }: { title: string; children: React.ReactNode }) {
   return <section className="mx-auto max-w-md px-5 py-12 sm:py-16">
@@ -31,7 +32,7 @@ export function LoginPage() {
   const [mfaCode, setMfaCode] = useState('')
   const { setSession } = useAuth()
   const navigate = useNavigate()
-  const canLogin = identifier.trim().length > 0 && password.length > 0
+  const canLogin = (method === 'email' ? identifier.trim().length > 0 : isValidLocalPhone(identifier)) && password.length > 0
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setError('')
@@ -40,7 +41,7 @@ export function LoginPage() {
       const endpoint = method === 'email' ? '/v1/auth/login' : '/v1/auth/login-by-phone'
       const payload = method === 'email'
         ? { email: identifier.trim(), password }
-        : { phone: identifier.trim(), password }
+        : { phone: normalizeLocalPhone(identifier), password }
       const { data } = await api.post<Session & {
         mfaRequired?: boolean
         mfaChallengeToken?: string
@@ -88,7 +89,8 @@ export function LoginPage() {
       <button type="button" onClick={() => { setMethod('email'); setIdentifier('') }} className={`rounded-lg border p-2 ${method === 'email' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Correo</button>
       <button type="button" onClick={() => { setMethod('phone'); setIdentifier('') }} className={`rounded-lg border p-2 ${method === 'phone' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Celular</button>
     </div>
-    <input type={method === 'email' ? 'email' : 'tel'} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChange={(e) => setIdentifier(e.target.value)} required />
+    <input type={method === 'email' ? 'email' : 'tel'} inputMode={method === 'phone' ? 'numeric' : undefined} maxLength={method === 'phone' ? 10 : undefined} pattern={method === 'phone' ? '\\d{10}' : undefined} placeholder={method === 'email' ? 'Correo' : 'Celular, ej. 3001234567'} value={identifier} onChange={(e) => setIdentifier(method === 'phone' ? normalizeLocalPhone(e.target.value) : e.target.value)} required />
+    {method === 'phone' && identifier.length > 0 && !isValidLocalPhone(identifier) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
     <PasswordField placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} required />
     {error && <p className="text-sm text-red-400">{error}</p>}
     <button disabled={loading || !canLogin} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50">{loading ? 'Ingresando...' : 'Ingresar'}</button>
@@ -133,7 +135,7 @@ export function RegisterPage() {
       const endpoint = method === 'email' ? '/v1/auth/register' : '/v1/auth/register-by-phone'
       const payload = method === 'email'
         ? { fullName: form.fullName, email: form.email, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
-        : { fullName: form.fullName, phone: form.phone, verificationToken, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
+        : { fullName: form.fullName, phone: normalizeLocalPhone(form.phone), verificationToken, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
       const { data } = await api.post<Session>(endpoint, payload)
       setSession(data); navigate('/app')
     } catch (reason) { setError(message(reason)) } finally { setLoading(false) }
@@ -142,7 +144,7 @@ export function RegisterPage() {
   async function sendOtp() {
     setOtpLoading(true); setError(''); setOtpNotice('')
     try {
-      const { data } = await api.post<{ message: string; debugCode?: string }>('/v1/auth/phone/send-otp', { phone: form.phone })
+      const { data } = await api.post<{ message: string; debugCode?: string }>('/v1/auth/phone/send-otp', { phone: normalizeLocalPhone(form.phone) })
       setOtpNotice(data.debugCode ? `Código enviado. Código de desarrollo: ${data.debugCode}` : 'Código enviado por SMS.')
     } catch (reason) { setError(message(reason)) } finally { setOtpLoading(false) }
   }
@@ -150,7 +152,7 @@ export function RegisterPage() {
   async function verifyOtp() {
     setOtpLoading(true); setError('')
     try {
-      const { data } = await api.post<{ verificationToken: string }>('/v1/auth/phone/verify-otp', { phone: form.phone, code: otpCode })
+      const { data } = await api.post<{ verificationToken: string }>('/v1/auth/phone/verify-otp', { phone: normalizeLocalPhone(form.phone), code: otpCode })
       setVerificationToken(data.verificationToken); setOtpNotice('Celular verificado correctamente.')
     } catch (reason) { setError(message(reason)) } finally { setOtpLoading(false) }
   }
@@ -161,8 +163,9 @@ export function RegisterPage() {
     <input placeholder="Nombre completo" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
     {method === 'email'
       ? <input type="email" placeholder="Correo" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-      : <><div className="flex gap-2"><input type="tel" placeholder="Celular, ej. 3001234567" value={form.phone} onChange={(e) => { setForm({ ...form, phone: e.target.value }); setVerificationToken('') }} required /><button type="button" disabled={otpLoading || !form.phone.trim()} onClick={() => void sendOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">Enviar código</button></div>
-        <div className="flex gap-2"><input inputMode="numeric" maxLength={8} placeholder="Código OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} /><button type="button" disabled={otpLoading || !otpCode || Boolean(verificationToken)} onClick={() => void verifyOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">{verificationToken ? 'Verificado' : 'Verificar'}</button></div>
+      : <><div className="flex gap-2"><input type="tel" inputMode="numeric" maxLength={10} pattern="\d{10}" placeholder="Celular, ej. 3001234567" value={form.phone} onChange={(e) => { setForm({ ...form, phone: normalizeLocalPhone(e.target.value) }); setVerificationToken('') }} required /><button type="button" disabled={otpLoading || !isValidLocalPhone(form.phone)} onClick={() => void sendOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">Enviar código</button></div>
+        {form.phone.length > 0 && !isValidLocalPhone(form.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
+        <div className="flex gap-2"><input inputMode="numeric" maxLength={8} placeholder="Código OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} /><button type="button" disabled={otpLoading || !otpCode || !isValidLocalPhone(form.phone) || Boolean(verificationToken)} onClick={() => void verifyOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">{verificationToken ? 'Verificado' : 'Verificar'}</button></div>
         {otpNotice && <p className="text-sm text-emerald-400">{otpNotice}</p>}</>}
     <PasswordField minLength={8} placeholder="Contraseña (mínimo 8 caracteres)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
     <PasswordField minLength={8} placeholder="Confirmar contraseña" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
@@ -170,7 +173,7 @@ export function RegisterPage() {
     {referralMessage && <p className={`text-sm ${referralMessage.startsWith('Código válido') ? 'text-emerald-400' : 'text-amber-300'}`}>{referralMessage}</p>}
     <p className="text-sm text-slate-400">Después de ingresar podrás completar tu perfil, subir tu foto y enviar el documento para verificación.</p>
     {error && <p className="text-sm text-red-400">{error}</p>}
-    <button disabled={loading || (method === 'phone' && !verificationToken)} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:opacity-50">{loading ? 'Creando...' : 'Crear cuenta'}</button>
+    <button disabled={loading || (method === 'phone' && (!verificationToken || !isValidLocalPhone(form.phone)))} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:opacity-50">{loading ? 'Creando...' : 'Crear cuenta'}</button>
   </form></AuthShell>
 }
 
