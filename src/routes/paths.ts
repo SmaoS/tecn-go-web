@@ -15,6 +15,7 @@ export const workflowPaths = {
     payments: '/app/cliente/pagos',
     profile: '/app/cliente/perfil',
     legal: '/app/cliente/legal',
+    referrals: '/app/cliente/referidos',
   },
   technician: {
     assigned: '/app/tecnico/asignadas',

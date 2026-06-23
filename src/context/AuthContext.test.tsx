@@ -30,6 +30,20 @@ describe('AuthProvider', () => {
     expect(screen.getByText('Sesión persistida')).toBeInTheDocument()
   })
 
+  it('restaura el rol efectivo desde activeMode', () => {
+    localStorage.setItem(sessionStorageKey, JSON.stringify(sessionFixture({
+      role: 'TECHNICIAN',
+      roles: ['CLIENT', 'TECHNICIAN'],
+      activeMode: 'CLIENT',
+      fullName: 'Sesión modo cliente',
+    })))
+
+    renderAuthProvider()
+
+    expect(screen.getByText('Sesión modo cliente')).toBeInTheDocument()
+    expect(JSON.parse(localStorage.getItem(sessionStorageKey) ?? '{}').role).toBe('CLIENT')
+  })
+
   it('elimina una sesión inválida sin romper el arranque', () => {
     localStorage.setItem(sessionStorageKey, '{sesion-invalida')
 

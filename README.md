@@ -77,7 +77,8 @@ npm run test:watch
 npm run preview
 ```
 
-La URL del backend se configura con `VITE_API_URL`. No se deben guardar secretos en
+La URL del backend se configura con `VITE_API_URL`. El enlace compartido por
+**Invita y gana** usa `VITE_PLAY_STORE_URL`. No se deben guardar secretos en
 variables de Vite porque se incluyen en el bundle del navegador.
 
 ## Producción

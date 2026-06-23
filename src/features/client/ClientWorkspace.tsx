@@ -7,6 +7,7 @@ const links = [
   { to: workflowPaths.client.payments, label: 'Pagos', primary: true },
   { to: workflowPaths.client.profile, label: 'Mi perfil', primary: true },
   { to: workflowPaths.client.history, label: 'Historial de solicitudes' },
+  { to: workflowPaths.client.referrals, label: 'Invita y gana' },
   { to: workflowPaths.client.legal, label: 'Seguridad y términos' },
 
 ]

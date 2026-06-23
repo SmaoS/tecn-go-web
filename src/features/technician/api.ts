@@ -32,7 +32,7 @@ export const technicianApi = {
   rate: (id: string, score: number, comment: string) => api.post(`/v1/service-requests/${id}/ratings`, { score, comment }),
   ratingStatus: (id: string) => api.get<{ rated: boolean }>(`/v1/service-requests/${id}/ratings/me`).then(({ data }) => data),
   location: (payload: object) => api.put('/v1/technicians/me/location', payload),
-  referralCode: () => api.get<ReferralCode>('/v1/technicians/me/referral-code').then(({ data }) => data),
-  referrals: () => api.get<ReferralRegistration[]>('/v1/technicians/me/referrals').then(({ data }) => data),
-  referralRewards: () => api.get<ReferralReward[]>('/v1/technicians/me/referral-rewards').then(({ data }) => data),
+  referralCode: () => api.get<ReferralCode>('/v1/users/me/referral-code').then(({ data }) => data),
+  referrals: () => api.get<ReferralRegistration[]>('/v1/users/me/referrals').then(({ data }) => data),
+  referralRewards: () => api.get<ReferralReward[]>('/v1/users/me/referral-rewards').then(({ data }) => data),
 }

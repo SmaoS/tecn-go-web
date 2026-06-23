@@ -71,6 +71,7 @@ export function AppRoutes() {
           <Route path="nueva" element={<CreateRequestPage />} />
           <Route path="pagos" element={<ClientPaymentsPage />} />
           <Route path="perfil" element={<ClientProfilePage />} />
+          <Route path="referidos" element={<TechnicianReferralsPage />} />
           <Route path="legal" element={<LegalPage />} />
         </Route></Route>
         <Route element={<RoleRoute role="TECHNICIAN" />}><Route path="tecnico" element={<TechnicianWorkspace />}>
