@@ -76,10 +76,11 @@ describe('ClientRequestsPage', () => {
 
     await screen.findByText('Califica al técnico')
     await user.selectOptions(screen.getByRole('combobox'), '4')
-    await user.type(screen.getByPlaceholderText('Comentario opcional'), 'Buen servicio')
+    await user.click(screen.getByRole('button', { name: 'Excelente servicio' }))
+    await user.type(screen.getByPlaceholderText('Comentario personal opcional'), 'Buen servicio')
     await user.click(screen.getByRole('button', { name: 'Enviar calificación' }))
 
-    await waitFor(() => expect(rating).toEqual({ score: 4, comment: 'Buen servicio' }))
+    await waitFor(() => expect(rating).toEqual({ score: 4, comment: 'Excelente servicio. Buen servicio' }))
     expect(screen.getByText('Calificación enviada.')).toBeInTheDocument()
   })
 })

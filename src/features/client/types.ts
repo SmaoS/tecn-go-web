@@ -13,4 +13,5 @@ export type PaymentMethod = 'CASH' | 'BREB' | 'NEQUI' | 'DAVIPLATA' | 'BANCOLOMB
 export interface RatingDraft {
   score: number
   comment: string
+  selectedPhrases?: string[]
 }

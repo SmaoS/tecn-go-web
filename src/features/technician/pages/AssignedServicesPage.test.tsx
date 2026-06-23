@@ -69,9 +69,6 @@ describe('AssignedServicesPage', () => {
       technicianName: 'Técnico TecnGo',
     })
     let rating: Record<string, unknown> = {}
-    vi.spyOn(window, 'prompt')
-      .mockReturnValueOnce('4')
-      .mockReturnValueOnce('Cliente puntual')
     server.use(
       http.get('*/v1/service-requests/my-assigned/page', () => HttpResponse.json(page([request]))),
       http.get(`*/v1/service-requests/${request.id}/ratings/me`, () => HttpResponse.json({ rated: false })),
@@ -84,8 +81,12 @@ describe('AssignedServicesPage', () => {
       session: roleSessionFixture('TECHNICIAN'),
     })
 
-    await user.click(await screen.findByRole('button', { name: 'Calificar cliente' }))
+    await screen.findByRole('button', { name: 'Calificar cliente' })
+    await user.selectOptions(screen.getByRole('combobox'), '4')
+    await user.click(screen.getByRole('button', { name: 'Puntual y responsable' }))
+    await user.type(screen.getByPlaceholderText('Comentario personal opcional'), 'Cliente puntual')
+    await user.click(screen.getByRole('button', { name: 'Calificar cliente' }))
 
-    await waitFor(() => expect(rating).toEqual({ score: 4, comment: 'Cliente puntual' }))
+    await waitFor(() => expect(rating).toEqual({ score: 4, comment: 'Puntual y responsable. Cliente puntual' }))
   })
 })

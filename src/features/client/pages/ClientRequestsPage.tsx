@@ -10,6 +10,8 @@ import { clientApi } from '../api'
 import { useClientQuotes, useClientRatingStatuses, useClientRequestAction, useClientRequests } from '../hooks'
 import type { RatingDraft } from '../types'
 import { formatCopCurrency } from '../../../lib/format'
+import { RatingPhraseChips } from '../../ratings/RatingPhraseChips'
+import { buildRatingComment } from '../../ratings/ratingPhrases'
 
 export function ClientRequestsPage() {
   const { session } = useAuth()
@@ -46,7 +48,10 @@ export function ClientRequestsPage() {
           {item.technicianId && <button onClick={() => setChatRequest(item)} className="rounded-lg border border-brand-500/50 px-3 py-2 text-sm text-brand-300">Abrir chat</button>}
           {!['COMPLETED', 'PAID', 'CANCELLED'].includes(item.status) && <button onClick={() => action.mutate(() => clientApi.cancel(item.id))} className="rounded-lg border border-red-500/50 px-3 py-2 text-sm text-red-300">Cancelar</button>}
         </div>
-        {item.status === 'PAID' && ratingStatuses.data?.[item.id] === false && <div className="mt-4 grid gap-2 rounded-xl bg-slate-950/50 p-3"><strong className="text-sm">Califica al técnico</strong><select value={ratings[item.id]?.score ?? 5} onChange={(event) => setRatings({ ...ratings, [item.id]: { score: Number(event.target.value), comment: ratings[item.id]?.comment ?? '' } })}>{[5, 4, 3, 2, 1].map((score) => <option key={score} value={score}>{score} estrellas</option>)}</select><textarea placeholder="Comentario opcional" value={ratings[item.id]?.comment ?? ''} onChange={(event) => setRatings({ ...ratings, [item.id]: { score: ratings[item.id]?.score ?? 5, comment: event.target.value } })} /><button onClick={() => action.mutate(() => clientApi.rate(item.id, ratings[item.id] ?? { score: 5, comment: '' }), { onSuccess: () => setNotice('Calificación enviada.') })} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Enviar calificación</button></div>}
+        {item.status === 'PAID' && ratingStatuses.data?.[item.id] === false && <div className="mt-4 grid gap-2 rounded-xl bg-slate-950/50 p-3"><strong className="text-sm">Califica al técnico</strong><select value={ratings[item.id]?.score ?? 5} onChange={(event) => setRatings({ ...ratings, [item.id]: { score: Number(event.target.value), comment: ratings[item.id]?.comment ?? '', selectedPhrases: ratings[item.id]?.selectedPhrases ?? [] } })}>{[5, 4, 3, 2, 1].map((score) => <option key={score} value={score}>{score} estrellas</option>)}</select><RatingPhraseChips audience="CLIENT" selected={ratings[item.id]?.selectedPhrases ?? []} onChange={(selectedPhrases) => setRatings({ ...ratings, [item.id]: { score: ratings[item.id]?.score ?? 5, comment: ratings[item.id]?.comment ?? '', selectedPhrases } })} /><textarea placeholder="Comentario personal opcional" value={ratings[item.id]?.comment ?? ''} onChange={(event) => setRatings({ ...ratings, [item.id]: { score: ratings[item.id]?.score ?? 5, comment: event.target.value, selectedPhrases: ratings[item.id]?.selectedPhrases ?? [] } })} /><button onClick={() => {
+          const draft = ratings[item.id] ?? { score: 5, comment: '', selectedPhrases: [] }
+          action.mutate(() => clientApi.rate(item.id, { score: draft.score, comment: buildRatingComment(draft.selectedPhrases ?? [], draft.comment) }), { onSuccess: () => setNotice('Calificación enviada.') })
+        }} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Enviar calificación</button></div>}
         <ServiceSupportPanel requestId={item.id} />
       </article>)}</div>
     </QueryState>
