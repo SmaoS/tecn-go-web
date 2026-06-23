@@ -33,7 +33,7 @@ describe('AssignedServicesPage', () => {
     })
 
     await screen.findByText('Revisar una instalación eléctrica')
-    await user.click(screen.getByRole('button', { name: 'Ir en camino' }))
+    await user.click(screen.getByRole('button', { name: 'Voy en camino' }))
 
     await waitFor(() => expect(nextStatus).toBe('ON_THE_WAY'))
   })

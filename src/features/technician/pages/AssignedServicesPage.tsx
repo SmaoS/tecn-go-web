@@ -81,7 +81,7 @@ export function AssignedServicesPage() {
     {action.error && <p className="mb-4 text-red-300">No fue posible actualizar el servicio.</p>}
     <QueryState pending={requests.isPending || ((requests.data ?? []).some((item) => item.status === 'PAID') && ratingStatuses.isPending)} error={requests.error ?? ratingStatuses.error}>
       <RequestList title="" items={requests.data ?? []} actionLabel={(item) => {
-        const labels: Partial<Record<RequestStatus, string>> = { QUOTE_ACCEPTED: 'Ir en camino', ON_THE_WAY: 'Marcar llegada', ARRIVED: 'Iniciar servicio', IN_PROGRESS: 'Completar' }
+        const labels: Partial<Record<RequestStatus, string>> = { QUOTE_ACCEPTED: 'Voy en camino', ON_THE_WAY: 'Marcar llegada', ARRIVED: 'Iniciar servicio', IN_PROGRESS: 'Completar' }
         return item.status === 'PAID' && ratingStatuses.data?.[item.id] === false ? 'Calificar cliente' : labels[item.status]
       }} onAction={(item) => item.status === 'PAID' ? rateClient(item) : advance(item)} onChat={setChatRequest} />
     </QueryState>
