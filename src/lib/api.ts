@@ -83,6 +83,15 @@ api.interceptors.response.use(
     ) {
       redirectBrowser('/app/onboarding')
     }
+    if (error.response?.status === 409 && error.response.data?.code === 'LEGAL_ACCEPTANCE_REQUIRED') {
+      const session = readStoredSession()
+      const role = session?.activeMode ?? session?.role
+      const legalPath = role === 'TECHNICIAN' ? '/app/tecnico/legal' : '/app/cliente/legal'
+      if (window.location.pathname !== legalPath) {
+        const returnTo = `${window.location.pathname}${window.location.search}`
+        redirectBrowser(`${legalPath}?required=1&returnTo=${encodeURIComponent(returnTo)}`)
+      }
+    }
     return Promise.reject(error)
   },
 )

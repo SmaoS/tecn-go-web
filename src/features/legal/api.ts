@@ -5,6 +5,7 @@ export const legalApi = {
   active: () => api.get<LegalDocument[]>('/v1/legal/documents/active').then(({ data }) => data),
   publicActive: () => api.get<LegalDocument[]>('/v1/legal/documents/public').then(({ data }) => data),
   accept: (id: string) => api.post(`/v1/legal/documents/${id}/accept`),
+  acceptAll: () => api.post('/v1/legal/documents/accept-all'),
   all: () => api.get<LegalDocument[]>('/v1/admin/legal-documents').then(({ data }) => data),
   activate: (id: string) => api.put(`/v1/admin/legal-documents/${id}/activate`),
   create: (value: Omit<LegalDocument, 'id' | 'accepted'>) => api.post('/v1/admin/legal-documents', value),

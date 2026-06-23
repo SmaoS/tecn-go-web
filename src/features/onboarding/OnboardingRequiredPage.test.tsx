@@ -73,16 +73,29 @@ describe('OnboardingRequiredPage', () => {
     let accepted = false
     server.use(
       http.get('*/v1/users/me/onboarding-status', () => HttpResponse.json(status('LEGAL_ACCEPTANCE'))),
-      http.post('*/v1/users/me/onboarding/legal-acceptance', () => {
+      http.get('*/v1/legal/documents/active', () => HttpResponse.json([
+        {
+          id: 'legal-1',
+          code: 'CLIENT_TERMS',
+          title: 'Términos para clientes',
+          version: '4.0',
+          roleTarget: 'CLIENT',
+          content: 'Texto completo de los términos.',
+          active: true,
+          accepted: false,
+        },
+      ])),
+      http.post('*/v1/legal/documents/accept-all', () => {
         accepted = true
-        return HttpResponse.json(status('PROFILE_SELFIE'))
+        return HttpResponse.json({ complete: true, pending: [], accepted: [] })
       }),
     )
     const { user } = renderWithProviders(<OnboardingRequiredPage />, {
       session: roleSessionFixture('CLIENT'),
     })
 
-    await user.click(await screen.findByRole('button', { name: 'Aceptar y continuar' }))
+    expect(await screen.findByText('Texto completo de los términos.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Aceptar todos y continuar' }))
 
     await waitFor(() => expect(accepted).toBe(true))
   })

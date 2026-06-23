@@ -7,6 +7,7 @@ import { uploadFile } from '../../lib/files'
 import { GeographicFields } from '../catalogs/GeographicFields'
 import { apiMessage } from '../shared/api'
 import { onboardingApi } from './api'
+import { LegalDocumentsContent } from '../legal/LegalDocumentsContent'
 
 type DocumentType = 'CC' | 'PASSPORT'
 
@@ -40,16 +41,15 @@ export function OnboardingRequiredPage() {
   const refresh = async () => queryClient.invalidateQueries({ queryKey: ['onboarding-status'] })
 
   const mainMutation = useMutation({ mutationFn: onboardingApi.mainData, onSuccess: refresh })
-  const legalMutation = useMutation({ mutationFn: onboardingApi.legalAcceptance, onSuccess: refresh })
   const selfieMutation = useMutation({ mutationFn: onboardingApi.profileSelfie, onSuccess: refresh })
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
   const professionalMutation = useMutation({ mutationFn: onboardingApi.professionalProfile, onSuccess: refresh })
   const certificateMutation = useMutation({ mutationFn: onboardingApi.certificate, onSuccess: refresh })
   const skipCertificate = useMutation({ mutationFn: onboardingApi.skipCertificate, onSuccess: refresh })
-  const pending = mainMutation.isPending || legalMutation.isPending || selfieMutation.isPending
+  const pending = mainMutation.isPending || selfieMutation.isPending
     || documentMutation.isPending || professionalMutation.isPending
     || certificateMutation.isPending || skipCertificate.isPending
-  const error = mainMutation.error || legalMutation.error || selfieMutation.error || documentMutation.error
+  const error = mainMutation.error || selfieMutation.error || documentMutation.error
     || professionalMutation.error || certificateMutation.error || skipCertificate.error
 
   useEffect(() => {
@@ -86,8 +86,8 @@ export function OnboardingRequiredPage() {
       <button disabled={pending} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar y continuar</button>
     </form>}
     {status.data?.currentStep === 'LEGAL_ACCEPTANCE' && <div className="mt-5 space-y-4">
-      <p className="text-slate-300">Acepta los documentos legales requeridos para tu rol.</p>
-      <button disabled={pending} onClick={() => legalMutation.mutate()} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Aceptar y continuar</button>
+      <p className="text-slate-300">Lee todos los documentos legales requeridos para tu rol.</p>
+      <LegalDocumentsContent buttonLabel="Aceptar todos y continuar" onAccepted={refresh} />
     </div>}
     {status.data?.currentStep === 'PROFILE_SELFIE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Carga una foto clara de tu rostro. Después quedará bloqueada para cambios desde tu perfil.</p>

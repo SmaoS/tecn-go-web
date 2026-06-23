@@ -51,4 +51,17 @@ describe('seguridad del cliente API', () => {
 
     expect(redirectBrowser).toHaveBeenCalledWith(path)
   })
+
+  it('redirige a términos y conserva la acción original ante aceptación pendiente', async () => {
+    localStorage.setItem(sessionStorageKey, JSON.stringify(sessionFixture({ role: 'CLIENT' })))
+    server.use(http.post('*/v1/protected-action', () =>
+      HttpResponse.json({ code: 'LEGAL_ACCEPTANCE_REQUIRED' }, { status: 409 })))
+    const { api } = await import('./api')
+
+    await expect(api.post('/v1/protected-action')).rejects.toBeDefined()
+
+    expect(redirectBrowser).toHaveBeenCalledWith(
+      expect.stringMatching(/^\/app\/cliente\/legal\?required=1&returnTo=/),
+    )
+  })
 })
