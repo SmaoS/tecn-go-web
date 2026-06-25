@@ -28,6 +28,7 @@ export function UserProfileEditor() {
   const [passwordNotice, setPasswordNotice] = useState('')
   const [passwordModal, setPasswordModal] = useState(false)
   const [phoneCode, setPhoneCode] = useState('')
+  const [fileUploading, setFileUploading] = useState(false)
   const profile = useProfile()
   const current = draft ?? profile.data
   const save = useSaveProfile()
@@ -56,9 +57,11 @@ export function UserProfileEditor() {
   })
   async function file(field: 'profilePhotoUrl' | 'documentPhotoUrl', selected?: File) {
     if (!selected || !current) return
+    setFileUploading(true)
     try {
       setDraft({ ...current, [field]: await uploadFile(selected, field === 'profilePhotoUrl' ? 'PROFILE' : 'DOCUMENT') })
     } catch (reason) { setError(apiMessage(reason)) }
+    finally { setFileUploading(false) }
   }
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -97,7 +100,8 @@ export function UserProfileEditor() {
       <label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label>
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
-    <div className="mt-3 flex flex-wrap gap-2"><button className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300">Guardar perfil</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
+    {fileUploading && <p className="mt-2 text-sm text-brand-300">Cargando archivo...</p>}
+    <div className="mt-3 flex flex-wrap gap-2"><button disabled={save.isPending || fileUploading || !current.documentPhotoUrl} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">{save.isPending || fileUploading ? 'Guardando...' : 'Guardar perfil'}</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
     <button type="button" onClick={() => setPasswordModal(true)} className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-sm">Modificar contraseña</button>
     </form>}
     {current && passwordModal && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4" role="dialog" aria-modal="true">

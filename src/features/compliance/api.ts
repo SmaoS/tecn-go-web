@@ -2,8 +2,8 @@ import { api } from '../../lib/api'
 import type {
   AccessAudit,
   ComplianceIncident,
-  DataExport,
   DataRequest,
+  DataRequestStatus,
   IncidentSeverity,
   IncidentStatus,
   RetentionPolicy,
@@ -12,10 +12,18 @@ import type {
 const root = '/v1/admin/compliance'
 
 export const complianceApi = {
-  exportMine: () => api.post<DataExport>('/v1/users/me/data-export').then(({ data }) => data),
+  requestExport: () => api.post<DataRequest>('/v1/users/me/data-export-request').then(({ data }) => data),
+  exportRequests: () => api.get<DataRequest[]>('/v1/users/me/data-export-requests').then(({ data }) => data),
+  exportMine: () => api.post<DataRequest>('/v1/users/me/data-export-request').then(({ data }) => data),
   requestAnonymization: (reason: string) =>
     api.post<DataRequest>('/v1/users/me/data-anonymization', { reason }).then(({ data }) => data),
   dataRequests: () => api.get<DataRequest[]>(`${root}/data-requests`).then(({ data }) => data),
+  adminExportRequests: (status: DataRequestStatus = 'PENDING') =>
+    api.get<DataRequest[]>('/v1/admin/data-export-requests', { params: { status } }).then(({ data }) => data),
+  approveExportRequest: (id: string) =>
+    api.put<DataRequest>(`/v1/admin/data-export-requests/${id}/approve`).then(({ data }) => data),
+  rejectExportRequest: (id: string, reason: string) =>
+    api.put<DataRequest>(`/v1/admin/data-export-requests/${id}/reject`, { reason }).then(({ data }) => data),
   approveAnonymization: (id: string) =>
     api.put<DataRequest>(`${root}/data-requests/${id}/approve-anonymization`).then(({ data }) => data),
   rejectRequest: (id: string, reason: string) =>

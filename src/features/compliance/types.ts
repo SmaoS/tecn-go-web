@@ -1,4 +1,4 @@
-export type DataRequestStatus = 'PENDING' | 'COMPLETED' | 'REJECTED'
+export type DataRequestStatus = 'PENDING' | 'APPROVED' | 'SENT' | 'COMPLETED' | 'REJECTED'
 export type IncidentStatus = 'OPEN' | 'INVESTIGATING' | 'CONTAINED' | 'RESOLVED'
 export type IncidentSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
@@ -11,6 +11,11 @@ export interface DataRequest {
   reason?: string
   requestedAt: string
   completedAt?: string
+  reviewedAt?: string
+  rejectionReason?: string
+  exportFileUrl?: string
+  sentAt?: string
+  reviewedByUserId?: string
 }
 
 export interface RetentionPolicy {
@@ -43,10 +48,4 @@ export interface AccessAudit {
   outcome: 'SUCCESS' | 'DENIED' | 'FAILED'
   correlationId?: string
   createdAt: string
-}
-
-export interface DataExport {
-  requestId: string
-  generatedAt: string
-  data: Record<string, unknown>
 }

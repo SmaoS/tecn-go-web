@@ -2,10 +2,12 @@ import { useEffect, useState, type ImgHTMLAttributes } from 'react'
 import { api } from '../lib/api'
 import { requiresAuthentication } from './privateAsset'
 
-export function PrivateImage({ src, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+export function PrivateImage({ src, className, onLoad, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
   const [resolvedSrc, setResolvedSrc] = useState<string>()
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
+    setLoaded(false)
     if (!src) {
       setResolvedSrc(undefined)
       return
@@ -31,6 +33,18 @@ export function PrivateImage({ src, ...props }: ImgHTMLAttributes<HTMLImageEleme
     }
   }, [src])
 
-  if (!resolvedSrc) return null
-  return <img src={resolvedSrc} {...props} />
+  return <span className={`relative inline-block overflow-hidden align-middle ${className ?? ''}`}>
+    {!loaded && <span className="absolute inset-0 z-10 grid place-items-center bg-slate-900/90">
+      <span className="h-5 w-5 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" aria-label="Cargando imagen" />
+    </span>}
+    {resolvedSrc && <img
+      src={resolvedSrc}
+      className={className}
+      onLoad={(event) => {
+        setLoaded(true)
+        onLoad?.(event)
+      }}
+      {...props}
+    />}
+  </span>
 }

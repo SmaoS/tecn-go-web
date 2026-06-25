@@ -10,7 +10,7 @@ const links = [
   { to: workflowPaths.admin.technicianWallets, label: 'Saldos técnicos' },
   { to: workflowPaths.admin.settings, label: 'Configuración' },
   { to: workflowPaths.admin.operations, label: 'Pagos y denuncias' },
-  { to: workflowPaths.admin.users, label: 'Usuarios inactivos' },
+  { to: workflowPaths.admin.users, label: 'Usuarios' },
   { to: workflowPaths.admin.legal, label: 'Documentos legales' },
   { to: workflowPaths.admin.referrals, label: 'Referidos' },
   { to: workflowPaths.admin.appVersions, label: 'Versiones de App' },

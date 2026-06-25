@@ -26,6 +26,7 @@ export function TechnicianProfilePage() {
   const client = useQueryClient()
   const [form, setForm] = useState(emptyProfile)
   const [error, setError] = useState('')
+  const [fileUploading, setFileUploading] = useState(false)
   const categories = useTechnicianCategories()
   const profile = useTechnicianProfile()
   useEffect(() => {
@@ -60,7 +61,9 @@ export function TechnicianProfilePage() {
   async function file(field: 'profilePhotoUrl' | 'documentPhotoUrl' | 'certificatePhotoUrl', selected?: File) {
     if (!selected) return
     const kind = field === 'profilePhotoUrl' ? 'PROFILE' : field === 'certificatePhotoUrl' ? 'CERTIFICATE' : 'DOCUMENT'
+    setFileUploading(true)
     try { setForm({ ...form, [field]: await uploadFile(selected, kind) }) } catch (reason) { setError(apiMessage(reason)) }
+    finally { setFileUploading(false) }
   }
   function useLocation() {
     navigator.geolocation.getCurrentPosition(({ coords }) => setForm((value) => ({
@@ -97,8 +100,9 @@ export function TechnicianProfilePage() {
         <label className="text-sm">Dirección de domicilio<input value={form.homeAddress} onChange={(event) => setForm({ ...form, homeAddress: event.target.value })} required /></label>
         <label className="text-sm">Barrio<input value={form.homeNeighborhood} onChange={(event) => setForm({ ...form, homeNeighborhood: event.target.value })} /></label>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={useLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">{form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener mi ubicación GPS'}</button>{!session?.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">Verificar correo</button>}</div>
+        {fileUploading && <p className="text-sm text-brand-300">Cargando archivo...</p>}
         {error && <p className="text-sm text-red-300">{error}</p>}
-        <button disabled={save.isPending || !isValidLocalPhone(form.phone)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{save.isPending ? 'Guardando...' : profile.data ? 'Actualizar perfil' : 'Crear perfil'}</button>
+        <button disabled={save.isPending || fileUploading || !form.documentPhotoUrl || !isValidLocalPhone(form.phone)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{save.isPending || fileUploading ? 'Guardando...' : profile.data ? 'Actualizar perfil' : 'Crear perfil'}</button>
       </form>
     </QueryState>
     <DataRightsPanel />

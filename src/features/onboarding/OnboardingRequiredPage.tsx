@@ -40,6 +40,8 @@ export function OnboardingRequiredPage() {
   const [certificateUrl, setCertificateUrl] = useState('')
   const [professional, setProfessional] = useState({ categoryIds: [] as string[], workExperienceDescription: '' })
   const [showLegalPreview, setShowLegalPreview] = useState(false)
+  const [fileUploading, setFileUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const refresh = async () => queryClient.invalidateQueries({ queryKey: ['onboarding-status'] })
 
   const mainMutation = useMutation({ mutationFn: onboardingApi.mainData, onSuccess: refresh })
@@ -48,7 +50,7 @@ export function OnboardingRequiredPage() {
   const professionalMutation = useMutation({ mutationFn: onboardingApi.professionalProfile, onSuccess: refresh })
   const certificateMutation = useMutation({ mutationFn: onboardingApi.certificate, onSuccess: refresh })
   const skipCertificate = useMutation({ mutationFn: onboardingApi.skipCertificate, onSuccess: refresh })
-  const pending = mainMutation.isPending || selfieMutation.isPending
+  const pending = fileUploading || mainMutation.isPending || selfieMutation.isPending
     || documentMutation.isPending || professionalMutation.isPending
     || certificateMutation.isPending || skipCertificate.isPending
   const error = mainMutation.error || selfieMutation.error || documentMutation.error
@@ -61,7 +63,15 @@ export function OnboardingRequiredPage() {
   async function upload(event: ChangeEvent<HTMLInputElement>, kind: 'PROFILE' | 'DOCUMENT' | 'CERTIFICATE', setUrl: (url: string) => void) {
     const file = event.target.files?.[0]
     if (!file) return
-    setUrl(await uploadFile(file, kind))
+    setFileUploading(true)
+    setUploadError('')
+    try {
+      setUrl(await uploadFile(file, kind))
+    } catch (reason) {
+      setUploadError(apiMessage(reason))
+    } finally {
+      setFileUploading(false)
+    }
   }
 
   function submitMain(event: FormEvent) {
@@ -105,17 +115,20 @@ export function OnboardingRequiredPage() {
     </div>}
     {status.data?.currentStep === 'PROFILE_SELFIE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Carga una foto clara de tu rostro. Después quedará bloqueada para cambios desde tu perfil.</p>
-      <input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => void upload(event, 'PROFILE', setProfilePhotoUrl)} />
-      {profilePhotoUrl && <button disabled={pending} onClick={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar selfie</button>}
+      <input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => void upload(event, 'PROFILE', setProfilePhotoUrl)} />
+      {fileUploading && <p className="text-sm text-brand-300">Cargando imagen...</p>}
+      <button disabled={pending || !profilePhotoUrl} onClick={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">Guardar selfie</button>
     </div>}
     {status.data?.currentStep === 'IDENTITY_DOCUMENT' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">{main.documentType === 'CC' ? 'Carga frente y reverso de tu cédula.' : 'Carga la página principal del pasaporte.'}</p>
       {main.documentType === 'CC' ? <>
-        <label className="block text-sm">Frente<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setFrontUrl)} /></label>
-        <label className="block text-sm">Reverso<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setBackUrl)} /></label>
+        <label className="block text-sm">Frente<input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setFrontUrl)} /></label>
+        <label className="block text-sm">Reverso<input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setBackUrl)} /></label>
+        {fileUploading && <p className="text-sm text-brand-300">Cargando documento...</p>}
         <button disabled={pending || !frontUrl || !backUrl} onClick={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
       </> : <>
-        <label className="block text-sm">Pasaporte<input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setSingleUrl)} /></label>
+        <label className="block text-sm">Pasaporte<input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setSingleUrl)} /></label>
+        {fileUploading && <p className="text-sm text-brand-300">Cargando documento...</p>}
         <button disabled={pending || !singleUrl} onClick={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
       </>}
     </div>}
@@ -161,11 +174,12 @@ export function OnboardingRequiredPage() {
     </div>}
     {status.data?.currentStep === 'TECHNICIAN_CERTIFICATE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Si no tienes certificado de estudio, lo puedes cargar después.</p>
-      <input type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'CERTIFICATE', setCertificateUrl)} />
+      <input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'CERTIFICATE', setCertificateUrl)} />
+      {fileUploading && <p className="text-sm text-brand-300">Cargando certificado...</p>}
       <button disabled={pending || !certificateUrl} onClick={() => certificateMutation.mutate(certificateUrl)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar certificado</button>
       <button disabled={pending} onClick={() => skipCertificate.mutate()} className="rounded-xl border border-slate-700 px-5 py-3">No tengo certificado ahora</button>
     </div>}
     {status.data?.currentStep === 'COMPLETED' && <p className="mt-5 text-slate-300">Tu inscripción está lista. Te estamos llevando al inicio.</p>}
-    {error && <p className="mt-4 text-sm text-red-400">{apiMessage(error)}</p>}
+    {(uploadError || error) && <p className="mt-4 text-sm text-red-400">{uploadError || apiMessage(error)}</p>}
   </section>
 }

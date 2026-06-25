@@ -8,6 +8,7 @@ import { useServiceCategories } from '../hooks'
 import type { ClientRequestForm } from '../types'
 import { useProfile } from '../../profile/hooks'
 import { paymentMethodLabels, requestPaymentMethods } from '../../payments/paymentMethods'
+import { FilePreviewImage } from '../../../components/LoadingImage'
 
 const emptyForm: ClientRequestForm = {
   categoryId: '', description: '', address: '', latitude: '', longitude: '', estimatedPrice: '', paymentMethod: 'CASH',
@@ -72,7 +73,7 @@ export function CreateRequestPage() {
           </select>
         </label>
         <label className="block text-sm text-slate-300">Imágenes del problema (opcional, máximo 5)<input type="file" accept=".jpg,.jpeg,.png,.webp" multiple onChange={(event) => setImages(Array.from(event.target.files ?? []).slice(0, 5))} /></label>
-        {images.length > 0 && <div className="grid grid-cols-3 gap-2">{images.map((file) => <img key={`${file.name}-${file.lastModified}`} src={URL.createObjectURL(file)} alt="" className="h-24 w-full rounded-lg object-cover" />)}</div>}
+        {images.length > 0 && <div className="grid grid-cols-3 gap-2">{images.map((file) => <FilePreviewImage key={`${file.name}-${file.lastModified}`} file={file} alt="" className="h-24 w-full rounded-lg object-cover" />)}</div>}
         {notice && <p className="text-sm text-emerald-400">{notice}</p>}
         {locationError && <p className="text-sm text-red-400">{locationError}</p>}
         {create.error && <p className="text-sm text-red-400">{apiMessage(create.error)}</p>}
