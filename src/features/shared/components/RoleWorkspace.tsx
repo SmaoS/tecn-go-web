@@ -76,7 +76,7 @@ export function RoleWorkspace({ title, subtitle, links }: {
         </button>
         {menuOpen && <div
           role="menu"
-          className="absolute right-0 z-30 mt-2 grid max-h-[min(70vh,32rem)] w-72 gap-1 overflow-y-auto rounded-2xl border border-slate-700 bg-surface p-2 shadow-2xl shadow-black/40"
+  className="absolute sm:right-0 sm:left-auto left-0 z-30 mt-2 grid max-h-[min(70vh,32rem)] w-72 gap-1 overflow-y-auto rounded-2xl border border-slate-700 bg-surface p-2 shadow-2xl shadow-black/40"
         >
           {secondaryLinks.map((link) =>
             <NavLink
