@@ -12,6 +12,7 @@ import type { TechnicianProfileForm } from '../types'
 import { GeographicFields } from '../../catalogs/GeographicFields'
 import { DataRightsPanel } from '../../compliance/DataRightsPanel'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../../lib/phone'
+import { useProfile } from '../../profile/hooks'
 
 const emptyProfile: TechnicianProfileForm = {
   documentNumber: '', phone: '', categoryIds: [], description: '',
@@ -29,6 +30,7 @@ export function TechnicianProfilePage() {
   const [fileUploading, setFileUploading] = useState(false)
   const categories = useTechnicianCategories()
   const profile = useTechnicianProfile()
+  const userProfile = useProfile()
   useEffect(() => {
     if (!profile.data) return
     const data = profile.data
@@ -44,6 +46,27 @@ export function TechnicianProfilePage() {
       departmentId: data.departmentId ?? '', cityId: data.cityId ?? '',
     })
   }, [profile.data])
+  useEffect(() => {
+    if (profile.data || !userProfile.data) return
+    const data = userProfile.data
+    setForm((current) => ({
+      ...current,
+      documentNumber: current.documentNumber || data.documentNumber || '',
+      phone: current.phone || data.phone || '',
+      profilePhotoUrl: current.profilePhotoUrl || data.profilePhotoUrl || '',
+      documentPhotoUrl: current.documentPhotoUrl || data.documentPhotoUrl || '',
+      certificatePhotoUrl: current.certificatePhotoUrl || data.certificatePhotoUrl || '',
+      workExperienceDescription: current.workExperienceDescription || data.workExperienceDescription || '',
+      homeAddress: current.homeAddress || data.homeAddress || '',
+      homeLatitude: current.homeLatitude || String(data.homeLatitude ?? ''),
+      homeLongitude: current.homeLongitude || String(data.homeLongitude ?? ''),
+      homeCity: current.homeCity || data.homeCity || '',
+      homeNeighborhood: current.homeNeighborhood || data.homeNeighborhood || '',
+      countryId: current.countryId || data.countryId || '',
+      departmentId: current.departmentId || data.departmentId || '',
+      cityId: current.cityId || data.cityId || '',
+    }))
+  }, [profile.data, userProfile.data])
   const save = useMutation({
     mutationFn: () => technicianApi.saveProfile(profile.data ?? null, {
       ...form,
@@ -80,10 +103,15 @@ export function TechnicianProfilePage() {
   }
 
   return <section className="max-w-3xl"><h2 className="mb-4 text-2xl font-bold">Mi perfil técnico</h2>
-    <QueryState pending={categories.isPending || profile.isPending} error={categories.error}>
+    <QueryState pending={categories.isPending || profile.isPending || userProfile.isPending} error={categories.error ?? userProfile.error}>
       <form onSubmit={submit} className="space-y-3 rounded-3xl border border-slate-800 bg-slate-900 p-6">
         <div className="flex justify-between">{profile.data && <><VerificationBadge value={profile.data.verificationStatus} /><span className="text-sm font-bold text-brand-400">{profile.data.status}</span></>}</div>
-        <input placeholder="Documento" value={form.documentNumber} onChange={(event) => setForm({ ...form, documentNumber: event.target.value })} required />
+        <label className="text-sm">Documento
+          <input placeholder="Documento" value={form.documentNumber}
+            readOnly={Boolean((userProfile.data?.documentNumber || profile.data?.documentNumber))}
+            onChange={(event) => setForm({ ...form, documentNumber: event.target.value })} required />
+          {userProfile.data?.documentNumber && !profile.data?.documentNumber && <span className="mt-1 block text-xs text-slate-400">Tomado del perfil de cliente.</span>}
+        </label>
         <input placeholder="Teléfono" inputMode="numeric" maxLength={10} pattern="\d{10}" value={form.phone} onChange={(event) => setForm({ ...form, phone: normalizeLocalPhone(event.target.value) })} required />
         {form.phone && !isValidLocalPhone(form.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
         <fieldset><legend className="mb-3 text-sm text-slate-400">Categorías</legend><div className="grid gap-x-8 gap-y-3 sm:grid-cols-2">

@@ -45,11 +45,11 @@ describe('CreateRequestPage', () => {
     )
     const { user } = renderWithProviders(<CreateRequestPage />)
 
-    await screen.findByText('Villavicencio')
+    await screen.findByText('Electricista')
     await user.selectOptions(screen.getByRole('combobox', { name: '' }), category.id)
     await user.type(screen.getByPlaceholderText('Describe lo que necesitas'), 'Revisar tomacorriente')
     await user.type(screen.getByPlaceholderText('Dirección del servicio'), 'Calle 30 # 20-10')
-    await user.type(screen.getByPlaceholderText('Presupuesto estimado (opcional)'), '90000')
+    await user.type(screen.getByPlaceholderText('Presupuesto estimado (opcional)'), '50000')
     await user.click(screen.getByRole('button', { name: 'Crear solicitud' }))
 
     await screen.findByText('Solicitud creada y disponible para técnicos cercanos.')
@@ -58,7 +58,7 @@ describe('CreateRequestPage', () => {
       cityId: userProfileFixture().cityId,
       latitude: 4.16,
       longitude: -73.65,
-      estimatedPrice: 90000,
+      estimatedPrice: 50000,
       paymentMethod: 'CASH',
     })
   })

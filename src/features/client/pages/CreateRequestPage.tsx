@@ -66,7 +66,9 @@ export function CreateRequestPage() {
         <textarea placeholder="Describe lo que necesitas" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} required />
         <input placeholder="Dirección del servicio" value={form.address} onChange={(event) => setForm({ ...form, address: event.target.value })} required />
         <button type="button" onClick={currentLocation} className="rounded-xl border border-slate-700 px-4 py-2 text-sm">{form.latitude && form.longitude ? 'Ubicación GPS lista' : 'Obtener ubicación GPS'}</button>
-        <input type="number" min="0" step="1000" placeholder="Presupuesto estimado (opcional)" value={form.estimatedPrice} onChange={(event) => setForm({ ...form, estimatedPrice: event.target.value })} />
+        <input inputMode="numeric" placeholder="Presupuesto estimado (opcional)"
+          value={formatThousands(form.estimatedPrice)}
+          onChange={(event) => setForm({ ...form, estimatedPrice: onlyDigits(event.target.value) })} />
         <label className="block text-sm text-slate-300">¿Por dónde vas a pagar?
           <select value={form.paymentMethod} onChange={(event) => setForm({ ...form, paymentMethod: event.target.value as ClientRequestForm['paymentMethod'] })} required>
             {requestPaymentMethods.map((method) => <option key={method} value={method}>{paymentMethodLabels[method]}</option>)}
@@ -83,4 +85,13 @@ export function CreateRequestPage() {
       </form>
     </QueryState>
   </section>
+}
+
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, '')
+}
+
+function formatThousands(value: string) {
+  const digits = onlyDigits(value)
+  return digits ? Number(digits).toLocaleString('es-CO') : ''
 }
