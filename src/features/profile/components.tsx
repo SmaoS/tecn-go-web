@@ -73,6 +73,7 @@ export function UserProfileEditor() {
   function update(values: Partial<UserProfile>) {
     if (current) setDraft({ ...current, ...values })
   }
+  const documentRequired = current?.role === 'TECHNICIAN'
   function useHomeLocation() {
     navigator.geolocation.getCurrentPosition(({ coords }) => update({
       homeLatitude: coords.latitude,
@@ -97,11 +98,11 @@ export function UserProfileEditor() {
       <label className="text-sm">Dirección de domicilio<input value={current.homeAddress ?? ''} onChange={(event) => update({ homeAddress: event.target.value })} /></label>
       <label className="text-sm">Barrio<input value={current.homeNeighborhood ?? ''} onChange={(event) => update({ homeNeighborhood: event.target.value })} /></label>
       {!current.profilePhotoFaceValidated && <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>}
-      <label className="text-sm">Documento de identidad<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label>
+      <label className="text-sm">Documento de identidad {documentRequired ? 'obligatorio' : 'opcional'}<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} /></label>
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
     {fileUploading && <p className="mt-2 text-sm text-brand-300">Cargando archivo...</p>}
-    <div className="mt-3 flex flex-wrap gap-2"><button disabled={save.isPending || fileUploading || !current.documentPhotoUrl} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">{save.isPending || fileUploading ? 'Guardando...' : 'Guardar perfil'}</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
+    <div className="mt-3 flex flex-wrap gap-2"><button disabled={save.isPending || fileUploading || (documentRequired && !current.documentPhotoUrl)} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">{save.isPending || fileUploading ? 'Guardando...' : 'Guardar perfil'}</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
     <button type="button" onClick={() => setPasswordModal(true)} className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-sm">Modificar contraseña</button>
     </form>}
     {current && passwordModal && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4" role="dialog" aria-modal="true">

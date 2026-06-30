@@ -38,11 +38,13 @@ export interface ServiceRequest {
   clientProfilePhotoUrl?: string
   clientAverageRating: number
   clientPaidServicesCount: number
+  clientDocumentsVerified?: boolean
   technicianProfilePhotoUrl?: string
   technicianAverageRating?: number
   technicianCompletedServicesCount: number
   technicianExperienceDescription?: string
   technicianCategories: string[]
+  technicianDocumentsVerified?: boolean
   certifiedTechnician?: boolean
   categoryId: string
   categoryName: string
@@ -83,6 +85,7 @@ export interface ServiceQuote {
   technicianCompletedServicesCount: number
   technicianExperienceDescription?: string
   technicianCategories: string[]
+  technicianDocumentsVerified?: boolean
   certifiedTechnician?: boolean
   price: number
   description?: string
@@ -227,6 +230,22 @@ export interface UserVerification {
   workExperienceDescription?: string
   createdAt: string
   verifiedAt?: string
+}
+
+export interface ProfileSelfieChangeRequest {
+  id: string
+  userId: string
+  userName: string
+  userEmail?: string
+  userRole: Role
+  currentPhotoUrl?: string
+  requestedPhotoUrl: string
+  faceDetectionStatus?: 'AUTO_VALIDATED' | 'MANUAL_REVIEW_REQUIRED' | 'FAILED'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  requestedAt: string
+  reviewedByUserId?: string
+  reviewedAt?: string
+  rejectionReason?: string
 }
 
 export interface Verifier {

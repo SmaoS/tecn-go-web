@@ -6,7 +6,7 @@ import { GeographicFields } from '../catalogs/GeographicFields'
 import { apiMessage } from '../shared/api'
 import { QueryState } from '../shared/components/QueryState'
 import { verificationApi } from './api'
-import { usePendingVerifications, useVerifiers } from './hooks'
+import { usePendingProfileSelfieChanges, usePendingVerifications, useVerifiers } from './hooks'
 import type { VerifierForm } from './types'
 
 export function VerificationQueue() {
@@ -14,11 +14,20 @@ export function VerificationQueue() {
   const [error, setError] = useState('')
   const [large, setLarge] = useState<{ url: string; title: string } | null>(null)
   const items = usePendingVerifications()
+  const selfieChanges = usePendingProfileSelfieChanges()
   const review = useMutation({
     mutationFn: ({ id, decision }: { id: string; decision: 'verify' | 'reject' | 'photo' }) =>
       decision === 'verify' ? verificationApi.verify(id)
         : decision === 'photo' ? verificationApi.verifyProfilePhoto(id)
           : verificationApi.reject(id),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.verifications }),
+    onError: (reason) => setError(apiMessage(reason)),
+  })
+  const reviewSelfieChange = useMutation({
+    mutationFn: ({ id, decision, reason }: { id: string; decision: 'approve' | 'reject'; reason?: string }) =>
+      decision === 'approve'
+        ? verificationApi.approveProfileSelfieChange(id)
+        : verificationApi.rejectProfileSelfieChange(id, reason ?? 'Selfie no aprobada por verificación manual'),
     onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.verifications }),
     onError: (reason) => setError(apiMessage(reason)),
   })
@@ -31,6 +40,34 @@ export function VerificationQueue() {
 
   return <section className="mb-8"><h2 className="mb-4 text-xl font-bold">Identidades pendientes ({items.data?.length ?? 0})</h2>
     {error && <p className="mb-3 text-red-400">{error}</p>}
+    <div className="mb-8">
+      <h3 className="mb-3 text-lg font-bold">Cambios de selfie pendientes ({selfieChanges.data?.length ?? 0})</h3>
+      <QueryState pending={selfieChanges.isPending} error={selfieChanges.error} empty={selfieChanges.data?.length === 0}>
+        <div className="grid gap-4 md:grid-cols-2">
+          {selfieChanges.data?.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div><h4 className="font-bold">{item.userName}</h4><p className="text-sm text-slate-400">{item.userEmail}</p></div>
+              <span className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-bold text-brand-300">{item.userRole}</span>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">Solicitada el {new Date(item.requestedAt).toLocaleString()}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {item.currentPhotoUrl
+                ? <EvidenceThumb title="Foto actual" url={item.currentPhotoUrl} onOpen={openEvidence} onLarge={(url) => setLarge({ url, title: 'Foto actual' })} />
+                : <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-3 text-sm text-slate-400">Sin foto actual</div>}
+              <EvidenceThumb title="Selfie propuesta" url={item.requestedPhotoUrl} onOpen={openEvidence} onLarge={(url) => setLarge({ url, title: 'Selfie propuesta' })} />
+            </div>
+            {item.faceDetectionStatus && <p className="mt-2 text-xs text-slate-400">Rostro: {item.faceDetectionStatus}</p>}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button onClick={() => reviewSelfieChange.mutate({ id: item.id, decision: 'approve' })} className="rounded-lg bg-emerald-500 px-4 py-2 font-bold text-slate-950">Aprobar cambio</button>
+              <button onClick={() => {
+                const reason = window.prompt('Motivo del rechazo')?.trim()
+                if (reason) reviewSelfieChange.mutate({ id: item.id, decision: 'reject', reason })
+              }} className="rounded-lg border border-red-500 px-4 py-2 text-red-300">Rechazar</button>
+            </div>
+          </article>)}
+        </div>
+      </QueryState>
+    </div>
     <QueryState pending={items.isPending} error={items.error} empty={items.data?.length === 0}><div className="grid gap-4 md:grid-cols-2">
       {items.data?.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
         <div className="flex items-start justify-between gap-3"><div><h3 className="font-bold">{item.fullName}</h3><p className="text-sm text-slate-400">{item.email}</p></div><span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300">{item.role}</span></div>

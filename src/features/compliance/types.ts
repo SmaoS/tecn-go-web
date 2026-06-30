@@ -18,6 +18,22 @@ export interface DataRequest {
   reviewedByUserId?: string
 }
 
+export interface ProfileSelfieChangeRequest {
+  id: string
+  userId: string
+  userName: string
+  userEmail?: string
+  userRole: 'CLIENT' | 'TECHNICIAN' | 'VERIFIER' | 'ADMIN'
+  currentPhotoUrl?: string
+  requestedPhotoUrl: string
+  faceDetectionStatus?: 'AUTO_VALIDATED' | 'MANUAL_REVIEW_REQUIRED' | 'FAILED'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  requestedAt: string
+  reviewedByUserId?: string
+  reviewedAt?: string
+  rejectionReason?: string
+}
+
 export interface RetentionPolicy {
   id: string
   dataCategory: string

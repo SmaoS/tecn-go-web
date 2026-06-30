@@ -8,6 +8,8 @@ import { technicianApi } from '../api'
 import { useAssignedServices, useTechnicianAction, useTechnicianRatingStatuses } from '../hooks'
 import { RatingPhraseChips } from '../../ratings/RatingPhraseChips'
 import { buildRatingComment } from '../../ratings/ratingPhrases'
+import { formatCopCurrency } from '../../../lib/format'
+import { paymentMethodLabels } from '../../payments/paymentMethods'
 
 type RatingDraft = {
   score: number
@@ -21,13 +23,19 @@ export function AssignedServicesPage() {
   const [locationOnline, setLocationOnline] = useState(false)
   const [error, setError] = useState('')
   const [ratings, setRatings] = useState<Record<string, RatingDraft>>({})
+  const [paymentRequest, setPaymentRequest] = useState<ServiceRequest | null>(null)
+  const [ratingRequest, setRatingRequest] = useState<ServiceRequest | null>(null)
   const requests = useAssignedServices()
   const ratingStatuses = useTechnicianRatingStatuses((requests.data ?? []).filter((item) => item.status === 'PAID').map((item) => item.id))
   const action = useTechnicianAction()
   function advance(item: ServiceRequest) {
     const next: Partial<Record<RequestStatus, RequestStatus>> = {
       QUOTE_ACCEPTED: 'ON_THE_WAY', ON_THE_WAY: 'ARRIVED',
-      ARRIVED: 'IN_PROGRESS', IN_PROGRESS: 'COMPLETED',
+      ARRIVED: 'IN_PROGRESS',
+    }
+    if (item.status === 'IN_PROGRESS') {
+      setPaymentRequest(item)
+      return
     }
     if (next[item.status]) action.mutate(() => technicianApi.advance(item.id, next[item.status]!))
   }
@@ -38,6 +46,23 @@ export function AssignedServicesPage() {
       draft.score,
       buildRatingComment(draft.selectedPhrases, draft.comment),
     ))
+  }
+  function confirmPayment(received: boolean) {
+    if (!paymentRequest) return
+    const request = paymentRequest
+    action.mutate(
+      () => technicianApi.technicianComplete(request.id, {
+        paymentReceived: received,
+        paymentMethod: request.requestedPaymentMethod,
+        comment: received ? undefined : 'Problema de pago reportado por el técnico.',
+      }),
+      {
+        onSuccess: () => {
+          setPaymentRequest(null)
+          if (received) setRatingRequest(request)
+        },
+      },
+    )
   }
   useEffect(() => {
     if (!locationOnline || !navigator.geolocation) return
@@ -108,5 +133,101 @@ export function AssignedServicesPage() {
       })}</div>
     </QueryState>
     {chatRequest && <ChatPanel request={chatRequest} currentUserId={session!.userId} onClose={() => setChatRequest(null)} />}
+    {paymentRequest && <PaymentConfirmationDialog
+      request={paymentRequest}
+      loading={action.isPending}
+      onClose={() => setPaymentRequest(null)}
+      onPaid={() => confirmPayment(true)}
+      onUnpaid={() => confirmPayment(false)}
+    />}
+    {ratingRequest && <RatingDialog
+      request={ratingRequest}
+      draft={ratings[ratingRequest.id] ?? { score: 5, comment: '', selectedPhrases: [] }}
+      loading={action.isPending}
+      onDraft={(draft) => setRatings({ ...ratings, [ratingRequest.id]: draft })}
+      onClose={() => setRatingRequest(null)}
+      onSubmit={() => {
+        const draft = ratings[ratingRequest.id] ?? { score: 5, comment: '', selectedPhrases: [] }
+        action.mutate(
+          () => technicianApi.rate(
+            ratingRequest.id,
+            draft.score,
+            buildRatingComment(draft.selectedPhrases, draft.comment),
+          ),
+          { onSuccess: () => setRatingRequest(null) },
+        )
+      }}
+    />}
   </section>
+}
+
+function PaymentConfirmationDialog({
+  request,
+  loading,
+  onPaid,
+  onUnpaid,
+  onClose,
+}: {
+  request: ServiceRequest
+  loading: boolean
+  onPaid: () => void
+  onUnpaid: () => void
+  onClose: () => void
+}) {
+  const amount = request.finalPrice ?? request.technicianPrice ?? request.estimatedPrice
+  return <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4">
+    <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+      <h3 className="text-2xl font-black">✓ Servicio finalizado</h3>
+      <p className="mt-2 text-slate-400">¿El cliente pagó el valor acordado?</p>
+      <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-sm">
+        <Info label="Cliente" value={request.clientName ?? 'Cliente'} />
+        <Info label="Método de pago" value={paymentMethodLabels[request.requestedPaymentMethod] ?? request.requestedPaymentMethod} />
+        <Info label="Valor acordado" value={formatCopCurrency(amount)} highlight />
+      </div>
+      <div className="mt-5 grid gap-3">
+        <button disabled={loading} onClick={onPaid} className="rounded-xl bg-brand-500 px-4 py-3 font-black text-slate-950 disabled:opacity-60">Sí, recibí el pago</button>
+        <button disabled={loading} onClick={onUnpaid} className="rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-3 font-black text-red-200 disabled:opacity-60">No recibí el pago</button>
+        <button disabled={loading} onClick={onClose} className="py-2 font-bold text-slate-400">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}
+
+function RatingDialog({
+  request,
+  draft,
+  loading,
+  onDraft,
+  onClose,
+  onSubmit,
+}: {
+  request?: ServiceRequest
+  draft: RatingDraft
+  loading: boolean
+  onDraft: (draft: RatingDraft) => void
+  onClose: () => void
+  onSubmit: () => void
+}) {
+  return <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-4">
+    <div className="w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+      <h3 className="text-2xl font-black">Califica al cliente</h3>
+      <p className="mt-2 text-slate-400">Tu calificación ayuda a mantener una comunidad segura{request?.clientName ? ` · ${request.clientName}` : ''}.</p>
+      <select className="mt-5" value={draft.score} onChange={(event) => onDraft({ ...draft, score: Number(event.target.value) })}>
+        {[5, 4, 3, 2, 1].map((score) => <option key={score} value={score}>{score} estrellas</option>)}
+      </select>
+      <div className="mt-3"><RatingPhraseChips audience="TECHNICIAN" selected={draft.selectedPhrases} onChange={(selectedPhrases) => onDraft({ ...draft, selectedPhrases })} /></div>
+      <textarea className="mt-3" placeholder="Comentario personal opcional" value={draft.comment} onChange={(event) => onDraft({ ...draft, comment: event.target.value })} />
+      <div className="mt-5 grid gap-3">
+        <button disabled={loading || !request} onClick={onSubmit} className="rounded-xl bg-brand-500 px-4 py-3 font-black text-slate-950 disabled:opacity-60">Enviar calificación</button>
+        <button disabled={loading} onClick={onClose} className="py-2 font-bold text-slate-400">Calificar después</button>
+      </div>
+    </div>
+  </div>
+}
+
+function Info({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return <div className="flex justify-between gap-4 py-2">
+    <span className="text-slate-400">{label}</span>
+    <strong className={highlight ? 'text-brand-400' : 'text-white'}>{value}</strong>
+  </div>
 }

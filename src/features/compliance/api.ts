@@ -6,6 +6,7 @@ import type {
   DataRequestStatus,
   IncidentSeverity,
   IncidentStatus,
+  ProfileSelfieChangeRequest,
   RetentionPolicy,
 } from './types'
 
@@ -17,6 +18,13 @@ export const complianceApi = {
   exportMine: () => api.post<DataRequest>('/v1/users/me/data-export-request').then(({ data }) => data),
   requestAnonymization: (reason: string) =>
     api.post<DataRequest>('/v1/users/me/data-anonymization', { reason }).then(({ data }) => data),
+  requestProfileSelfieChange: (profilePhotoUrl: string) =>
+    api.post<ProfileSelfieChangeRequest>('/v1/users/me/profile-selfie-change-requests', {
+      profilePhotoUrl,
+      faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED',
+    }).then(({ data }) => data),
+  profileSelfieChangeRequests: () =>
+    api.get<ProfileSelfieChangeRequest[]>('/v1/users/me/profile-selfie-change-requests').then(({ data }) => data),
   dataRequests: () => api.get<DataRequest[]>(`${root}/data-requests`).then(({ data }) => data),
   adminExportRequests: (status: DataRequestStatus = 'PENDING') =>
     api.get<DataRequest[]>('/v1/admin/data-export-requests', { params: { status } }).then(({ data }) => data),

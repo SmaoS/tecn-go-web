@@ -62,6 +62,7 @@ export function AvailableRequestsPage() {
       <div className="space-y-3">{requests.data?.map((item) => <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
         {item.firstServiceImageUrl && <PrivateImage src={item.firstServiceImageUrl} alt="" className="mb-3 h-40 w-full rounded-xl object-cover" />}
         <strong>{item.categoryName}</strong><Reputation photo={item.clientProfilePhotoUrl} name={item.clientName} rating={item.clientAverageRating} services={item.clientPaidServicesCount} />
+        {item.clientDocumentsVerified && <p className="ml-3 mt-1 text-sm font-bold text-brand-400">✓ Verificado</p>}
         <p className="mt-2 text-sm text-slate-400">{item.description}</p>{item.images?.length > 0 && <ImageGallery urls={item.images.map((image) => image.imageUrl)} />}
         {item.estimatedPrice != null && <p className="mt-2 font-bold text-brand-400">Estimado del cliente: {formatCopCurrency(item.estimatedPrice)}</p>}
         <p className="mt-2 text-xs text-slate-500">{item.address} · {item.distanceKm?.toFixed(2)} km</p>

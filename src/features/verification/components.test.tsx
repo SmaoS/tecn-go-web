@@ -23,6 +23,7 @@ describe('VerificationQueue', () => {
   it('muestra evidencias y aprueba una identidad pendiente', async () => {
     let verifiedId = ''
     server.use(
+      http.get('*/v1/verifications/profile-selfie-change-requests/pending', () => HttpResponse.json([])),
       http.get('*/v1/verifications/pending', () => HttpResponse.json([{
         id: 'user-1',
         fullName: 'Usuario pendiente',
@@ -51,6 +52,7 @@ describe('VerificationQueue', () => {
   it('valida la foto de perfil y permite revisar la miniatura', async () => {
     let photoVerified = false
     server.use(
+      http.get('*/v1/verifications/profile-selfie-change-requests/pending', () => HttpResponse.json([])),
       http.get('*/v1/verifications/pending', () => HttpResponse.json([{
         id: 'user-1',
         fullName: 'Usuario pendiente',
@@ -74,6 +76,36 @@ describe('VerificationQueue', () => {
     await user.click(screen.getByRole('button', { name: 'Validar rostro visible' }))
 
     await waitFor(() => expect(photoVerified).toBe(true))
+  })
+
+  it('aprueba un cambio de selfie pendiente', async () => {
+    let approvedId = ''
+    server.use(
+      http.get('*/v1/verifications/pending', () => HttpResponse.json([])),
+      http.get('*/v1/verifications/profile-selfie-change-requests/pending', () => HttpResponse.json([{
+        id: 'change-1',
+        userId: 'user-1',
+        userName: 'Usuario pendiente',
+        userEmail: 'pendiente@tecngo.test',
+        userRole: 'CLIENT',
+        currentPhotoUrl: '/v1/files/current',
+        requestedPhotoUrl: '/v1/files/proposed',
+        status: 'PENDING',
+        requestedAt: '2026-06-30T12:00:00Z',
+      }])),
+      http.put('*/v1/verifications/profile-selfie-change-requests/:id/approve', ({ params }) => {
+        approvedId = String(params.id)
+        return HttpResponse.json({})
+      }),
+    )
+    const { user } = renderWithProviders(<VerificationQueue />)
+
+    await screen.findByText('Usuario pendiente')
+    expect(screen.getAllByText('Foto actual')).toHaveLength(2)
+    expect(screen.getAllByText('Selfie propuesta')).toHaveLength(2)
+    await user.click(screen.getByRole('button', { name: 'Aprobar cambio' }))
+
+    await waitFor(() => expect(approvedId).toBe('change-1'))
   })
 
   it('crea una cuenta de verificador con ubicación', async () => {

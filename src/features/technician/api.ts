@@ -29,6 +29,8 @@ export const technicianApi = {
     : api.post('/v1/technicians/profile', payload),
   quote: (id: string, technicianPrice: number, description?: string) => api.put(`/v1/service-requests/${id}/quote`, { technicianPrice, description }),
   advance: (id: string, status: string) => api.put(`/v1/service-requests/${id}/status`, { status }),
+  technicianComplete: (id: string, input: { paymentReceived: boolean; paymentMethod?: string; comment?: string }) =>
+    api.post(`/v1/service-requests/${id}/technician-complete`, input),
   rate: (id: string, score: number, comment: string) => api.post(`/v1/service-requests/${id}/ratings`, { score, comment }),
   ratingStatus: (id: string) => api.get<{ rated: boolean }>(`/v1/service-requests/${id}/ratings/me`).then(({ data }) => data),
   location: (payload: object) => api.put('/v1/technicians/me/location', payload),

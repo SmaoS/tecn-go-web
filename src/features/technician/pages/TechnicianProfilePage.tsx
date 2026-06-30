@@ -122,6 +122,7 @@ export function TechnicianProfilePage() {
         {!profile.data?.profilePhotoFaceValidated && <label className="text-sm">Foto de perfil<input type="file" accept=".jpg,.jpeg,.png" onChange={(event) => void file('profilePhotoUrl', event.target.files?.[0])} /></label>}
         <label className="text-sm">Documento obligatorio<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('documentPhotoUrl', event.target.files?.[0])} required={!form.documentPhotoUrl} /></label>
         <label className="text-sm">Certificado opcional<input type="file" accept=".jpg,.jpeg,.png,.pdf" onChange={(event) => void file('certificatePhotoUrl', event.target.files?.[0])} /></label>
+        <p className="text-sm text-brand-300">Subir un certificado puede darte ventaja frente a otros técnicos cuando el cliente compara cotizaciones.</p>
         <div className="grid gap-3 sm:grid-cols-3">
           <GeographicFields countryId={form.countryId} departmentId={form.departmentId} cityId={form.cityId} onChange={(values) => setForm({ ...form, countryId: values.countryId ?? '', departmentId: values.departmentId ?? '', cityId: values.cityId ?? '', homeCity: values.cityName ?? '' })} />
         </div>
