@@ -255,6 +255,18 @@ export interface Verifier {
   createdAt: string
 }
 
+export interface Rating {
+  id: string
+  serviceRequestId: string
+  raterId: string
+  raterName: string
+  ratedUserId: string
+  ratedUserName: string
+  score: number
+  comment?: string
+  createdAt: string
+}
+
 export interface Payment {
   paymentId: string
   serviceRequestId: string

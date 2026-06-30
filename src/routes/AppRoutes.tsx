@@ -26,6 +26,8 @@ import { TechnicianEarningsPage } from '../features/technician/pages/TechnicianE
 import { TechnicianWalletPage } from '../features/technician/pages/TechnicianWalletPage'
 import { TechnicianProfilePage } from '../features/technician/pages/TechnicianProfilePage'
 import { TechnicianReferralsPage } from '../features/technician/pages/TechnicianReferralsPage'
+import { TechnicianProductivityPage } from '../features/technician/pages/TechnicianProductivityPage'
+import { PqrPage } from '../features/compliance/PqrPage'
 import { AdminReferralsPage } from '../features/admin/pages/AdminReferralsPage'
 import { AdminAppVersionsPage } from '../features/admin/pages/AdminAppVersionsPage'
 import { AdminTechnicianWalletsPage } from '../features/admin/pages/AdminTechnicianWalletsPage'
@@ -72,6 +74,7 @@ export function AppRoutes() {
           <Route path="pagos" element={<ClientPaymentsPage />} />
           <Route path="perfil" element={<ClientProfilePage />} />
           <Route path="referidos" element={<TechnicianReferralsPage />} />
+          <Route path="pqr" element={<PqrPage />} />
           <Route path="legal" element={<LegalPage />} />
         </Route></Route>
         <Route element={<RoleRoute role="TECHNICIAN" />}><Route path="tecnico" element={<TechnicianWorkspace />}>
@@ -83,6 +86,8 @@ export function AppRoutes() {
           <Route path="saldo" element={<TechnicianWalletPage />} />
           <Route path="perfil" element={<TechnicianProfilePage />} />
           <Route path="referidos" element={<TechnicianReferralsPage />} />
+          <Route path="productividad" element={<TechnicianProductivityPage />} />
+          <Route path="pqr" element={<PqrPage />} />
           <Route path="legal" element={<LegalPage />} />
         </Route></Route>
         <Route element={<RoleRoute role="VERIFIER" />}><Route path="verificador" element={<VerifierDashboard />} /></Route>

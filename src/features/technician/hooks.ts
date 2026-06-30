@@ -45,6 +45,14 @@ export function useTechnicianWallet() {
   return { wallet, transactions }
 }
 
+export function useTechnicianRatings(technicianId?: string) {
+  return useQuery({
+    queryKey: ['ratings', 'technician', technicianId],
+    enabled: Boolean(technicianId),
+    queryFn: () => technicianApi.ratings(technicianId!),
+  })
+}
+
 export function useRechargeWallet() {
   const client = useQueryClient()
   return useMutation({

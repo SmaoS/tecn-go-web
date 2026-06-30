@@ -1,5 +1,5 @@
 import { api } from '../../lib/api'
-import type { FinancialSummary, PageResponse, RechargeResponse, ReferralCode, ReferralRegistration, ReferralReward, ServiceCategory, ServiceRequest, TechnicianProfile, TechnicianWallet, TechnicianWalletTransaction } from '../../types'
+import type { FinancialSummary, PageResponse, Rating, RechargeResponse, ReferralCode, ReferralRegistration, ReferralReward, ServiceCategory, ServiceRequest, TechnicianProfile, TechnicianWallet, TechnicianWalletTransaction } from '../../types'
 
 export interface AvailableRequestSearch {
   cityId?: string
@@ -21,6 +21,7 @@ export const technicianApi = {
   earnings: () => api.get<FinancialSummary>('/v1/technicians/me/earnings').then(({ data }) => data),
   wallet: () => api.get<TechnicianWallet>('/v1/technicians/me/wallet').then(({ data }) => data),
   walletTransactions: () => api.get<TechnicianWalletTransaction[]>('/v1/technicians/me/wallet/transactions').then(({ data }) => data),
+  ratings: (technicianId: string) => api.get<Rating[]>(`/v1/technicians/${technicianId}/ratings`).then(({ data }) => data),
   rechargeWallet: (amount: number) => api.post<RechargeResponse>('/v1/technicians/me/wallet/recharge', { amount, platform: 'WEB' }).then(({ data }) => data),
   reconcileRecharge: (transactionId: string) =>
     api.put('/v1/technicians/me/wallet/recharges/transaction', { transactionId }),

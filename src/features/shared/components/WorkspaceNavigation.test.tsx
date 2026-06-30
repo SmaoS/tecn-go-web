@@ -22,6 +22,8 @@ describe('navegación por rol', () => {
     ])
     await user.click(screen.getByRole('button', { name: /más/i }))
     expect(screen.getByRole('menuitem', { name: 'Historial de solicitudes' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Invita amigos' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'PQR' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Seguridad y términos' })).toBeInTheDocument()
   })
 
@@ -36,6 +38,9 @@ describe('navegación por rol', () => {
     ])
     await user.click(screen.getByRole('button', { name: /más/i }))
     expect(screen.getByRole('menuitem', { name: 'Mi saldo' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Productividad' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Invita conocidos' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'PQR' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Mi perfil' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Compromiso y términos' })).toBeInTheDocument()
   })

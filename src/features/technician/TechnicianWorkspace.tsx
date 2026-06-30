@@ -7,7 +7,9 @@ const links = [
   { to: workflowPaths.technician.history, label: 'Historial de servicios', primary: true },
   { to: workflowPaths.technician.earnings, label: 'Ganancias', primary: true },
   { to: workflowPaths.technician.wallet, label: 'Mi saldo' },
-  { to: workflowPaths.technician.referrals, label: 'Invita y gana' },
+  { to: workflowPaths.technician.productivity, label: 'Productividad' },
+  { to: workflowPaths.technician.referrals, label: 'Invita conocidos' },
+  { to: workflowPaths.technician.pqr, label: 'PQR' },
   { to: workflowPaths.technician.profile, label: 'Mi perfil' },
   { to: workflowPaths.technician.legal, label: 'Compromiso y términos' },
 ]

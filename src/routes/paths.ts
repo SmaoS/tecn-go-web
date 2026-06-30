@@ -16,6 +16,7 @@ export const workflowPaths = {
     profile: '/app/cliente/perfil',
     legal: '/app/cliente/legal',
     referrals: '/app/cliente/referidos',
+    pqr: '/app/cliente/pqr',
   },
   technician: {
     assigned: '/app/tecnico/asignadas',
@@ -26,6 +27,8 @@ export const workflowPaths = {
     profile: '/app/tecnico/perfil',
     legal: '/app/tecnico/legal',
     referrals: '/app/tecnico/referidos',
+    productivity: '/app/tecnico/productividad',
+    pqr: '/app/tecnico/pqr',
   },
   admin: {
     overview: '/app/admin/resumen',
