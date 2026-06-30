@@ -34,6 +34,7 @@ function createAuthValue(session: Session | null, auth?: Partial<AuthValue>): Au
   return {
     session,
     setSession: () => undefined,
+    switchMode: async () => null,
     logout: async () => undefined,
     ...auth,
   }

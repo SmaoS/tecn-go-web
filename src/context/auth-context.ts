@@ -4,6 +4,7 @@ import type { Session } from '../types'
 export interface AuthValue {
   session: Session | null
   setSession: (session: Session) => void
+  switchMode: (mode: 'CLIENT' | 'TECHNICIAN') => Promise<Session | null>
   logout: () => Promise<void>
 }
 

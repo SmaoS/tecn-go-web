@@ -24,6 +24,9 @@ function WorkspaceRoutes() {
       <Route path="uno" element={<p>Página uno</p>} />
       <Route path="cinco" element={<p>Página cinco</p>} />
     </Route>
+    <Route path="/app/tecnico/disponibles" element={<p>Modo técnico</p>} />
+    <Route path="/app/cliente/solicitudes" element={<p>Modo cliente</p>} />
+    <Route path="/app/onboarding" element={<p>Inscripción</p>} />
   </Routes>
 }
 
@@ -77,5 +80,19 @@ describe('RoleWorkspace', () => {
     })
 
     expect(screen.getByRole('button', { name: /más/i })).toHaveClass('border-brand-500')
+  })
+
+  it('permite cambiar de modo desde el menú', async () => {
+    const switchMode = vi.fn(async () => roleSessionFixture('TECHNICIAN'))
+    const { user } = renderWithProviders(<WorkspaceRoutes />, {
+      route: '/panel/uno',
+      session: roleSessionFixture('CLIENT'),
+      auth: { switchMode },
+    })
+
+    await user.click(screen.getByRole('button', { name: /más/i }))
+    await user.click(screen.getByRole('menuitem', { name: 'Modo técnico' }))
+
+    expect(switchMode).toHaveBeenCalledWith('TECHNICIAN')
   })
 })

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../context/useAuth'
 import { NotificationCenter } from '../../notifications/NotificationCenter'
 import { DashboardShell } from './DashboardShell'
+import { roleHome } from '../../../routes/paths'
+import { apiMessage } from '../api'
 
 export interface WorkspaceLink {
   to: string
@@ -15,16 +17,22 @@ export function RoleWorkspace({ title, subtitle, links }: {
   subtitle: string
   links: WorkspaceLink[]
 }) {
-  const { session } = useAuth()
+  const { session, switchMode } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [switchingMode, setSwitchingMode] = useState(false)
+  const [modeError, setModeError] = useState('')
   const explicitlyPrioritized = links.some((link) => link.primary)
   const primaryLinks = explicitlyPrioritized ? links.filter((link) => link.primary) : links.slice(0, 4)
   const secondaryLinks = explicitlyPrioritized ? links.filter((link) => !link.primary) : links.slice(4)
   const secondaryActive = secondaryLinks.some((link) =>
     location.pathname === link.to || location.pathname.startsWith(`${link.to}/`),
   )
+  const targetMode = session?.role === 'CLIENT'
+    ? 'TECHNICIAN'
+    : session?.role === 'TECHNICIAN' ? 'CLIENT' : null
 
   useEffect(() => {
     setMenuOpen(false)
@@ -53,8 +61,25 @@ export function RoleWorkspace({ title, subtitle, links }: {
         : 'border-slate-700 bg-surface/60 text-slate-300 hover:border-slate-600 hover:text-white'
     }`
 
+  async function changeMode() {
+    if (!targetMode) return
+    setModeError('')
+    setSwitchingMode(true)
+    try {
+      const next = await switchMode(targetMode)
+      setMenuOpen(false)
+      if (!next) return
+      navigate(next.onboardingCompleted ? roleHome[next.role] : '/app/onboarding')
+    } catch (error) {
+      setModeError(apiMessage(error))
+    } finally {
+      setSwitchingMode(false)
+    }
+  }
+
   return <DashboardShell title={title ?? `Hola, ${session?.fullName}`} subtitle={subtitle}>
     <NotificationCenter />
+    {modeError && <p className="mb-3 rounded-xl bg-red-500/10 p-3 text-sm text-red-300">{modeError}</p>}
     <nav aria-label={`Navegación ${subtitle.toLowerCase()}`} className="mb-8 flex flex-wrap items-center gap-2">
       {primaryLinks.map((link) =>
         <NavLink key={link.to} to={link.to} className={linkClass}>{link.label}</NavLink>,
@@ -94,6 +119,18 @@ export function RoleWorkspace({ title, subtitle, links }: {
               {link.label}
             </NavLink>,
           )}
+          {targetMode && <>
+            <div className="my-1 border-t border-slate-800" />
+            <button
+              type="button"
+              role="menuitem"
+              disabled={switchingMode}
+              onClick={() => void changeMode()}
+              className="rounded-xl px-4 py-3 text-left text-sm font-semibold text-brand-300 transition-colors hover:bg-slate-800 hover:text-brand-200 disabled:opacity-50"
+            >
+              {switchingMode ? 'Cambiando modo...' : targetMode === 'TECHNICIAN' ? 'Modo técnico' : 'Modo cliente'}
+            </button>
+          </>}
         </div>}
       </div>}
     </nav>

@@ -25,6 +25,7 @@ describe('navegación por rol', () => {
     expect(screen.getByRole('menuitem', { name: 'Invita amigos' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'PQR' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Seguridad y términos' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Modo técnico' })).toBeInTheDocument()
   })
 
   it('prioriza trabajo disponible y asignado para técnico', async () => {
@@ -43,6 +44,7 @@ describe('navegación por rol', () => {
     expect(screen.getByRole('menuitem', { name: 'PQR' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Mi perfil' })).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Compromiso y términos' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Modo cliente' })).toBeInTheDocument()
   })
 
   it('mantiene visibles los cuatro flujos críticos de administración', async () => {
