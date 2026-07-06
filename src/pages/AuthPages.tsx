@@ -104,7 +104,7 @@ export function RegisterPage() {
   const [role, setRole] = useState<Role>(kind === 'tecnico' ? 'TECHNICIAN' : 'CLIENT')
   const [searchParams] = useSearchParams()
   const [method, setMethod] = useState<'email' | 'phone'>('email')
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '', referralCode: searchParams.get('ref') ?? '' })
+  const [form, setForm] = useState({ fullName: '', email: '', confirmEmail: '', phone: '', password: '', confirmPassword: '', referralCode: searchParams.get('ref') ?? '' })
   const [otpCode, setOtpCode] = useState('')
   const [verificationToken, setVerificationToken] = useState('')
   const [otpNotice, setOtpNotice] = useState('')
@@ -128,13 +128,16 @@ export function RegisterPage() {
     if (form.password !== form.confirmPassword) {
       setError('Las contraseñas no coinciden'); setLoading(false); return
     }
+    if (method === 'email' && form.email.trim().toLowerCase() !== form.confirmEmail.trim().toLowerCase()) {
+      setError('Los correos no coinciden'); setLoading(false); return
+    }
     try {
       if (method === 'phone' && !verificationToken) {
         setError('Verifica el código enviado a tu celular'); setLoading(false); return
       }
       const endpoint = method === 'email' ? '/v1/auth/register' : '/v1/auth/register-by-phone'
       const payload = method === 'email'
-        ? { fullName: form.fullName, email: form.email, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
+        ? { fullName: form.fullName, email: form.email, confirmEmail: form.confirmEmail, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
         : { fullName: form.fullName, phone: normalizeLocalPhone(form.phone), verificationToken, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
       const { data } = await api.post<Session>(endpoint, payload)
       setSession(data)
@@ -165,7 +168,11 @@ export function RegisterPage() {
     <div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setMethod('email')} className={`rounded-lg border p-2 ${method === 'email' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Con correo</button><button type="button" onClick={() => setMethod('phone')} className={`rounded-lg border p-2 ${method === 'phone' ? 'border-brand-400 text-brand-300' : 'border-slate-700'}`}>Con celular</button></div>
     <input placeholder="Nombre completo" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} required />
     {method === 'email'
-      ? <input type="email" placeholder="Correo" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+      ? <>
+        <input type="email" placeholder="Correo" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+        <input type="email" placeholder="Confirmar correo" value={form.confirmEmail} onChange={(e) => setForm({ ...form, confirmEmail: e.target.value })} required />
+        {form.confirmEmail && form.email.trim().toLowerCase() !== form.confirmEmail.trim().toLowerCase() && <p className="text-sm text-red-400">Los correos no coinciden</p>}
+      </>
       : <><div className="flex gap-2"><input type="tel" inputMode="numeric" maxLength={10} pattern="\d{10}" placeholder="Celular, ej. 3001234567" value={form.phone} onChange={(e) => { setForm({ ...form, phone: normalizeLocalPhone(e.target.value) }); setVerificationToken('') }} required /><button type="button" disabled={otpLoading || !isValidLocalPhone(form.phone)} onClick={() => void sendOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">Enviar código</button></div>
         {form.phone.length > 0 && !isValidLocalPhone(form.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
         <div className="flex gap-2"><input inputMode="numeric" maxLength={8} placeholder="Código OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} /><button type="button" disabled={otpLoading || !otpCode || !isValidLocalPhone(form.phone) || Boolean(verificationToken)} onClick={() => void verifyOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">{verificationToken ? 'Verificado' : 'Verificar'}</button></div>
@@ -176,7 +183,7 @@ export function RegisterPage() {
     {referralMessage && <p className={`text-sm ${referralMessage.startsWith('Código válido') ? 'text-emerald-400' : 'text-amber-300'}`}>{referralMessage}</p>}
     <p className="text-sm text-slate-400">Después de ingresar podrás completar tu perfil, subir tu foto y enviar el documento para verificación.</p>
     {error && <p className="text-sm text-red-400">{error}</p>}
-    <button disabled={loading || (method === 'phone' && (!verificationToken || !isValidLocalPhone(form.phone)))} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:opacity-50">{loading ? 'Creando...' : 'Crear cuenta'}</button>
+    <button disabled={loading || (method === 'email' && form.email.trim().toLowerCase() !== form.confirmEmail.trim().toLowerCase()) || (method === 'phone' && (!verificationToken || !isValidLocalPhone(form.phone)))} className="w-full rounded-xl bg-brand-500 py-3 font-bold text-slate-950 disabled:opacity-50">{loading ? 'Creando...' : 'Crear cuenta'}</button>
   </form></AuthShell>
 }
 
