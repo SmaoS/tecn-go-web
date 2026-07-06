@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRef } from 'react'
 import { legalApi } from './api'
 import { apiMessage } from '../shared/api'
 
@@ -12,6 +13,7 @@ export function LegalDocumentsContent({
   showAcceptButton?: boolean
 }) {
   const queryClient = useQueryClient()
+  const endRef = useRef<HTMLDivElement>(null)
   const documents = useQuery({ queryKey: ['legal', 'active'], queryFn: legalApi.active })
   const acceptAll = useMutation({
     mutationFn: legalApi.acceptAll,
@@ -29,6 +31,13 @@ export function LegalDocumentsContent({
   if (documents.error) return <p className="text-red-400">{apiMessage(documents.error)}</p>
 
   return <div className="space-y-4">
+    {showAcceptButton && <button
+      type="button"
+      onClick={() => endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })}
+      className="rounded-xl border border-brand-500 px-4 py-2 text-sm font-bold text-brand-300"
+    >
+      Ir al final ↓
+    </button>}
     {documents.data?.map((document) => <article key={document.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
       <div className="flex flex-wrap justify-between gap-4">
         <strong>{document.title}</strong>
@@ -36,6 +45,7 @@ export function LegalDocumentsContent({
       </div>
       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">{document.content}</p>
     </article>)}
+    <div ref={endRef} />
     {showAcceptButton && <>
       {acceptAll.error && <p className="text-sm text-red-400">{apiMessage(acceptAll.error)}</p>}
       <button

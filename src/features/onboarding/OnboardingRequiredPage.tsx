@@ -66,7 +66,9 @@ export function OnboardingRequiredPage() {
     setFileUploading(true)
     setUploadError('')
     try {
-      setUrl(await uploadFile(file, kind))
+      const url = await uploadFile(file, kind)
+      setUrl(url)
+      if (kind === 'CERTIFICATE') certificateMutation.mutate(url)
     } catch (reason) {
       setUploadError(apiMessage(reason))
     } finally {
@@ -161,22 +163,24 @@ export function OnboardingRequiredPage() {
         onChange={(event) => setProfessional({ ...professional, workExperienceDescription: event.target.value })}
       />
       <p className="text-xs text-slate-400">{professional.workExperienceDescription.trim().length}/1000 · mínimo 30 caracteres</p>
-      <button
-        disabled={pending || professional.categoryIds.length === 0 || professional.workExperienceDescription.trim().length < 30}
-        onClick={() => professionalMutation.mutate({
-          categoryIds: professional.categoryIds,
-          workExperienceDescription: professional.workExperienceDescription.trim(),
-        })}
-        className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Continuar
-      </button>
+      <div className="sticky bottom-0 -mx-6 border-t border-slate-800 bg-slate-900/95 p-4 backdrop-blur">
+        <button
+          disabled={pending || professional.categoryIds.length === 0 || professional.workExperienceDescription.trim().length < 30}
+          onClick={() => professionalMutation.mutate({
+            categoryIds: professional.categoryIds,
+            workExperienceDescription: professional.workExperienceDescription.trim(),
+          })}
+          className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Continuar
+        </button>
+      </div>
     </div>}
     {status.data?.currentStep === 'TECHNICIAN_CERTIFICATE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Si no tienes certificado de estudio, lo puedes cargar después.</p>
       <input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'CERTIFICATE', setCertificateUrl)} />
       {fileUploading && <p className="text-sm text-brand-300">Cargando certificado...</p>}
-      <button disabled={pending || !certificateUrl} onClick={() => certificateMutation.mutate(certificateUrl)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar certificado</button>
+      <button disabled={pending || !certificateUrl} onClick={() => certificateMutation.mutate(certificateUrl)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">{certificateMutation.isPending ? 'Guardando certificado...' : 'Guardar certificado'}</button>
       <button disabled={pending} onClick={() => skipCertificate.mutate()} className="rounded-xl border border-slate-700 px-5 py-3">No tengo certificado ahora</button>
     </div>}
     {status.data?.currentStep === 'COMPLETED' && <p className="mt-5 text-slate-300">Tu inscripción está lista. Te estamos llevando al inicio.</p>}

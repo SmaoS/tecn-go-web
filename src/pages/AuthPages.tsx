@@ -137,7 +137,10 @@ export function RegisterPage() {
         ? { fullName: form.fullName, email: form.email, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
         : { fullName: form.fullName, phone: normalizeLocalPhone(form.phone), verificationToken, password: form.password, confirmPassword: form.confirmPassword, referralCode: form.referralCode, role }
       const { data } = await api.post<Session>(endpoint, payload)
-      setSession(data); navigate('/app')
+      setSession(data)
+      navigate(!data.emailVerified && !data.phoneVerified
+        ? '/app/confirmar-correo'
+        : data.onboardingCompleted ? '/app' : '/app/onboarding')
     } catch (reason) { setError(message(reason)) } finally { setLoading(false) }
   }
 
