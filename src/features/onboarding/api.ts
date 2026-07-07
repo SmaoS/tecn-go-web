@@ -13,6 +13,8 @@ export interface OnboardingStatus {
 export const onboardingApi = {
   status: () => api.get<OnboardingStatus>('/v1/users/me/onboarding-status').then(({ data }) => data),
   resendEmail: () => api.post('/v1/auth/send-email-verification'),
+  updateEmail: (payload: { email: string; confirmEmail: string }) =>
+    api.put<{ message: string; email: string; emailVerified: boolean }>('/v1/auth/email', payload).then(({ data }) => data),
   mainData: (payload: {
     fullName: string
     phone?: string
