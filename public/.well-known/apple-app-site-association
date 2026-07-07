@@ -1,0 +1,30 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "6785997062.com.tecngo.app",
+        "paths": [
+          "/app/*",
+          "/reset-password*",
+          "/verificar-correo*",
+          "/abrir-app*"
+        ],
+        "components": [
+          {
+            "/": "/app/*"
+          },
+          {
+            "/": "/reset-password*"
+          },
+          {
+            "/": "/verificar-correo*"
+          },
+          {
+            "/": "/abrir-app*"
+          }
+        ]
+      }
+    ]
+  }
+}

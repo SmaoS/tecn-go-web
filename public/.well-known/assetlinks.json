@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.tecngo",
+      "sha256_cert_fingerprints": [
+        "72:F7:23:E7:3D:CB:36:1E:4B:EC:52:50:5E:D1:FB:CA:53:A8:1A:FF:94:80:19:86:4C:D8:BC:EC:B5:4C:AD:1F"
+      ]
+    }
+  }
+]

@@ -34,6 +34,7 @@ import { AdminTechnicianWalletsPage } from '../features/admin/pages/AdminTechnic
 import { AdminCompliancePage } from '../features/admin/pages/AdminCompliancePage'
 import { VerifierDashboard } from '../features/verification/VerifierDashboard'
 import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '../pages/AuthPages'
+import { AppOpenPage } from '../pages/AppOpenPage'
 import { HealthPage } from '../pages/HealthPage'
 import { LandingPage } from '../pages/LandingPage'
 import { VerifyEmailPage } from '../pages/VerifyEmailPage'
@@ -50,6 +51,7 @@ export function AppRoutes() {
       <Route path="register" element={<RegisterPage />} />
       <Route path="forgot-password" element={<ForgotPasswordPage />} />
       <Route path="reset-password" element={<ResetPasswordPage />} />
+      <Route path="abrir-app" element={<AppOpenPage />} />
       <Route path="health" element={<HealthPage />} />
       <Route path="verificar-correo" element={<VerifyEmailPage />} />
       <Route path="privacy" element={<PublicLegalPage kind="privacy" />} />
