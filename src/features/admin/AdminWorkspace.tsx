@@ -4,7 +4,6 @@ import { workflowPaths } from '../../routes/paths'
 const links = [
   { to: workflowPaths.admin.overview, label: 'Resumen', primary: true },
   { to: workflowPaths.admin.verifications, label: 'Verificaciones', primary: true },
-  { to: workflowPaths.admin.pendingVerifications, label: 'Pendientes por Verificación', primary: true },
   { to: workflowPaths.admin.categories, label: 'Categorías' },
   { to: workflowPaths.admin.finances, label: 'Finanzas', primary: true },
   { to: workflowPaths.admin.technicianWallets, label: 'Saldos técnicos' },

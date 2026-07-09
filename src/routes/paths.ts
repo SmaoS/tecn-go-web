@@ -3,7 +3,7 @@ import type { Role } from '../types'
 export const roleHome: Record<Role, string> = {
   CLIENT: '/app/cliente/solicitudes',
   TECHNICIAN: '/app/tecnico/disponibles',
-  VERIFIER: '/app/verificador',
+  VERIFIER: '/app/verificador/identidades',
   ADMIN: '/app/admin/resumen',
 }
 
@@ -33,6 +33,11 @@ export const workflowPaths = {
   admin: {
     overview: '/app/admin/resumen',
     verifications: '/app/admin/verificaciones',
+    verificationIdentities: '/app/admin/verificaciones/identidades',
+    verificationSelfies: '/app/admin/verificaciones/selfies',
+    verificationTechnicians: '/app/admin/verificaciones/tecnicos',
+    verificationDataExports: '/app/admin/verificaciones/exportacion-datos',
+    verificationVerifiers: '/app/admin/verificaciones/verificadores',
     pendingVerifications: '/app/admin/pendientes-verificacion',
     categories: '/app/admin/categorias',
     finances: '/app/admin/finanzas',
@@ -44,5 +49,11 @@ export const workflowPaths = {
     referrals: '/app/admin/referidos',
     appVersions: '/app/admin/versiones-app',
     compliance: '/app/admin/cumplimiento',
+  },
+  verifier: {
+    identities: '/app/verificador/identidades',
+    selfies: '/app/verificador/selfies',
+    dataExports: '/app/verificador/exportacion-datos',
+    operations: '/app/verificador/moderacion',
   },
 } as const

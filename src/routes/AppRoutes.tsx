@@ -6,7 +6,12 @@ import { AdminCategoriesPage } from '../features/admin/pages/AdminCategoriesPage
 import { AdminFinancesPage } from '../features/admin/pages/AdminFinancesPage'
 import { AdminOverviewPage } from '../features/admin/pages/AdminOverviewPage'
 import { AdminSettingsPage } from '../features/admin/pages/AdminSettingsPage'
-import { AdminVerificationPage } from '../features/admin/pages/AdminVerificationPage'
+import { AdminVerificationHomePage } from '../features/admin/pages/AdminVerificationHomePage'
+import { AdminTechnicianVerificationPage } from '../features/admin/pages/AdminTechnicianVerificationPage'
+import { AdminVerifierManagerPage } from '../features/admin/pages/AdminVerifierManagerPage'
+import { AdminIdentityVerificationPage } from '../features/admin/pages/AdminIdentityVerificationPage'
+import { AdminSelfieVerificationPage } from '../features/admin/pages/AdminSelfieVerificationPage'
+import { AdminDataExportRequestsPage } from '../features/admin/pages/AdminDataExportRequestsPage'
 import { AdminPendingVerificationPage } from '../features/admin/pages/AdminPendingVerificationPage'
 import { AdminOperationsPage } from '../features/admin/pages/AdminOperationsPage'
 import { AdminUsersPage } from '../features/admin/pages/AdminUsersPage'
@@ -32,7 +37,11 @@ import { AdminReferralsPage } from '../features/admin/pages/AdminReferralsPage'
 import { AdminAppVersionsPage } from '../features/admin/pages/AdminAppVersionsPage'
 import { AdminTechnicianWalletsPage } from '../features/admin/pages/AdminTechnicianWalletsPage'
 import { AdminCompliancePage } from '../features/admin/pages/AdminCompliancePage'
-import { VerifierDashboard } from '../features/verification/VerifierDashboard'
+import { VerifierWorkspace } from '../features/verification/VerifierWorkspace'
+import { VerifierIdentitiesPage } from '../features/verification/pages/VerifierIdentitiesPage'
+import { VerifierSelfieChangesPage } from '../features/verification/pages/VerifierSelfieChangesPage'
+import { VerifierDataExportsPage } from '../features/verification/pages/VerifierDataExportsPage'
+import { VerifierOperationsPage } from '../features/verification/pages/VerifierOperationsPage'
 import { ForgotPasswordPage, LoginPage, RegisterPage, ResetPasswordPage } from '../pages/AuthPages'
 import { AppOpenPage } from '../pages/AppOpenPage'
 import { HealthPage } from '../pages/HealthPage'
@@ -92,11 +101,22 @@ export function AppRoutes() {
           <Route path="pqr" element={<PqrPage />} />
           <Route path="legal" element={<LegalPage />} />
         </Route></Route>
-        <Route element={<RoleRoute role="VERIFIER" />}><Route path="verificador" element={<VerifierDashboard />} /></Route>
+        <Route element={<RoleRoute role="VERIFIER" />}><Route path="verificador" element={<VerifierWorkspace />}>
+          <Route index element={<Navigate to="identidades" replace />} />
+          <Route path="identidades" element={<VerifierIdentitiesPage />} />
+          <Route path="selfies" element={<VerifierSelfieChangesPage />} />
+          <Route path="exportacion-datos" element={<VerifierDataExportsPage />} />
+          <Route path="moderacion" element={<VerifierOperationsPage />} />
+        </Route></Route>
         <Route element={<RoleRoute role="ADMIN" />}><Route path="admin" element={<AdminWorkspace />}>
           <Route index element={<Navigate to="resumen" replace />} />
           <Route path="resumen" element={<AdminOverviewPage />} />
-          <Route path="verificaciones" element={<AdminVerificationPage />} />
+          <Route path="verificaciones" element={<AdminVerificationHomePage />} />
+          <Route path="verificaciones/identidades" element={<AdminIdentityVerificationPage />} />
+          <Route path="verificaciones/selfies" element={<AdminSelfieVerificationPage />} />
+          <Route path="verificaciones/tecnicos" element={<AdminTechnicianVerificationPage />} />
+          <Route path="verificaciones/exportacion-datos" element={<AdminDataExportRequestsPage />} />
+          <Route path="verificaciones/verificadores" element={<AdminVerifierManagerPage />} />
           <Route path="pendientes-verificacion" element={<AdminPendingVerificationPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="finanzas" element={<AdminFinancesPage />} />

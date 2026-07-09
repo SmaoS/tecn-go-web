@@ -1,8 +1,8 @@
 import { IdentityVerificationQueue } from '../../verification/components'
 
-export function AdminPendingVerificationPage() {
+export function AdminIdentityVerificationPage() {
   return <section>
-    <h2 className="mb-4 text-2xl font-bold">Pendientes por Verificación</h2>
+    <h2 className="mb-4 text-2xl font-bold">Identidades pendientes</h2>
     <IdentityVerificationQueue />
   </section>
 }

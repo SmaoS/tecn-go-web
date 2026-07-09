@@ -1,15 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useState } from 'react'
+import { AdminDataExportRequestsPanel } from '../../compliance/AdminDataExportRequestsPanel'
 import { complianceApi } from '../../compliance/api'
-import type { ComplianceIncident, DataRequest, IncidentSeverity, RetentionPolicy } from '../../compliance/types'
+import type { ComplianceIncident, IncidentSeverity, RetentionPolicy } from '../../compliance/types'
 
 export function AdminCompliancePage() {
   const client = useQueryClient()
   const requests = useQuery({ queryKey: ['admin', 'compliance', 'requests'], queryFn: complianceApi.dataRequests })
-  const exportRequests = useQuery({
-    queryKey: ['admin', 'compliance', 'export-requests'],
-    queryFn: () => complianceApi.adminExportRequests('PENDING'),
-  })
   const policies = useQuery({ queryKey: ['admin', 'compliance', 'policies'], queryFn: complianceApi.policies })
   const incidents = useQuery({ queryKey: ['admin', 'compliance', 'incidents'], queryFn: complianceApi.incidents })
   const audits = useQuery({ queryKey: ['admin', 'compliance', 'audits'], queryFn: complianceApi.audits })
@@ -41,12 +38,7 @@ export function AdminCompliancePage() {
       </article>)}
     </Panel>
 
-    <Panel title="Solicitudes de exportación de datos">
-      {exportRequests.data?.length === 0 && <p className="text-sm text-slate-400">No hay solicitudes pendientes.</p>}
-      {exportRequests.data?.map((item) => <ExportRequest key={item.id} item={item}
-        approve={() => action.mutate(() => complianceApi.approveExportRequest(item.id))}
-        reject={(reason) => action.mutate(() => complianceApi.rejectExportRequest(item.id, reason))} />)}
-    </Panel>
+    <AdminDataExportRequestsPanel />
 
     <Panel title="Políticas de retención">
       {policies.data?.map((item) => <Policy key={item.id} item={item}
@@ -92,30 +84,6 @@ export function AdminCompliancePage() {
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return <section><h3 className="mb-3 text-lg font-bold">{title}</h3><div className="space-y-3">{children}</div></section>
-}
-
-function ExportRequest({ item, approve, reject }: {
-  item: DataRequest
-  approve: () => void
-  reject: (reason: string) => void
-}) {
-  return <article className="rounded-xl border border-slate-800 p-4">
-    <strong>{item.userName}</strong>
-    <p className="text-sm text-slate-400">
-      {item.status} · solicitada el {new Date(item.requestedAt).toLocaleString()}
-    </p>
-    <p className="mt-2 text-sm text-slate-300">
-      Al aprobar se genera un ZIP plano y se envía al correo registrado del usuario.
-    </p>
-    <div className="mt-3 flex flex-wrap gap-2">
-      <button className="rounded bg-brand-500 px-3 py-2 font-bold text-slate-950"
-        onClick={approve}>Aprobar y enviar</button>
-      <button className="rounded border border-red-500 px-3 py-2 text-red-300" onClick={() => {
-        const reason = window.prompt('Motivo del rechazo')
-        if (reason?.trim()) reject(reason.trim())
-      }}>Rechazar</button>
-    </div>
-  </article>
 }
 
 function Policy({ item, save }: { item: RetentionPolicy; save: (item: RetentionPolicy) => void }) {

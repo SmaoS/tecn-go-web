@@ -54,7 +54,7 @@ describe('navegación por rol', () => {
     })
 
     expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'Resumen', 'Verificaciones', 'Pendientes por Verificación', 'Finanzas',
+      'Resumen', 'Verificaciones', 'Finanzas',
     ])
     await user.click(screen.getByRole('button', { name: /más/i }))
     expect(screen.getByRole('menuitem', { name: 'Categorías' })).toBeInTheDocument()
