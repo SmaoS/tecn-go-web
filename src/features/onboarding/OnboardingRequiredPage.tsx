@@ -25,7 +25,7 @@ const stepLabels: Record<string, string> = {
 export function OnboardingRequiredPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { session } = useAuth()
+  const { session, setSession } = useAuth()
   const status = useQuery({ queryKey: ['onboarding-status'], queryFn: onboardingApi.status, refetchInterval: false })
   const categories = useQuery({
     queryKey: ['service-categories', 'onboarding'],
@@ -44,7 +44,15 @@ export function OnboardingRequiredPage() {
   const [uploadError, setUploadError] = useState('')
   const refresh = async () => queryClient.invalidateQueries({ queryKey: ['onboarding-status'] })
 
-  const mainMutation = useMutation({ mutationFn: onboardingApi.mainData, onSuccess: refresh })
+  const mainMutation = useMutation({
+    mutationFn: onboardingApi.mainData,
+    onSuccess: async () => {
+      if (session && main.fullName.trim() !== session.fullName) {
+        setSession({ ...session, fullName: main.fullName.trim() })
+      }
+      await refresh()
+    },
+  })
   const selfieMutation = useMutation({ mutationFn: onboardingApi.profileSelfie, onSuccess: refresh })
   const documentMutation = useMutation({ mutationFn: onboardingApi.identityDocument, onSuccess: refresh })
   const professionalMutation = useMutation({ mutationFn: onboardingApi.professionalProfile, onSuccess: refresh })

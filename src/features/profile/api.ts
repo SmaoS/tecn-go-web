@@ -9,6 +9,8 @@ export const profileApi = {
   me: () => api.get<UserProfile>('/v1/users/me/profile').then(({ data }) => data),
   save: (profile: UserProfile) => api.put<UserProfile>('/v1/users/me/profile', profile).then(({ data }) => data),
   verifyEmail: () => api.post('/v1/auth/send-email-verification'),
+  updateEmail: (payload: { email: string; confirmEmail: string }) =>
+    api.put<{ message: string; email: string; emailVerified: boolean }>('/v1/auth/email', payload).then(({ data }) => data),
   sendPhoneOtp: ({ phone, countryId }: { phone: string; countryId?: string }) =>
     api.post<{ debugCode?: string }>('/v1/auth/phone/send-otp', { phone, countryId }).then(({ data }) => data),
   verifyPhoneOtp: (phone: string, code: string, countryId?: string) => api.post('/v1/auth/phone/verify-otp', verifyPhoneOtpBody(phone, code, countryId)),

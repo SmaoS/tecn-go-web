@@ -9,6 +9,7 @@ import { useProfile, useSaveProfile } from './hooks'
 import { PasswordField } from '../../components/PasswordField'
 import { GeographicFields } from '../catalogs/GeographicFields'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../../lib/phone'
+import { useAuth } from '../../context/useAuth'
 
 const verificationLabels: Record<VerificationStatus, string> = {
   CREATED: 'Cuenta creada: carga tu documento',
@@ -22,12 +23,15 @@ export function VerificationBadge({ value }: { value: VerificationStatus }) {
 }
 
 export function UserProfileEditor() {
+  const { session, setSession } = useAuth()
   const [draft, setDraft] = useState<UserProfile | null>(null)
   const [error, setError] = useState('')
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [passwordNotice, setPasswordNotice] = useState('')
   const [passwordModal, setPasswordModal] = useState(false)
   const [phoneCode, setPhoneCode] = useState('')
+  const [editingEmail, setEditingEmail] = useState(false)
+  const [emailForm, setEmailForm] = useState({ email: session?.email ?? '', confirmEmail: '' })
   const [fileUploading, setFileUploading] = useState(false)
   const profile = useProfile()
   const current = draft ?? profile.data
@@ -35,6 +39,17 @@ export function UserProfileEditor() {
   const verifyEmail = useMutation({
     mutationFn: profileApi.verifyEmail,
     onSuccess: () => setError('Correo de verificación enviado.'),
+    onError: (reason) => setError(apiMessage(reason)),
+  })
+  const updateEmail = useMutation({
+    mutationFn: profileApi.updateEmail,
+    onSuccess: (data) => {
+      if (session) setSession({ ...session, email: data.email, emailVerified: data.emailVerified })
+      setEmailForm({ email: data.email, confirmEmail: '' })
+      setEditingEmail(false)
+      setError('Correo actualizado. Revisa tu bandeja para verificarlo.')
+      void profile.refetch()
+    },
     onError: (reason) => setError(apiMessage(reason)),
   })
   const changePassword = useMutation({
@@ -66,7 +81,16 @@ export function UserProfileEditor() {
   function submit(event: FormEvent) {
     event.preventDefault()
     if (current) save.mutate(current, {
-      onSuccess: () => setDraft(null),
+      onSuccess: (saved) => {
+        if (session) setSession({
+          ...session,
+          fullName: saved.fullName,
+          email: saved.email || session.email,
+          emailVerified: saved.emailVerified,
+          phoneVerified: saved.phoneVerified,
+        })
+        setDraft(null)
+      },
       onError: (reason) => setError(apiMessage(reason)),
     })
   }
@@ -86,7 +110,21 @@ export function UserProfileEditor() {
     <div className="mt-2"><VerificationBadge value={current.verificationStatus} /><p className="mt-1 text-sm text-slate-400">Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</p></div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
       <input value={current.fullName} onChange={(event) => update({ fullName: event.target.value })} required />
-      <input type="email" value={current.email ?? ''} placeholder="Sin correo registrado" disabled readOnly className="cursor-not-allowed opacity-70" aria-label="Correo registrado" />
+      {!editingEmail ? <div className="grid gap-2">
+        <input type="email" value={current.email ?? session?.email ?? ''} placeholder="Sin correo registrado" disabled readOnly className="cursor-not-allowed opacity-70" aria-label="Correo registrado" />
+        <button type="button" onClick={() => {
+          setEmailForm({ email: current.email ?? session?.email ?? '', confirmEmail: '' })
+          setEditingEmail(true)
+        }} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">
+          {(current.email ?? session?.email) ? 'Modificar correo' : 'Registrar correo opcional'}
+        </button>
+      </div> : <div className="grid gap-2">
+        <input type="email" placeholder="Correo" value={emailForm.email} onChange={(event) => setEmailForm({ ...emailForm, email: event.target.value })} />
+        <input type="email" placeholder="Confirmar correo" value={emailForm.confirmEmail} onChange={(event) => setEmailForm({ ...emailForm, confirmEmail: event.target.value })} />
+        {emailForm.confirmEmail && emailForm.email.trim().toLowerCase() !== emailForm.confirmEmail.trim().toLowerCase() && <p className="text-sm text-red-400">Los correos no coinciden</p>}
+        <button type="button" disabled={updateEmail.isPending || !emailForm.email.trim() || emailForm.email.trim().toLowerCase() !== emailForm.confirmEmail.trim().toLowerCase()} onClick={() => updateEmail.mutate(emailForm)} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">Actualizar correo y enviar verificación</button>
+        <button type="button" onClick={() => setEditingEmail(false)} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Cancelar</button>
+      </div>}
       <input placeholder="Teléfono" inputMode="numeric" maxLength={10} pattern="\d{10}" value={current.phone ?? ''} onChange={(event) => update({ phone: normalizeLocalPhone(event.target.value) })} />
       {current.phone && !isValidLocalPhone(current.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
       {!current.phoneVerified && current.phone && <div className="flex gap-2 sm:col-span-2">
@@ -102,7 +140,7 @@ export function UserProfileEditor() {
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
     {fileUploading && <p className="mt-2 text-sm text-brand-300">Cargando archivo...</p>}
-    <div className="mt-3 flex flex-wrap gap-2"><button disabled={save.isPending || fileUploading || (documentRequired && !current.documentPhotoUrl)} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">{save.isPending || fileUploading ? 'Guardando...' : 'Guardar perfil'}</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!current.emailVerified && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
+    <div className="mt-3 flex flex-wrap gap-2"><button disabled={save.isPending || fileUploading || (documentRequired && !current.documentPhotoUrl)} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">{save.isPending || fileUploading ? 'Guardando...' : 'Guardar perfil'}</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!editingEmail && !current.emailVerified && (current.email || session?.email) && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
     <button type="button" onClick={() => setPasswordModal(true)} className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-sm">Modificar contraseña</button>
     </form>}
     {current && passwordModal && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4" role="dialog" aria-modal="true">
