@@ -35,6 +35,12 @@ interface InactiveUser {
   id: string
 }
 
+interface AdminUserDeletionResponse {
+  userId: string
+  email?: string
+  message: string
+}
+
 const roles: Array<{ value: Role; label: string }> = [
   { value: 'CLIENT', label: 'Cliente' },
   { value: 'TECHNICIAN', label: 'Técnico' },
@@ -70,6 +76,7 @@ export function AdminUsersPage() {
     createdTo: '',
     page: 0,
   })
+  const [deleteMessage, setDeleteMessage] = useState('')
   const params = useMemo(() => ({
     role: filters.role || undefined,
     status: filters.status || undefined,
@@ -86,6 +93,17 @@ export function AdminUsersPage() {
   const activate = useMutation({
     mutationFn: (id: string) => api.put<InactiveUser>(`/v1/admin/users/${id}/activate`),
     onSuccess: () => void client.invalidateQueries({ queryKey: ['admin', 'users-search'] }),
+  })
+  const deleteInitialRegistration = useMutation({
+    mutationFn: (user: AdminUser) => api.delete<AdminUserDeletionResponse>(`/v1/admin/users/${user.id}/initial-registration`)
+      .then(({ data }) => data),
+    onSuccess: (data) => {
+      setDeleteMessage(data.message)
+      void client.invalidateQueries({ queryKey: ['admin', 'users-search'] })
+    },
+    onError: (error: any) => {
+      setDeleteMessage(error.response?.data?.message ?? 'No fue posible eliminar el usuario.')
+    },
   })
 
   return <section className="space-y-5">
@@ -125,6 +143,9 @@ export function AdminUsersPage() {
 
     {users.isPending && <p className="text-sm text-slate-400">Cargando usuarios...</p>}
     {users.error && <p className="text-sm text-red-300">No fue posible consultar usuarios.</p>}
+    {deleteMessage && <p className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-200">
+      {deleteMessage}
+    </p>}
 
     <div className="overflow-x-auto rounded-2xl border border-slate-800">
       <table className="w-full min-w-[980px] text-left text-sm">
@@ -138,6 +159,7 @@ export function AdminUsersPage() {
             <th className="px-4 py-3">Comentarios</th>
             <th className="px-4 py-3">Estado</th>
             <th className="px-4 py-3">Creado</th>
+            <th className="px-4 py-3">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -181,8 +203,16 @@ export function AdminUsersPage() {
               </button>}
             </td>
             <td className="px-4 py-3">{new Date(user.createdAt).toLocaleDateString()}</td>
+            <td className="px-4 py-3">
+              {canDeleteInitialRegistration(user) && <button
+                disabled={deleteInitialRegistration.isPending}
+                onClick={() => handleDeleteInitialRegistration(user, deleteInitialRegistration.mutate)}
+                className="rounded border border-red-500/50 px-3 py-2 text-xs font-bold text-red-200 hover:bg-red-500/10 disabled:opacity-50">
+                Eliminar registro
+              </button>}
+            </td>
           </tr>)}
-          {users.data?.content.length === 0 && <tr><td className="px-4 py-6 text-center text-slate-400" colSpan={8}>
+          {users.data?.content.length === 0 && <tr><td className="px-4 py-6 text-center text-slate-400" colSpan={9}>
             No hay usuarios con estos filtros.
           </td></tr>}
         </tbody>
@@ -214,4 +244,17 @@ function toEndInstant(value: string) {
 
 function initials(name: string) {
   return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || 'TG'
+}
+
+function canDeleteInitialRegistration(user: AdminUser) {
+  return !user.roles.includes('ADMIN') && !user.roles.includes('VERIFIER')
+}
+
+function handleDeleteInitialRegistration(user: AdminUser, deleteUser: (user: AdminUser) => void) {
+  const label = user.email ?? user.phone ?? user.fullName
+  const confirmed = window.confirm(
+    `Vas a eliminar el registro inicial de ${label}.\n\n` +
+    'Solo se permite si no tiene solicitudes, pagos, calificaciones, cotizaciones ni denuncias. Esta acción no se puede deshacer.',
+  )
+  if (confirmed) deleteUser(user)
 }
