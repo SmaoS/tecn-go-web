@@ -30,9 +30,10 @@ export function RoleWorkspace({ title, subtitle, links }: {
   const secondaryActive = secondaryLinks.some((link) =>
     location.pathname === link.to || location.pathname.startsWith(`${link.to}/`),
   )
-  const targetMode = session?.role === 'CLIENT'
+  const currentMode = session?.activeMode ?? session?.role
+  const targetMode = currentMode === 'CLIENT'
     ? 'TECHNICIAN'
-    : session?.role === 'TECHNICIAN' ? 'CLIENT' : null
+    : currentMode === 'TECHNICIAN' ? 'CLIENT' : null
 
   useEffect(() => {
     setMenuOpen(false)
@@ -179,6 +180,14 @@ export function RoleWorkspace({ title, subtitle, links }: {
       {primaryLinks.map((link) =>
         <NavLink key={link.to} to={link.to} className={linkClass}>{link.label}</NavLink>,
       )}
+      {targetMode && <button
+        type="button"
+        disabled={switchingMode}
+        onClick={() => void changeMode()}
+        className="rounded-xl border border-brand-500/60 bg-brand-500/10 px-4 py-2.5 text-sm font-semibold text-brand-300 transition-colors hover:bg-brand-500/15 hover:text-brand-200 disabled:opacity-50"
+      >
+        {switchingMode ? 'Cambiando modo...' : targetMode === 'TECHNICIAN' ? 'Modo técnico' : 'Modo cliente'}
+      </button>}
       {secondaryLinks.length > 0 && <div ref={menuRef} className="relative">
         <button
           type="button"
