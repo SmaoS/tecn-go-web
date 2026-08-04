@@ -56,9 +56,9 @@ export function CreateRequestPage() {
   }
   useEffect(() => currentLocation(), [])
 
-  return <section className="max-w-2xl"><h2 className="mb-4 text-2xl font-bold">Crear solicitud</h2>
+  return <section className="mx-auto max-w-2xl"><h2 className="mb-4 text-2xl font-bold md:text-3xl">Crear solicitud</h2>
     <QueryState pending={categories.isPending} error={categories.error}>
-      <form onSubmit={submit} className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900 p-6">
+      <form onSubmit={submit} className="space-y-4 rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-6">
         <select value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })} required>
           <option value="">Selecciona una categoría</option>
           {categories.data?.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
@@ -81,7 +81,9 @@ export function CreateRequestPage() {
         {create.error && <p className="text-sm text-red-400">{apiMessage(create.error)}</p>}
         {!profile.data?.cityId && <p className="text-sm text-amber-300">Completa la ciudad en Mi perfil antes de crear una solicitud.</p>}
         {(!form.latitude || !form.longitude) && <p className="text-sm text-amber-300">Se requiere ubicación GPS para publicar.</p>}
-        <button disabled={create.isPending || !profile.data?.cityId || !form.latitude || !form.longitude} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{create.isPending ? 'Creando...' : 'Crear solicitud'}</button>
+        <div className="mobile-sticky-action -mx-1 rounded-2xl bg-slate-900/90 p-1 backdrop-blur md:static md:mx-0 md:bg-transparent md:p-0">
+          <button disabled={create.isPending || !profile.data?.cityId || !form.latitude || !form.longitude} className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">{create.isPending ? 'Creando...' : 'Crear solicitud'}</button>
+        </div>
       </form>
     </QueryState>
   </section>

@@ -7,8 +7,8 @@ export function LegalPage() {
   const [searchParams] = useSearchParams()
   const returnTo = searchParams.get('returnTo')
 
-  return <section>
-    <h2 className="mb-2 text-2xl font-bold">Seguridad, términos y tratamiento de datos</h2>
+  return <section className="mx-auto max-w-3xl">
+    <h2 className="mb-2 text-2xl font-bold md:text-3xl">Seguridad, términos y tratamiento de datos</h2>
     <p className="mb-5 text-slate-300">Lee todos los documentos. Al final puedes aceptarlos en una sola acción.</p>
     <LegalDocumentsContent onAccepted={() => {
       if (returnTo?.startsWith('/app/') && returnTo !== location.pathname) navigate(returnTo, { replace: true })

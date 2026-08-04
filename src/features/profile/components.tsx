@@ -105,7 +105,7 @@ export function UserProfileEditor() {
     }), () => setError('No fue posible obtener la ubicación del navegador'))
   }
   return <QueryState pending={profile.isPending} error={profile.error}>
-    {current && <form onSubmit={submit} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+    {current && <form onSubmit={submit} className="mb-8 rounded-2xl border border-slate-800 bg-slate-900 p-4 sm:p-5">
     <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">Mi perfil y reputación</h2><span className="text-brand-400">★ {current.averageRating.toFixed(1)} · {current.paidServicesCount} pagados</span></div>
     <div className="mt-2"><VerificationBadge value={current.verificationStatus} /><p className="mt-1 text-sm text-slate-400">Correo: {current.emailVerified ? 'verificado' : 'pendiente'} · Documentos: {current.documentsVerified ? 'verificados' : 'pendientes'}</p></div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -127,7 +127,7 @@ export function UserProfileEditor() {
       </div>}
       <input placeholder="Teléfono" inputMode="numeric" maxLength={10} pattern="\d{10}" value={current.phone ?? ''} onChange={(event) => update({ phone: normalizeLocalPhone(event.target.value) })} />
       {current.phone && !isValidLocalPhone(current.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
-      {!current.phoneVerified && current.phone && <div className="flex gap-2 sm:col-span-2">
+      {!current.phoneVerified && current.phone && <div className="grid gap-2 sm:col-span-2 sm:grid-cols-[auto_1fr_auto]">
         <button type="button" disabled={!isValidLocalPhone(current.phone)} onClick={() => sendPhoneOtp.mutate({ phone: current.phone!, countryId: current.countryId })} className="rounded-lg border border-slate-700 px-3 py-2 text-sm disabled:opacity-50">Enviar código al celular</button>
         <input inputMode="numeric" placeholder="Código OTP" value={phoneCode} onChange={(event) => setPhoneCode(event.target.value.replace(/\D/g, ''))} />
         <button type="button" disabled={!phoneCode || !isValidLocalPhone(current.phone)} onClick={() => verifyPhoneOtp.mutate({ phone: current.phone!, code: phoneCode, countryId: current.countryId })} className="rounded-lg border border-brand-500 px-3 py-2 text-sm disabled:opacity-50">Verificar celular</button>
@@ -140,7 +140,7 @@ export function UserProfileEditor() {
     </div>
     {error && <p className="mt-2 text-sm text-slate-300">{error}</p>}
     {fileUploading && <p className="mt-2 text-sm text-brand-300">Cargando archivo...</p>}
-    <div className="mt-3 flex flex-wrap gap-2"><button disabled={save.isPending || fileUploading || (documentRequired && !current.documentPhotoUrl)} className="rounded-lg border border-brand-500 px-3 py-2 text-sm text-brand-300 disabled:opacity-50">{save.isPending || fileUploading ? 'Guardando...' : 'Guardar perfil'}</button><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!editingEmail && !current.emailVerified && (current.email || session?.email) && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
+    <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap"><div className="mobile-sticky-action rounded-2xl bg-slate-900/90 p-1 backdrop-blur sm:static sm:bg-transparent sm:p-0"><button disabled={save.isPending || fileUploading || (documentRequired && !current.documentPhotoUrl)} className="w-full rounded-lg border border-brand-500 px-3 py-3 text-sm font-bold text-brand-300 disabled:opacity-50 sm:w-auto sm:py-2">{save.isPending || fileUploading ? 'Guardando...' : 'Guardar perfil'}</button></div><button type="button" onClick={useHomeLocation} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">{current.homeLatitude != null && current.homeLongitude != null ? 'Ubicación de domicilio lista' : 'Obtener ubicación del domicilio'}</button>{!editingEmail && !current.emailVerified && (current.email || session?.email) && <button type="button" onClick={() => verifyEmail.mutate()} className="rounded-lg border border-slate-700 px-3 py-2 text-sm">Verificar correo</button>}</div>
     <button type="button" onClick={() => setPasswordModal(true)} className="mt-3 rounded-lg border border-slate-700 px-3 py-2 text-sm">Modificar contraseña</button>
     </form>}
     {current && passwordModal && <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/75 p-4" role="dialog" aria-modal="true">

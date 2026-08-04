@@ -8,9 +8,9 @@ import { PasswordField } from '../components/PasswordField'
 import { isValidLocalPhone, localPhoneHint, normalizeLocalPhone } from '../lib/phone'
 
 function AuthShell({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="mx-auto max-w-md px-5 py-12 sm:py-16">
+  return <section className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-md content-center px-4 py-8 pb-[calc(2rem+var(--tecngo-safe-bottom))] sm:px-5 sm:py-16">
     <div className="mb-7 flex justify-center"><img src="/tecngo-logo-dark.png" alt="TecnGo" className="h-14 w-auto" /></div>
-    <div className="tecngo-panel p-6 sm:p-8">
+    <div className="tecngo-panel p-5 sm:p-8">
       <p className="mb-2 text-sm font-bold uppercase tracking-[.16em] text-brand-400">TecnGo</p>
       <h1 className="mb-7 text-3xl font-extrabold tracking-tight">{title}</h1>
       {children}
@@ -173,9 +173,9 @@ export function RegisterPage() {
         <input type="email" placeholder="Confirmar correo" value={form.confirmEmail} onChange={(e) => setForm({ ...form, confirmEmail: e.target.value })} required />
         {form.confirmEmail && form.email.trim().toLowerCase() !== form.confirmEmail.trim().toLowerCase() && <p className="text-sm text-red-400">Los correos no coinciden</p>}
       </>
-      : <><div className="flex gap-2"><input type="tel" inputMode="numeric" maxLength={10} pattern="\d{10}" placeholder="Celular, ej. 3001234567" value={form.phone} onChange={(e) => { setForm({ ...form, phone: normalizeLocalPhone(e.target.value) }); setVerificationToken('') }} required /><button type="button" disabled={otpLoading || !isValidLocalPhone(form.phone)} onClick={() => void sendOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">Enviar código</button></div>
+      : <><div className="grid gap-2 sm:grid-cols-[1fr_auto]"><input type="tel" inputMode="numeric" maxLength={10} pattern="\d{10}" placeholder="Celular, ej. 3001234567" value={form.phone} onChange={(e) => { setForm({ ...form, phone: normalizeLocalPhone(e.target.value) }); setVerificationToken('') }} required /><button type="button" disabled={otpLoading || !isValidLocalPhone(form.phone)} onClick={() => void sendOtp()} className="rounded-xl border border-brand-500 px-3 py-3 text-sm font-bold disabled:opacity-50">Enviar código</button></div>
         {form.phone.length > 0 && !isValidLocalPhone(form.phone) && <p className="text-sm text-red-400">{localPhoneHint}</p>}
-        <div className="flex gap-2"><input inputMode="numeric" maxLength={8} placeholder="Código OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} /><button type="button" disabled={otpLoading || !otpCode || !isValidLocalPhone(form.phone) || Boolean(verificationToken)} onClick={() => void verifyOtp()} className="rounded-xl border border-brand-500 px-3 text-sm disabled:opacity-50">{verificationToken ? 'Verificado' : 'Verificar'}</button></div>
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto]"><input inputMode="numeric" maxLength={8} placeholder="Código OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} /><button type="button" disabled={otpLoading || !otpCode || !isValidLocalPhone(form.phone) || Boolean(verificationToken)} onClick={() => void verifyOtp()} className="rounded-xl border border-brand-500 px-3 py-3 text-sm font-bold disabled:opacity-50">{verificationToken ? 'Verificado' : 'Verificar'}</button></div>
         {otpNotice && <p className="text-sm text-emerald-400">{otpNotice}</p>}</>}
     <PasswordField minLength={8} placeholder="Contraseña (mínimo 8 caracteres)" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
     <PasswordField minLength={8} placeholder="Confirmar contraseña" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />

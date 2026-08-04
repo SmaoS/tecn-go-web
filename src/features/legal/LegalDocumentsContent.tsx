@@ -48,6 +48,7 @@ export function LegalDocumentsContent({
     <div ref={endRef} />
     {showAcceptButton && <>
       {acceptAll.error && <p className="text-sm text-red-400">{apiMessage(acceptAll.error)}</p>}
+      <div className="mobile-sticky-action rounded-2xl bg-canvas/85 p-1 backdrop-blur md:static md:bg-transparent md:p-0">
       <button
         disabled={acceptAll.isPending || pendingDocuments.length === 0}
         onClick={() => acceptAll.mutate()}
@@ -57,6 +58,7 @@ export function LegalDocumentsContent({
           ? 'Términos y condiciones aceptados'
           : acceptAll.isPending ? 'Aceptando...' : buttonLabel}
       </button>
+      </div>
     </>}
   </div>
 }

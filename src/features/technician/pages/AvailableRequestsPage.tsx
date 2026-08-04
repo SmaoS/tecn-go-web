@@ -75,7 +75,7 @@ export function AvailableRequestsPage() {
           {location && Number.isFinite(item.latitude) && Number.isFinite(item.longitude) && mapsApiKey
             ? <iframe
               title={`Recorrido aproximado a ${item.categoryName}`}
-              className="h-72 w-full rounded-xl border border-slate-700"
+              className="h-64 w-full rounded-xl border border-slate-700 sm:h-72"
               loading="lazy"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
@@ -89,7 +89,7 @@ export function AvailableRequestsPage() {
             href={`https://www.google.com/maps/dir/?api=1&origin=${location.latitude},${location.longitude}&destination=${item.latitude},${item.longitude}&travelmode=driving`}
           >Abrir ruta vial en Google Maps</a>}
         </div>}
-        <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_2fr_auto]"><input type="number" min="1" placeholder="Tu cotización" value={quotes[item.id] ?? ''} onChange={(event) => setQuotes({ ...quotes, [item.id]: event.target.value })} /><input placeholder="Descripción de la oferta (opcional)" value={descriptions[item.id] ?? ''} onChange={(event) => setDescriptions({ ...descriptions, [item.id]: event.target.value })} /><button disabled={!quotes[item.id] || quote.isPending} onClick={() => quote.mutate(item.id)} className="rounded-lg bg-brand-500 px-3 py-2 font-bold text-slate-950 disabled:opacity-50">Cotizar</button></div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_2fr_auto]"><input type="number" min="1" placeholder="Tu cotización" value={quotes[item.id] ?? ''} onChange={(event) => setQuotes({ ...quotes, [item.id]: event.target.value })} /><input placeholder="Descripción de la oferta (opcional)" value={descriptions[item.id] ?? ''} onChange={(event) => setDescriptions({ ...descriptions, [item.id]: event.target.value })} /><button disabled={!quotes[item.id] || quote.isPending} onClick={() => quote.mutate(item.id)} className="rounded-lg bg-brand-500 px-3 py-3 font-bold text-slate-950 disabled:opacity-50">Cotizar</button></div>
       </article>)}</div>
     </QueryState>
   </section>

@@ -1,14 +1,16 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 import { LoadingOverlay } from './LoadingOverlay'
 
 export function Layout() {
   const { session, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const inApp = location.pathname.startsWith('/app')
   return (
     <div className="flex min-h-screen flex-col">
       <LoadingOverlay />
-      <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-canvas/90 backdrop-blur-xl">
+      <header className={`sticky top-0 z-40 border-b border-slate-800/80 bg-canvas/90 backdrop-blur-xl ${inApp ? 'hidden md:block' : ''}`}>
         <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center" aria-label="TecnGo - Inicio">
             <img src="/tecngo-logo-dark.png" alt="TecnGo" className="h-9 w-auto sm:h-11" />
@@ -29,7 +31,7 @@ export function Layout() {
         </nav>
       </header>
       <main className="flex-1"><Outlet /></main>
-      <footer className="border-t border-slate-800 bg-canvas/95">
+      <footer className={`border-t border-slate-800 bg-canvas/95 ${inApp ? 'hidden md:block' : ''}`}>
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 text-sm text-slate-400 sm:flex-row">
           <p>© 2026 TecnGo  Villavicencio</p>
           <nav aria-label="Enlaces legales" className="flex flex-wrap justify-center gap-4">

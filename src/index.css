@@ -3,18 +3,103 @@
 @tailwind utilities;
 
 @layer base {
-  html { background: #020817; }
+  :root {
+    color-scheme: dark;
+    --tecngo-primary: #00D84A;
+    --tecngo-background: #020817;
+    --tecngo-surface: #111827;
+    --tecngo-text-primary: #FFFFFF;
+    --tecngo-text-secondary: #94A3B8;
+    --tecngo-safe-top: env(safe-area-inset-top, 0px);
+    --tecngo-safe-right: env(safe-area-inset-right, 0px);
+    --tecngo-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --tecngo-safe-left: env(safe-area-inset-left, 0px);
+  }
+  html {
+    background: var(--tecngo-background);
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
   body {
     @apply min-h-screen bg-canvas font-sans text-slate-100 antialiased;
     background-image:
       radial-gradient(circle at 12% 0%, rgba(0, 216, 74, 0.09), transparent 28rem),
       radial-gradient(circle at 88% 18%, rgba(0, 184, 62, 0.05), transparent 24rem);
+    overflow-x: hidden;
+    touch-action: manipulation;
   }
-  input, select, textarea { @apply w-full rounded-xl border border-slate-700 bg-surface px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/15; }
-  button { @apply transition; }
+  #root { min-height: 100svh; overflow-x: hidden; }
+  input, select, textarea {
+    @apply w-full rounded-xl border border-slate-700 bg-surface px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/15;
+  }
+  button, a { -webkit-tap-highlight-color: transparent; }
+  button { @apply min-h-11 transition; }
+  img, iframe, video, canvas, svg { max-width: 100%; }
+  table { max-width: 100%; }
 }
 
 @layer components {
   .tecngo-panel { @apply rounded-3xl border border-slate-800 bg-surface/90 shadow-2xl shadow-black/20 backdrop-blur; }
-  .tecngo-primary { @apply rounded-xl bg-brand-500 px-5 py-3 font-extrabold text-canvas hover:bg-brand-300 disabled:cursor-not-allowed disabled:opacity-50; }
+  .tecngo-primary { @apply min-h-11 rounded-xl bg-brand-500 px-5 py-3 font-extrabold text-canvas hover:bg-brand-300 disabled:cursor-not-allowed disabled:opacity-50; }
+  .tecngo-card { @apply rounded-3xl border border-slate-800 bg-surface/95 p-4 shadow-xl shadow-black/15; }
+  .tecngo-mobile-page { padding-bottom: calc(5.75rem + var(--tecngo-safe-bottom)); }
+  .tecngo-scrollbarless {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .tecngo-scrollbarless::-webkit-scrollbar { display: none; }
+  .tecngo-touch-target { @apply min-h-11 min-w-11; }
+}
+
+@media (max-width: 767px) {
+  .desktop-table-on-mobile table,
+  .mobile-card-table {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+  }
+  .desktop-table-on-mobile thead,
+  .mobile-card-table thead {
+    display: none;
+  }
+  .desktop-table-on-mobile tbody,
+  .mobile-card-table tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .desktop-table-on-mobile tr,
+  .mobile-card-table tr {
+    display: grid;
+    gap: 0.5rem;
+    border: 1px solid rgb(30 41 59);
+    border-radius: 1.25rem;
+    background: rgb(15 23 42 / 0.68);
+    padding: 1rem;
+  }
+  .desktop-table-on-mobile td,
+  .mobile-card-table td {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0 !important;
+    border: 0 !important;
+    min-width: 0;
+  }
+  .desktop-table-on-mobile td::before,
+  .mobile-card-table td::before {
+    content: attr(data-label);
+    color: rgb(148 163 184);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .desktop-table-on-mobile td:not([data-label])::before,
+  .mobile-card-table td:not([data-label])::before {
+    content: none;
+  }
+  .mobile-sticky-action {
+    position: sticky;
+    bottom: calc(5.5rem + var(--tecngo-safe-bottom));
+    z-index: 20;
+  }
 }

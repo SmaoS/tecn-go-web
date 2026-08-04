@@ -147,7 +147,7 @@ export function AdminUsersPage() {
       {deleteMessage}
     </p>}
 
-    <div className="overflow-x-auto rounded-2xl border border-slate-800">
+    <div className="desktop-table-on-mobile rounded-2xl border border-slate-800 md:overflow-x-auto">
       <table className="w-full min-w-[980px] text-left text-sm">
         <thead className="bg-slate-900 text-slate-300">
           <tr>
@@ -164,7 +164,7 @@ export function AdminUsersPage() {
         </thead>
         <tbody>
           {users.data?.content.map((user) => <tr key={user.id} className="border-t border-slate-800 align-top">
-            <td className="px-4 py-3">
+            <td className="px-4 py-3" data-label="Usuario">
               <div className="flex items-center gap-3">
                 {user.profilePhotoUrl
                   ? <PrivateImage src={user.profilePhotoUrl} alt={user.fullName} className="h-12 w-12 rounded-full object-cover" />
@@ -177,22 +177,22 @@ export function AdminUsersPage() {
                 </div>
               </div>
             </td>
-            <td className="px-4 py-3">{user.email ?? '-'}</td>
-            <td className="px-4 py-3">{user.phone ?? '-'}</td>
-            <td className="px-4 py-3">{user.roles.join(', ') || user.primaryRole}</td>
-            <td className="px-4 py-3">
+            <td className="px-4 py-3" data-label="Correo">{user.email ?? '-'}</td>
+            <td className="px-4 py-3" data-label="Celular">{user.phone ?? '-'}</td>
+            <td className="px-4 py-3" data-label="Rol">{user.roles.join(', ') || user.primaryRole}</td>
+            <td className="px-4 py-3" data-label="Onboarding">
               <span className={user.onboardingCompleted ? 'text-emerald-300' : 'text-amber-300'}>
                 {user.onboardingCompleted ? 'Completo' : 'Pendiente'}
               </span>
               <p className="text-xs text-slate-400">{user.onboardingStep}</p>
               <p className="text-xs text-slate-500">{user.verificationStatus}</p>
             </td>
-            <td className="px-4 py-3">
+            <td className="px-4 py-3" data-label="Comentarios">
               <ul className="space-y-1">
                 {user.onboardingComments.map((comment) => <li key={comment} className="text-xs text-slate-300">• {comment}</li>)}
               </ul>
             </td>
-            <td className="px-4 py-3">
+            <td className="px-4 py-3" data-label="Estado">
               <span className={user.accountStatus === 'ACTIVE' ? 'text-emerald-300' : 'text-red-300'}>
                 {statusLabel[user.accountStatus]}
               </span>
@@ -202,8 +202,8 @@ export function AdminUsersPage() {
                 Activar
               </button>}
             </td>
-            <td className="px-4 py-3">{new Date(user.createdAt).toLocaleDateString()}</td>
-            <td className="px-4 py-3">
+            <td className="px-4 py-3" data-label="Creado">{new Date(user.createdAt).toLocaleDateString()}</td>
+            <td className="px-4 py-3" data-label="Acciones">
               {canDeleteInitialRegistration(user) && <button
                 disabled={deleteInitialRegistration.isPending}
                 onClick={() => handleDeleteInitialRegistration(user, deleteInitialRegistration.mutate)}

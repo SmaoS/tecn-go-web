@@ -50,6 +50,16 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: sentryAuthToken ? 'hidden' : false,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) {
+              return 'react-vendor'
+            }
+            if (id.includes('node_modules/@tanstack')) return 'query-vendor'
+          },
+        },
+      },
     },
     plugins: [
       react(),

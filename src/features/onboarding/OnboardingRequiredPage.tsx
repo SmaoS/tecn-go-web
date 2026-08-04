@@ -89,7 +89,7 @@ export function OnboardingRequiredPage() {
     mainMutation.mutate(main)
   }
 
-  return <section className="mx-auto max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-6">
+  return <section className="mx-auto max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 p-4 sm:p-6">
     <h2 className="text-2xl font-bold">Completa tu inscripción</h2>
     <p className="mt-2 text-slate-300">Paso actual: <strong className="text-brand-300">{stepLabels[status.data?.currentStep ?? 'MAIN_DATA']}</strong></p>
     <button
@@ -117,7 +117,9 @@ export function OnboardingRequiredPage() {
         <option value="PASSPORT">Pasaporte</option>
       </select>
       <input placeholder="Número de documento *" value={main.documentNumber} onChange={(event) => setMain({ ...main, documentNumber: event.target.value })} required />
-      <button disabled={pending || Boolean(main.phone) && !isValidLocalPhone(main.phone)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">Guardar y continuar</button>
+      <div className="mobile-sticky-action -mx-1 rounded-2xl bg-slate-900/90 p-1 backdrop-blur md:static md:mx-0 md:bg-transparent md:p-0">
+        <button disabled={pending || Boolean(main.phone) && !isValidLocalPhone(main.phone)} className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">Guardar y continuar</button>
+      </div>
     </form>}
     {status.data?.currentStep === 'LEGAL_ACCEPTANCE' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">Lee todos los documentos legales requeridos para tu rol.</p>
@@ -127,7 +129,9 @@ export function OnboardingRequiredPage() {
       <p className="text-slate-300">Carga una foto clara de tu rostro. Después quedará bloqueada para cambios desde tu perfil.</p>
       <input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => void upload(event, 'PROFILE', setProfilePhotoUrl)} />
       {fileUploading && <p className="text-sm text-brand-300">Cargando imagen...</p>}
-      <button disabled={pending || !profilePhotoUrl} onClick={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">Guardar selfie</button>
+      <div className="mobile-sticky-action -mx-1 rounded-2xl bg-slate-900/90 p-1 backdrop-blur md:static md:mx-0 md:bg-transparent md:p-0">
+        <button disabled={pending || !profilePhotoUrl} onClick={() => selfieMutation.mutate({ profilePhotoUrl, faceDetectionStatus: 'MANUAL_REVIEW_REQUIRED' })} className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950 disabled:opacity-50">Guardar selfie</button>
+      </div>
     </div>}
     {status.data?.currentStep === 'IDENTITY_DOCUMENT' && <div className="mt-5 space-y-4">
       <p className="text-slate-300">{main.documentType === 'CC' ? 'Carga frente y reverso de tu cédula.' : 'Carga la página principal del pasaporte.'}</p>
@@ -135,11 +139,15 @@ export function OnboardingRequiredPage() {
         <label className="block text-sm">Frente<input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setFrontUrl)} /></label>
         <label className="block text-sm">Reverso<input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setBackUrl)} /></label>
         {fileUploading && <p className="text-sm text-brand-300">Cargando documento...</p>}
-        <button disabled={pending || !frontUrl || !backUrl} onClick={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
+        <div className="mobile-sticky-action -mx-1 rounded-2xl bg-slate-900/90 p-1 backdrop-blur md:static md:mx-0 md:bg-transparent md:p-0">
+          <button disabled={pending || !frontUrl || !backUrl} onClick={() => documentMutation.mutate({ documentType: 'CC', documentFrontUrl: frontUrl, documentBackUrl: backUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
+        </div>
       </> : <>
         <label className="block text-sm">Pasaporte<input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'DOCUMENT', setSingleUrl)} /></label>
         {fileUploading && <p className="text-sm text-brand-300">Cargando documento...</p>}
-        <button disabled={pending || !singleUrl} onClick={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
+        <div className="mobile-sticky-action -mx-1 rounded-2xl bg-slate-900/90 p-1 backdrop-blur md:static md:mx-0 md:bg-transparent md:p-0">
+          <button disabled={pending || !singleUrl} onClick={() => documentMutation.mutate({ documentType: 'PASSPORT', documentSingleUrl: singleUrl, identityDocumentCaptureStatus: 'MANUAL_REVIEW_REQUIRED' })} className="w-full rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">Guardar documento</button>
+        </div>
       </>}
     </div>}
     {status.data?.currentStep === 'TECHNICIAN_PROFESSIONAL_PROFILE' && <div className="mt-5 space-y-4">
@@ -171,7 +179,7 @@ export function OnboardingRequiredPage() {
         onChange={(event) => setProfessional({ ...professional, workExperienceDescription: event.target.value })}
       />
       <p className="text-xs text-slate-400">{professional.workExperienceDescription.trim().length}/1000 · mínimo 30 caracteres</p>
-      <div className="sticky bottom-0 -mx-6 border-t border-slate-800 bg-slate-900/95 p-4 backdrop-blur">
+      <div className="mobile-sticky-action -mx-1 rounded-2xl border-t border-slate-800 bg-slate-900/95 p-1 backdrop-blur md:static md:-mx-6 md:rounded-none md:p-4">
         <button
           disabled={pending || professional.categoryIds.length === 0 || professional.workExperienceDescription.trim().length < 30}
           onClick={() => professionalMutation.mutate({
@@ -188,8 +196,10 @@ export function OnboardingRequiredPage() {
       <p className="text-slate-300">Si no tienes certificado de estudio, lo puedes cargar después.</p>
       <input disabled={pending} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={(event) => void upload(event, 'CERTIFICATE', setCertificateUrl)} />
       {fileUploading && <p className="text-sm text-brand-300">Cargando certificado...</p>}
-      <button disabled={pending || !certificateUrl} onClick={() => certificateMutation.mutate(certificateUrl)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">{certificateMutation.isPending ? 'Guardando certificado...' : 'Guardar certificado'}</button>
-      <button disabled={pending} onClick={() => skipCertificate.mutate()} className="rounded-xl border border-slate-700 px-5 py-3">No tengo certificado ahora</button>
+      <div className="mobile-sticky-action -mx-1 grid gap-2 rounded-2xl bg-slate-900/90 p-1 backdrop-blur md:static md:mx-0 md:bg-transparent md:p-0">
+        <button disabled={pending || !certificateUrl} onClick={() => certificateMutation.mutate(certificateUrl)} className="rounded-xl bg-brand-500 px-5 py-3 font-bold text-slate-950">{certificateMutation.isPending ? 'Guardando certificado...' : 'Guardar certificado'}</button>
+        <button disabled={pending} onClick={() => skipCertificate.mutate()} className="rounded-xl border border-slate-700 px-5 py-3">No tengo certificado ahora</button>
+      </div>
     </div>}
     {status.data?.currentStep === 'COMPLETED' && <p className="mt-5 text-slate-300">Tu inscripción está lista. Te estamos llevando al inicio.</p>}
     {(uploadError || error) && <p className="mt-4 text-sm text-red-400">{uploadError || apiMessage(error)}</p>}

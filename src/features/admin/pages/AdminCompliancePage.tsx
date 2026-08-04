@@ -70,12 +70,12 @@ export function AdminCompliancePage() {
     </Panel>
 
     <Panel title="Auditoría de accesos">
-      <div className="overflow-x-auto"><table className="w-full text-left text-sm">
+      <div className="desktop-table-on-mobile"><table className="w-full text-left text-sm">
         <thead><tr className="text-slate-400"><th>Fecha</th><th>Acción</th><th>Recurso</th><th>Resultado</th><th>Correlación</th></tr></thead>
         <tbody>{audits.data?.map((item) => <tr key={item.id} className="border-t border-slate-800">
-          <td className="py-2">{new Date(item.createdAt).toLocaleString()}</td>
-          <td>{item.action}</td><td>{item.resourceType}</td><td>{item.outcome}</td>
-          <td className="font-mono text-xs">{item.correlationId ?? '-'}</td>
+          <td data-label="Fecha" className="py-2">{new Date(item.createdAt).toLocaleString()}</td>
+          <td data-label="Acción">{item.action}</td><td data-label="Recurso">{item.resourceType}</td><td data-label="Resultado">{item.outcome}</td>
+          <td data-label="Correlación" className="font-mono text-xs">{item.correlationId ?? '-'}</td>
         </tr>)}</tbody>
       </table></div>
     </Panel>

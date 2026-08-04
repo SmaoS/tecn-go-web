@@ -19,7 +19,7 @@ export function AdminTechnicianWalletsPage() {
     <h2 className="mb-4 text-2xl font-bold">Saldos de técnicos</h2>
     <QueryState pending={wallets.isPending} error={wallets.error} empty={wallets.data?.length === 0}>
       <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900">
+        <div className="desktop-table-on-mobile rounded-2xl border border-slate-800 bg-slate-900 md:overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="text-slate-400">
@@ -31,13 +31,13 @@ export function AdminTechnicianWalletsPage() {
             </thead>
             <tbody>
               {wallets.data?.map((wallet) => <tr key={wallet.technicianId} className="border-t border-slate-800">
-                <td className="p-4">
+                <td className="p-4" data-label="Técnico">
                   <strong>{wallet.technicianName}</strong>
                   <p className="text-xs text-slate-500">{wallet.technicianEmail}</p>
                 </td>
-                <td className={wallet.balance < 0 ? 'font-bold text-red-300' : 'font-bold text-brand-300'}>{money(wallet.balance)}</td>
-                <td>{wallet.rechargeEnabled ? 'Activo' : 'Recargas apagadas'}</td>
-                <td><button className="text-brand-300" onClick={() => setSelected(wallet.technicianId)}>Ajustar</button></td>
+                <td data-label="Saldo" className={wallet.balance < 0 ? 'font-bold text-red-300' : 'font-bold text-brand-300'}>{money(wallet.balance)}</td>
+                <td data-label="Estado">{wallet.rechargeEnabled ? 'Activo' : 'Recargas apagadas'}</td>
+                <td data-label="Acciones"><button className="text-brand-300" onClick={() => setSelected(wallet.technicianId)}>Ajustar</button></td>
               </tr>)}
             </tbody>
           </table>
